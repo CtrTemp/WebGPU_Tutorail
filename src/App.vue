@@ -1,13 +1,14 @@
 <template>
   <Suspense>
-    <WebGPURoot/>
+    <!-- <WebGPURoot/> -->
+    <Tuto02_RenderGrid/>
   </Suspense>
     <!-- <WebGPURoot/> -->
 </template>
 
 <script setup>
-import HelloWorld from './components/HelloWorld.vue'
 import WebGPURoot from './components/WebGPURoot.vue';
+import Tuto02_RenderGrid from './components/Tuto02_RenderGrid.vue';
 
 
 // export default {
