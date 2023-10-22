@@ -1,7 +1,8 @@
 <template>
   <Suspense>
     <!-- <WebGPURoot/> -->
-    <Tuto02_RenderGrid/>
+    <!-- <Tuto02_RenderGrid/> -->
+    <Tuto03_RenderState/>
   </Suspense>
     <!-- <WebGPURoot/> -->
 </template>
@@ -9,6 +10,7 @@
 <script setup>
 import WebGPURoot from './components/WebGPURoot.vue';
 import Tuto02_RenderGrid from './components/Tuto02_RenderGrid.vue';
+import Tuto03_RenderState from './components/Tuto03_RenderState.vue';
 
 
 // export default {
