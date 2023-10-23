@@ -38,11 +38,11 @@ const mount_func = onMounted(()=>{
     // init vertices
     const vertices = new Float32Array([
         //   X,    Y,
-        -0.8, -0.8, // Triangle 1 (Blue)
+        -0.8, -0.8, // Triangle 1
         0.8, -0.8,
         0.8,  0.8,
 
-        -0.8, -0.8, // Triangle 2 (Red)
+        -0.8, -0.8, // Triangle 2
         0.8,  0.8,
         -0.8,  0.8,
     ]);
@@ -87,32 +87,32 @@ const mount_func = onMounted(()=>{
     // 创建针对单元格状态的缓冲区，以期望通过动态更新单元格状态来控制绘制
     const cellStateArray = new Uint32Array(GRID_SIZE * GRID_SIZE);
 
-    // Create two storage buffers to hold the cell state.
+    // 我们创建两个 storage buffer 并且使用乒乓模式来更新单元格状态
     const cellStateStorage = [
-    device.createBuffer({
-        label: "Cell State A",
-        size: cellStateArray.byteLength,
-        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
-    }),
-    device.createBuffer({
-        label: "Cell State B",
-        size: cellStateArray.byteLength,
-        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
-    })
+        device.createBuffer({
+            label: "Cell State A",
+            size: cellStateArray.byteLength,
+            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+        }),
+        device.createBuffer({
+            label: "Cell State B",
+            size: cellStateArray.byteLength,
+            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+        })
     ];
 
     // CPU 端初始化填充数据，这里每三个单元格激活一个（其余在定义时，默认为0填充）
-    // Mark every third cell of the first grid as active.
     for (let i = 0; i < cellStateArray.length; i+=3) {
-    cellStateArray[i] = 1;
+        cellStateArray[i] = 1;
     }
     device.queue.writeBuffer(cellStateStorage[0], 0, cellStateArray);
 
     // Mark every other cell of the second grid as active.
     for (let i = 0; i < cellStateArray.length; i++) {
-    cellStateArray[i] = i % 2;
+        cellStateArray[i] = i % 2;
     }
     // 导入数据到GPU
+    // 注意这里我们写入的是状态B，之后会使用状态B来更新状态A，如此循环往复
     device.queue.writeBuffer(cellStateStorage[1], 0, cellStateArray);
 
 
@@ -185,14 +185,14 @@ const mount_func = onMounted(()=>{
         label: "Cell pipeline",
         layout: "auto",
         vertex: {
-            module: cellShaderModule,
+            module: cellShaderModule,   // 指定 shader code
             entryPoint: "vertexMain",   // 指定 vertex shader 入口函数
-            buffers: [vertexBufferLayout]
+            buffers: [vertexBufferLayout]  // 其中存放输入的顶点数据
         },
         fragment: {
             module: cellShaderModule,
             entryPoint: "fragmentMain", // 指定 fragment shader 入口函数
-            targets: [{
+            targets: [{ // 指定输出对象类型
                 format: canvasFormat
             }]
         }
@@ -201,65 +201,39 @@ const mount_func = onMounted(()=>{
 
 
     // 创建一个映射关系，将GPU特定区域指定为 uniform buffer 的读取位置
+    // 注意这里与 OpenGL 的Uniform buffer的序号设定是一致的
     const bindGroups = [
         device.createBindGroup({
             label: "Cell renderer bind group A",
             layout: cellPipeline.getBindGroupLayout(0),
-            entries: [{
-            binding: 0,
-            resource: { buffer: uniformBuffer }
-            }, {
-            binding: 1,
-            resource: { buffer: cellStateStorage[0] }
-            }],
+            entries: [
+                {
+                    binding: 0,
+                    resource: { buffer: uniformBuffer }
+                }, 
+                {
+                    binding: 1,
+                    resource: { buffer: cellStateStorage[0] }
+                }
+            ],
         }),
         device.createBindGroup({
             label: "Cell renderer bind group B",
             layout: cellPipeline.getBindGroupLayout(0),
-            entries: [{
-            binding: 0,
-            resource: { buffer: uniformBuffer }
-            }, {
-            binding: 1,
-            resource: { buffer: cellStateStorage[1] }
-            }],
+            entries: [
+                {
+                    binding: 0,
+                    resource: { buffer: uniformBuffer }
+                }, 
+                {
+                    binding: 1,
+                    resource: { buffer: cellStateStorage[1] }
+                }
+            ],
         })
     ];
 
     
-    // /**
-    //  *  向 GPU 传递指令的接口 （渲染命令）。
-    //  *  注意，这里仅是将指令进行记录，并不会像GPU发送
-    //  * 这里是使用默认颜色清空画布（默认使用黑色清空画布）
-    //  * */ 
-    //  const encoder = device.createCommandEncoder();
-
-    // // 开始记录之后将要通过encoder向GPU传递指令
-    // const pass = encoder.beginRenderPass({
-    //     colorAttachments: [{
-    //         view: context.getCurrentTexture().createView(), // view 提供纹理
-    //         loadOp: "clear",
-    //         clearValue: [0, 0.0, 0.0, 1],
-    //         storeOp: "store",
-    //     }]
-    // });
-
-    // // 将渲染命令插入整个指令队列
-    // pass.setPipeline(cellPipeline);
-    // pass.setVertexBuffer(0, vertexBuffer);
-    // pass.setBindGroup(0, bindGroup); // 创建对应的映射关系
-    // // pass.draw(vertices.length / 2); // 6 vertices
-    // // 第二个参数告知我们要重复执行绘制多少次
-    // pass.draw(vertices.length / 2, GRID_SIZE * GRID_SIZE); // 6 vertices
-
-    // // 结束指令
-    // pass.end();
-
-
-    // const commandBuffer = encoder.finish(); // 在指令编码器上调用finish()，将创建一个GPUCommandBuffer()。
-    // device.queue.submit([commandBuffer]); // 通过向命令队列提交这个指令集，来进行你预期的操作
-
-
     // Move all of our rendering code into a function
     function updateGrid() {
         step++; // Increment the step count
@@ -277,7 +251,8 @@ const mount_func = onMounted(()=>{
 
         // Draw the grid.
         pass.setPipeline(cellPipeline);
-        pass.setBindGroup(0, bindGroups[step % 2]); // Updated!
+        // 关键点在这里，每次更新将会根据当前的时间步step切换绑定的 storage buffer，从而改变渲染效果
+        pass.setBindGroup(0, bindGroups[step % 2]); 
         pass.setVertexBuffer(0, vertexBuffer);
         pass.draw(vertices.length / 2, GRID_SIZE * GRID_SIZE);
 
@@ -286,7 +261,7 @@ const mount_func = onMounted(()=>{
         device.queue.submit([encoder.finish()]);
     }
 
-    // Schedule updateGrid() to run repeatedly
+    // 每间隔一定的时间区段就渲染一次
     setInterval(updateGrid, UPDATE_INTERVAL);
 })
 
