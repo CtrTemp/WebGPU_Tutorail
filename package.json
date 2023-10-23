@@ -8,8 +8,10 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@webgpu/types": "^0.1.38",
     "core-js": "^3.8.3",
-    "vue": "^3.2.13"
+    "vue": "^3.2.13",
+    "wgsl": "^0.1.10"
   },
   "devDependencies": {
     "@babel/core": "^7.12.16",

@@ -3,7 +3,8 @@
     <!-- <WebGPURoot/> -->
     <!-- <Tuto02_RenderGrid/> -->
     <!-- <Tuto03_RenderState/> -->
-    <Tuto04_ConwayLifeGame/>
+    <!-- <Tuto04_ConwayLifeGame/> -->
+    <Tuto05_Triangle/>
   </Suspense>
     <!-- <WebGPURoot/> -->
 </template>
@@ -13,6 +14,7 @@ import WebGPURoot from './components/WebGPURoot.vue';
 import Tuto02_RenderGrid from './components/Tuto02_RenderGrid.vue';
 import Tuto03_RenderState from './components/Tuto03_RenderState.vue';
 import Tuto04_ConwayLifeGame from './components/Tuto04_ConwayLifeGame.vue';
+import Tuto05_Triangle from './components/Tuto05_Triangle.vue';
 
 
 // export default {
