@@ -5,7 +5,8 @@
     <!-- <Tuto03_RenderState/> -->
     <!-- <Tuto04_ConwayLifeGame/> -->
     <!-- <Tuto05_Triangle/> -->
-    <Tuto06_MSAA/>
+    <!-- <Tuto06_MSAA/> -->
+    <Tuto07_CanvasResize/>
   </Suspense>
     <!-- <WebGPURoot/> -->
 </template>
@@ -17,6 +18,7 @@ import Tuto03_RenderState from './components/Tuto03_RenderState.vue';
 import Tuto04_ConwayLifeGame from './components/Tuto04_ConwayLifeGame.vue';
 import Tuto05_Triangle from './components/Tuto05_Triangle.vue';
 import Tuto06_MSAA from './components/Tuto06_MSAA.vue';
+import Tuto07_CanvasResize from './components/Tuto07_CanvasResize.vue';
 
 
 // export default {
