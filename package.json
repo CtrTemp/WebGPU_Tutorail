@@ -11,6 +11,7 @@
     "@webgpu/types": "^0.1.38",
     "core-js": "^3.8.3",
     "vue": "^3.2.13",
+    "wgpu-matrix": "^2.5.1",
     "wgsl": "^0.1.10"
   },
   "devDependencies": {
