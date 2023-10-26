@@ -7,7 +7,8 @@
     <!-- <Tuto05_Triangle/> -->
     <!-- <Tuto06_MSAA/> -->
     <!-- <Tuto07_CanvasResize/> -->
-    <Tuto08_RotatingCube/>
+    <!-- <Tuto08_RotatingCube/> -->
+    <Tuto09_twoCubes/>
   </Suspense>
     <!-- <WebGPURoot/> -->
 </template>
@@ -21,6 +22,7 @@ import Tuto05_Triangle from './components/Tuto05_Triangle.vue';
 import Tuto06_MSAA from './components/Tuto06_MSAA.vue';
 import Tuto07_CanvasResize from './components/Tuto07_CanvasResize.vue';
 import Tuto08_RotatingCube from './components/Tuto08_RotatingCube.vue';
+import Tuto09_twoCubes from './components/Tuto09_twoCubes.vue'
 
 
 // export default {
