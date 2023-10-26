@@ -1,3 +1,5 @@
+
+
 <template>
     <canvas width="512" height="512"></canvas>
 </template>
@@ -57,33 +59,64 @@ const mount_func = onMounted(()=>{
     
     
 
-    
-    // // Create the bind group layout and pipeline layout.
-    // const bindGroupLayout = device.createBindGroupLayout({
-    //     label: "Cell Bind Group Layout",
-    //     entries: [{
-    //         binding: 0,
-    //         // visibility 字段指明哪些着色器阶段可以使用该资源
-    //         // 当然我们也可以让这些资源对 fragment shader 也可见，但这没必要
-    //         visibility: GPUShaderStage.VERTEX | GPUShaderStage.COMPUTE | GPUShaderStage.FRAGMENT,
-    //         buffer: {} // 不填写 type 字段则默认为 uniform buffer
-    //     }, {
-    //         binding: 1,
-    //         visibility: GPUShaderStage.VERTEX | GPUShaderStage.COMPUTE | GPUShaderStage.FRAGMENT,
-    //         buffer: { type: "read-only-storage"} // Cell state input buffer
-    //     }, {
-    //         binding: 2,
-    //         visibility: GPUShaderStage.COMPUTE,
-    //         buffer: { type: "storage"} // Cell state output buffer
-    //     }]
+
+    const depthTexture = device.createTexture({
+        size: [canvas.width, canvas.height],
+        format: 'depth24plus',
+        usage: GPUTextureUsage.RENDER_ATTACHMENT,
+    });
+
+    const uniformBufferSize = 4 * 16; // 4x4 matrix
+    const uniformBuffer = device.createBuffer({
+        size: uniformBufferSize,
+        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    });
+
+    // console.log("cellPipeline = ", cellPipeline);
+    // console.log("cellPipeline = ", cellPipeline.getBindGroupLayout(0));
+
+    // const uniformBindGroup = device.createBindGroup({
+    //     layout: cellPipeline.getBindGroupLayout(0),
+    //     entries: [
+    //         {
+    //             binding: 0,
+    //             resource: {
+    //                 buffer: uniformBuffer,
+    //             },
+    //         },
+    //     ],
     // });
+    
+    // Create the bind group layout and pipeline layout.
+    const bindGroupLayout = device.createBindGroupLayout({
+        label: "Cell Bind Group Layout",
+        entries: [{
+            binding: 0,
+            visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
+            buffer: {} // 不填写 type 字段则默认为 uniform buffer
+        }]
+    });
 
-
+    const bindGroups = [
+        device.createBindGroup({
+            label: "Cell renderer bind group A",
+            layout: bindGroupLayout, // Updated Line 之前我们使用的是auto但现在不行了
+            // 这是因为之前仅有一条管线，而现在有两条资源共享的管线，这使得我们必须明确创建布局
+            entries: [{
+                binding: 0,
+                resource: { buffer: uniformBuffer }
+            }],
+        }),
+    ];
+    
+    const pipelineLayout = device.createPipelineLayout({
+        label: "Cell Pipeline Layout",
+        bindGroupLayouts: [ bindGroupLayout ],
+    });
 
     // 创建渲染流水线
     const cellPipeline = device.createRenderPipeline({
-        label: "Cell pipeline",
-        layout: "auto",
+        layout: pipelineLayout,
         vertex: {
             module: device.createShaderModule({
                 code:vertex_shader
@@ -135,33 +168,6 @@ const mount_func = onMounted(()=>{
     });
 
 
-
-    const depthTexture = device.createTexture({
-        size: [canvas.width, canvas.height],
-        format: 'depth24plus',
-        usage: GPUTextureUsage.RENDER_ATTACHMENT,
-    });
-
-    const uniformBufferSize = 4 * 16; // 4x4 matrix
-    const uniformBuffer = device.createBuffer({
-        size: uniformBufferSize,
-        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-    });
-
-    // console.log("cellPipeline = ", cellPipeline);
-    console.log("cellPipeline = ", cellPipeline.getBindGroupLayout(0));
-
-    const uniformBindGroup = device.createBindGroup({
-        layout: cellPipeline.getBindGroupLayout(0),
-        entries: [
-            {
-                binding: 0,
-                resource: {
-                buffer: uniformBuffer,
-                },
-            },
-        ],
-    });
 
 
     const renderPassDescriptor = {
@@ -235,7 +241,7 @@ const mount_func = onMounted(()=>{
 
         pass.setPipeline(cellPipeline);
         
-        pass.setBindGroup(0, uniformBindGroup);
+        pass.setBindGroup(0, bindGroups[0]);
         pass.setVertexBuffer(0, verticesBuffer);
         pass.draw(cubeVertexCount);
         

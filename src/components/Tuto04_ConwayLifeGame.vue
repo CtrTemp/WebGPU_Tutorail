@@ -35,29 +35,29 @@ const mount_func = onMounted(()=>{
     });
 
     
-    // init vertices
+    // 三角形顶点定义，CPU端
     const vertices = new Float32Array([
-        //   X,    Y,
-        -0.8, -0.8, // Triangle 1 (Blue)
+        -0.8, -0.8, // Triangle 1 
         0.8, -0.8,
         0.8,  0.8,
 
-        -0.8, -0.8, // Triangle 2 (Red)
+        -0.8, -0.8, // Triangle 2 
         0.8,  0.8,
         -0.8,  0.8,
     ]);
 
-
+    // 三角形顶点容器，GPU端
     const vertexBuffer = device.createBuffer({
         label: "Cell vertices",
         size: vertices.byteLength,
         usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
     });
+    // 将三角形顶点数据从 CPU 端拷贝到 GPU 端
     device.queue.writeBuffer(vertexBuffer, /*bufferOffset=*/0, vertices);
 
     // vertex layout on GPU
     const vertexBufferLayout = {
-        arrayStride: 8, 
+        arrayStride: 8, // 每个顶点数据包占用8字节，float*2
         attributes: [{
             format: "float32x2",
             offset: 0, 
@@ -75,6 +75,7 @@ const mount_func = onMounted(()=>{
     const WORKGROUP_SIZE = 8;
 
     // 在 CPU 端创建 uniform buffer 作为全局变量传参，这里我们将定义网格大小.
+    // GPU 端对应的 UBO
     const uniformArray = new Float32Array([GRID_SIZE, GRID_SIZE]);
     const uniformBuffer = device.createBuffer({
         label: "Grid Uniforms",
@@ -88,10 +89,10 @@ const mount_func = onMounted(()=>{
 
 
 
-    // 创建针对单元格状态的缓冲区，以期望通过动态更新单元格状态来控制绘制
+    // CPU端用于指示单元格状态的数组，以期望通过动态更新单元格状态来控制绘制
     const cellStateArray = new Uint32Array(GRID_SIZE * GRID_SIZE);
 
-    // Create two storage buffers to hold the cell state.
+    // GPU上创建两个状态缓冲区，通过切换状态来改变显示效果
     const cellStateStorage = [
         device.createBuffer({
             label: "Cell State A",
@@ -105,25 +106,14 @@ const mount_func = onMounted(()=>{
         })
     ];
 
-    // // CPU 端初始化填充数据，这里每三个单元格激活一个（其余在定义时，默认为0填充）
-    // // Mark every third cell of the first grid as active.
-    // for (let i = 0; i < cellStateArray.length; i+=3) {
-    //     cellStateArray[i] = 1;
-    // }
-
-    // Conway 生命游戏将最开始的状态完全随机生成
-    // 这里随机填充区域内 40% 的区域
+    // Conway 生命游戏的初始化状态填充，这里我们将一定比例的 单元格/细胞 设置为 激活/存活 状态
     for (let i = 0; i < cellStateArray.length; ++i) {
         cellStateArray[i] = Math.random() > 0.6 ? 1 : 0;
     }
+    // 将该状态写入第一个状态缓冲区中
     device.queue.writeBuffer(cellStateStorage[0], 0, cellStateArray);
 
-    // Mark every other cell of the second grid as active.
-    for (let i = 0; i < cellStateArray.length; i++) {
-        cellStateArray[i] = i % 2;
-    }
-    // 导入数据到GPU
-    device.queue.writeBuffer(cellStateStorage[1], 0, cellStateArray);
+    // 第二个状态缓冲区不需要进行填充
 
 
 
@@ -259,7 +249,20 @@ const mount_func = onMounted(()=>{
     });
 
 
-    // Create the bind group layout and pipeline layout.
+    /**
+     *  当我们在 GPU shader 端使用全局变量，类似 uniform buffer 或 storage buffer 时，
+     * 需要指定“布局”，也就是说其实你是在GPU端开辟了一些Buffer，并通过通信将CPU数据导入到
+     * 了该目标区域。但具体shader如何划分这些数据，也就是从内存的哪个位置开始读这部分数据
+     * 是未知的，所以以下的“布局”就用于指定这种顺序关系，并强调这些GPU上的内存区域用于什么，
+     * 暴露给哪些 shader 阶段。
+     * 
+     *  在这个阶段，我们主要对内存区域进行一下划分。并且指定各个区域对各个shader的可见性，
+     * 并且指定对应区域的类型。
+     */ 
+    /**
+     *  以上我们一共定义了三个变量：一个uniform buffer，两个storage buffer。所以一共三个
+     * entries，书写的binding序号代表了我们在shader中声明的三个变量的顺序。
+     * */ 
     const bindGroupLayout = device.createBindGroupLayout({
         label: "Cell Bind Group Layout",
         entries: [{
@@ -279,8 +282,14 @@ const mount_func = onMounted(()=>{
         }]
     });
 
-    // 创建一个映射关系，将GPU特定区域指定为 uniform buffer 的读取位置
-    // Create a bind group to pass the grid uniforms into the pipeline
+    /**
+     *  有了以上的区域划分，那么还需要指定各个划分区域的数据源。将之前我们定义在GPU端的buffer
+     * 填写到这里即可。
+     * */ 
+    /**
+     *  对于本案例，我们通过切换 bindGroups 来切换更新状态，所以定义了两个bindGroup。将两个
+     * storageBuffer的数据源进行调换。得到这两个不同的bindGroup
+     */ 
     const bindGroups = [
         device.createBindGroup({
             label: "Cell renderer bind group A",
@@ -314,14 +323,15 @@ const mount_func = onMounted(()=>{
         }),
     ];
 
-    // 从这里起，我们应该是要有两条流水线了？？？
-    // 一条是基本的渲染管线，另一条是compute shader？
+    /**
+     *  这里指定渲染流水线中使用的“布局”，就是之前GPU开辟内存区域划分的那个布局。
+    */
     const pipelineLayout = device.createPipelineLayout({
         label: "Cell Pipeline Layout",
         bindGroupLayouts: [ bindGroupLayout ],
     });
 
-    // 创建渲染流水线
+    // 创建渲染流水线！注意！！！这里是渲染管线（后面还有计算管线）
     const cellPipeline = device.createRenderPipeline({
         label: "Cell pipeline",
         layout: pipelineLayout,
@@ -340,7 +350,7 @@ const mount_func = onMounted(()=>{
     });
 
 
-    // 创建计算流水线
+    // 创建计算流水线。这里我们的模拟程序比较简单，计算管线和渲染管线使用的是用一个“布局”
     const simulationPipeline = device.createComputePipeline({
         label: "Simulation pipeline",
         layout: pipelineLayout,
@@ -358,24 +368,25 @@ const mount_func = onMounted(()=>{
         const encoder = device.createCommandEncoder();
 
         // 注意一点！！！这里需要使用同一个 encoder~ 不需要另外为 compute shader 创建新的 encoder
-        // const computeEncoder = device.createCommandEncoder();
 
-
+        // 第一个 pass 先进行 compute shader
         const computePass = encoder.beginComputePass();
-        // New lines
+        // 选中对应的 pipeline
         computePass.setPipeline(simulationPipeline),
+        // 选中对应的 bindGroup 以确定 shader 端声明变量的读取顺序
         computePass.setBindGroup(0, bindGroups[step % 2]);
 
-        // New lines
+        // compute shader 提交任务集群划分，已知并行集群大小，已知总任务量，做除法向上取整得到总提交量
         const workgroupCount = Math.ceil(GRID_SIZE / WORKGROUP_SIZE); // 向上取整，提交多少个任务集群
-        computePass.dispatchWorkgroups(workgroupCount, workgroupCount);  // 提交计算任务
+        // 提交计算任务，主要是修改 storage buffer 中的内容
+        computePass.dispatchWorkgroups(workgroupCount, workgroupCount);  
         computePass.end();
 
 
-
+        // 步进
         step++; // Increment the step count
 
-
+        // 第二个 pass 根据以上更新好的 storage buffer 进行渲染
         const pass = encoder.beginRenderPass({
             colorAttachments: [{
             view: context.getCurrentTexture().createView(),
@@ -385,12 +396,14 @@ const mount_func = onMounted(()=>{
             }]
         });
 
-        // Draw the grid.
+        // 指定渲染管线
         pass.setPipeline(cellPipeline);
-        // 关键点在这里，每次更新将会根据当前的时间步step切换绑定的 storage buffer，从而改变渲染效果
+        // 选择对应的bindGroup（主要是切换storage buffer）
         pass.setBindGroup(0, bindGroups[step % 2]); 
+        // 选择 vertex buffer
         pass.setVertexBuffer(0, vertexBuffer);
-        pass.draw(vertices.length / 2, GRID_SIZE * GRID_SIZE);
+        // 绘制指令（如果改成除以4，则可以看到只绘制三角形的结果）
+        pass.draw(vertices.length / 4, GRID_SIZE * GRID_SIZE);
 
         // End the render pass and submit the command buffer
         pass.end();
