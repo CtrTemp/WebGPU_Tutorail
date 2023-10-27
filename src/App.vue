@@ -10,7 +10,8 @@
     <!-- <Tuto08_RotatingCube/> -->
     <!-- <Tuto09_twoCubes/> -->
     <!-- <Tuto10_TexturedCube/> -->
-    <Tuto11_InstancedCube/>
+    <!-- <Tuto11_InstancedCube/> -->
+    <Tuto12_FractalCube/>
   </Suspense>
     <!-- <WebGPURoot/> -->
 </template>
@@ -27,6 +28,7 @@ import Tuto08_RotatingCube from './components/Tuto08_RotatingCube.vue';
 import Tuto09_twoCubes from './components/Tuto09_twoCubes.vue';
 import Tuto10_TexturedCube from './components/Tuto10_TexturedCube.vue';
 import Tuto11_InstancedCube from './components/Tuto11_InstancedCube.vue';
+import Tuto12_FractalCube from './components/Tuto12_FractalCube.vue';
 
 
 // export default {
