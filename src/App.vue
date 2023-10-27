@@ -9,7 +9,8 @@
     <!-- <Tuto07_CanvasResize/> -->
     <!-- <Tuto08_RotatingCube/> -->
     <!-- <Tuto09_twoCubes/> -->
-    <Tuto10_TexturedCube/>
+    <!-- <Tuto10_TexturedCube/> -->
+    <Tuto11_InstancedCube/>
   </Suspense>
     <!-- <WebGPURoot/> -->
 </template>
@@ -25,6 +26,7 @@ import Tuto07_CanvasResize from './components/Tuto07_CanvasResize.vue';
 import Tuto08_RotatingCube from './components/Tuto08_RotatingCube.vue';
 import Tuto09_twoCubes from './components/Tuto09_twoCubes.vue';
 import Tuto10_TexturedCube from './components/Tuto10_TexturedCube.vue';
+import Tuto11_InstancedCube from './components/Tuto11_InstancedCube.vue';
 
 
 // export default {
