@@ -11,7 +11,8 @@
     <!-- <Tuto09_twoCubes/> -->
     <!-- <Tuto10_TexturedCube/> -->
     <!-- <Tuto11_InstancedCube/> -->
-    <Tuto12_FractalCube/>
+    <!-- <Tuto12_FractalCube/> -->
+    <Tuto13_Camera/>
   </Suspense>
     <!-- <WebGPURoot/> -->
 </template>
@@ -29,6 +30,7 @@ import Tuto09_twoCubes from './components/Tuto09_twoCubes.vue';
 import Tuto10_TexturedCube from './components/Tuto10_TexturedCube.vue';
 import Tuto11_InstancedCube from './components/Tuto11_InstancedCube.vue';
 import Tuto12_FractalCube from './components/Tuto12_FractalCube.vue';
+import Tuto13_Camera from './components/Tuto13_Camera.vue';
 
 
 // export default {
