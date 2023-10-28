@@ -13,7 +13,8 @@
     <!-- <Tuto11_InstancedCube/> -->
     <!-- <Tuto12_FractalCube/> -->
     <!-- <Tuto13_Camera/> -->
-    <Tuto14_CubeMap/>
+    <!-- <Tuto14_CubeMap/> -->
+    <Tuto15_DeferredShading/>
   </Suspense>
     <!-- <WebGPURoot/> -->
 </template>
@@ -32,7 +33,8 @@ import Tuto10_TexturedCube from './components/Tuto10_TexturedCube.vue';
 import Tuto11_InstancedCube from './components/Tuto11_InstancedCube.vue';
 import Tuto12_FractalCube from './components/Tuto12_FractalCube.vue';
 // import Tuto13_Camera from './components/Tuto13_Camera.vue';
-import Tuto14_CubeMap from './components/Tuto14_CubeMap.vue';
+// import Tuto14_CubeMap from './components/Tuto14_CubeMap.vue';
+import Tuto15_DeferredShading from './components/Tuto15_DeferedShading.vue'
 
 
 // export default {
