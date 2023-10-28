@@ -15,7 +15,8 @@
     <!-- <Tuto13_Camera/> -->
     <!-- <Tuto14_CubeMap/> -->
     <!-- <Tuto15_DeferredShading/> -->
-    <Tuto16_ShadowMap/>
+    <!-- <Tuto16_ShadowMap/> -->
+    <Tuto17_Particles/>
   </Suspense>
     <!-- <WebGPURoot/> -->
 </template>
@@ -37,6 +38,7 @@ import Tuto12_FractalCube from './components/Tuto12_FractalCube.vue';
 // import Tuto14_CubeMap from './components/Tuto14_CubeMap.vue';
 import Tuto15_DeferredShading from './components/Tuto15_DeferedShading.vue'
 import Tuto16_ShadowMap from './components/Tuto16_ShadowMap.vue';
+import Tuto17_Particles from './components/Tuto17_Particles.vue';
 
 
 // export default {
