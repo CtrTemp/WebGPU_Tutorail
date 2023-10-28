@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import DemoCube from './components/00_Demo_Cube.vue'
 import DemoInstancedCube from './components/01_Demo_InstancesCube.vue'
+import Tuto12_Cameras from './components/Tuto12_Cameras.vue';
 </script>
 
 <template>
   <Suspense>
-    <DemoCube/>
+    <!-- <DemoCube/> -->
     <!-- <DemoInstancedCube/> -->
+    <Tuto12_Cameras/>
   </Suspense>
 </template>
 
