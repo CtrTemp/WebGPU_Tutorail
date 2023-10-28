@@ -1,4 +1,4 @@
-import dragonRawData from "stanford-dragon/4";
+import dragonRawData from "stanford-dragon/4.js";
 import { computeSurfaceNormals, computeProjectedPlaneUVs } from '../utils.js';
 
 export const mesh = {
