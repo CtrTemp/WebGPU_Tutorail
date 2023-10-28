@@ -9,7 +9,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "vue": "^3.3.4"
+    "ts-loader": "^9.5.0",
+    "vue": "^3.3.4",
+    "webgpu": "^0.1.16",
+    "wgpu-matrix": "^2.5.1"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.2.3",
