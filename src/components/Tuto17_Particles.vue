@@ -55,7 +55,8 @@ const particleInstanceByteSize =
   {
     const response = await fetch(
       // new URL('../assets/img/webgpu.png', import.meta.url).toString()
-      new URL('../assets/img/LGD_logo.jpg', import.meta.url).toString()
+      // new URL('../assets/img/LGD_logo.jpg', import.meta.url).toString()
+      new URL('../assets/img/logo_resized.png', import.meta.url).toString()
     );
     const imageBitmap = await createImageBitmap(await response.blob());
 
