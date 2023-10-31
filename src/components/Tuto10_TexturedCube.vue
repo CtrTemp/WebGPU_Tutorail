@@ -33,33 +33,32 @@ if (!adapter) {
 // 选中 GPU 设备
 const device = await adapter.requestDevice();
 
-
-
-
   // Fetch the image and upload it into a GPUTexture.
   let cubeTexture;
-  {
+    // CPU 端读入图片，并创建bitmap
     const response = await fetch(
       new URL('../assets/logo.png', import.meta.url).toString()
     );
     const imageBitmap = await createImageBitmap(await response.blob());
 
+    // GPU端开辟texture存储区
     cubeTexture = device.createTexture({
       size: [imageBitmap.width, imageBitmap.height, 1],
-      format: 'rgba8unorm',
+      format: 'rgba8unorm', // 格式
       usage:
         GPUTextureUsage.TEXTURE_BINDING |
         GPUTextureUsage.COPY_DST |
-        GPUTextureUsage.RENDER_ATTACHMENT,
+        GPUTextureUsage.RENDER_ATTACHMENT, // 这个字段的真实含义会不会是作为渲染pipeline的附件？
     });
+    // 将CPU数据导入到GPU上开辟的texture存储区
     device.queue.copyExternalImageToTexture(
-      { source: imageBitmap },
-      { texture: cubeTexture },
-      [imageBitmap.width, imageBitmap.height]
+      { source: imageBitmap }, // src
+      { texture: cubeTexture }, // dst
+      [imageBitmap.width, imageBitmap.height] // size
     );
-  }
 
   // Create a sampler with linear filtering for smooth interpolation.
+    //   创建线性插值采样器（MipMap相关？）
   const sampler = device.createSampler({
     magFilter: 'linear',
     minFilter: 'linear',
@@ -163,20 +162,31 @@ const mount_func = onMounted(()=>{
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     });
 
-
+    /**
+     *  这里注意
+     * */ 
     const uniformBindGroup = device.createBindGroup({
         layout: cellPipeline.getBindGroupLayout(0),
         entries: [
+            // 第一项描述 MVP 矩阵
             {
                 binding: 0,
                 resource: {
                     buffer: uniformBuffer,
                 },
             },
+            /**
+             *   第二项描述采样器？？？这个为何要提前定义并指明呢？在GLSL中是有默认的采样函数的。
+             * WGSL中其实也提供对应的采样函数，但需要你定义一个对采样方法的描述。就是这个sampler
+             * 
+            */
             {
                 binding: 1,
                 resource: sampler,
             },
+            /**
+             *  texture 将以 uniform buffer 的形式被传入
+             * */
             {
                 binding: 2,
                 resource: cubeTexture.createView(),
@@ -236,7 +246,6 @@ const mount_func = onMounted(()=>{
 
     function renderFrame()
     {
-
         const transformationMatrix = getTransformationMatrix();
         device.queue.writeBuffer(
             uniformBuffer,

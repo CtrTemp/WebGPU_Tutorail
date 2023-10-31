@@ -171,18 +171,9 @@ const mount_func = onMounted(()=>{
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     });
 
-    // const uniformBindGroup = device.createBindGroup({
-    //     layout: pipeline.getBindGroupLayout(0),
-    //     entries: [
-    //     {
-    //         binding: 0,
-    //         resource: {
-    //             buffer: uniformBuffer,
-    //         },
-    //     },
-    //     ],
-    // });
-
+    /**
+     *  注意对比与 two cubes 那个demo的不同，这里我们只使用了一个 bind Group
+     * */ 
     const uniformBindGroup = device.createBindGroup({
         layout: cellPipeline.getBindGroupLayout(0),
         entries: [
@@ -203,17 +194,6 @@ const mount_func = onMounted(()=>{
         ],
     });
 
-    // const uniformBindGroup = device.createBindGroup({
-    //     layout: cellPipeline.getBindGroupLayout(0),
-    //     entries: [
-    //     {
-    //         binding: 0,
-    //         resource: {
-    //         buffer: uniformBuffer,
-    //         },
-    //     },
-    //     ],
-    // });
 
     
     const aspect = canvas.width / canvas.height;
@@ -236,6 +216,7 @@ const mount_func = onMounted(()=>{
     const step = 4.0;
 
     // Initialize the matrix data for every instance.
+    // 多个 instance 的不同主要体现在 MVP 矩阵中的 Model 矩阵
     let m = 0;
     for (let x = 0; x < xCount; x++) {
         for (let y = 0; y < yCount; y++) {
@@ -279,10 +260,11 @@ const mount_func = onMounted(()=>{
                 mat4.multiply(viewMatrix, tmpMat4, tmpMat4);
                 mat4.multiply(projectionMatrix, tmpMat4, tmpMat4);
 
+                // 我们使用一个大矩阵+offset的形式确定每一个 instance 的 MVP矩阵
                 mvpMatricesData.set(tmpMat4, m);
 
                 i++;
-                m += matrixFloatCount;
+                m += matrixFloatCount; // offset++
             }
         }
     }
@@ -308,7 +290,6 @@ const mount_func = onMounted(()=>{
 
     function renderFrame()
     {
-
         // Update the matrix data.
         updateTransformationMatrix();
         device.queue.writeBuffer(

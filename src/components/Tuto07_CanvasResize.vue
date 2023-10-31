@@ -94,6 +94,8 @@ const mount_func = onMounted(()=>{
     const currentWidth = canvas.clientWidth;
     const currentHeight = canvas.clientHeight;
 
+    // 注意看，这里我们是通过修改 canvas 大小的方式来改变渲染的，并没有涉及
+    // vulkan 中类似交换链的概念
     function renderFrame()
     {
 

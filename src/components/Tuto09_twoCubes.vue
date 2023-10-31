@@ -124,8 +124,10 @@ const mount_func = onMounted(()=>{
         usage: GPUTextureUsage.RENDER_ATTACHMENT,
     });
 
-    const matrixSize = 4 * 16;
-    const offset = 256; // 添加注释：
+    const matrixSize = 4 * 16; // 4*4 的矩阵，每个 float 占用4个字节
+    const offset = 256; // 这个的具体含义是什么呢？？？按理说也应该是 64 啊？！
+    // uniformBindGroup offset must be 256-byte aligned
+    // 如上说明：uniformBindGroup的地址偏移必须是256字节对齐的！这是内置规定，故遵循即可
     const uniformBufferSize = matrixSize + offset; // 4x4 matrix
 
     const uniformBuffer = device.createBuffer({
@@ -235,6 +237,11 @@ const mount_func = onMounted(()=>{
     {
         updateTransformationMatrix();
 
+        /**
+         *  相较于前一个 demo，这里仅仅是使用了不同的 MVP 矩阵（其实也只有 Model 矩阵有变化）
+         * 来修饰同一个 Cube，绘制两次得到两个旋转立方体而已。
+         * */ 
+
         device.queue.writeBuffer(
             uniformBuffer,
             0,
@@ -260,9 +267,10 @@ const mount_func = onMounted(()=>{
 
         pass.setPipeline(cellPipeline);
         pass.setVertexBuffer(0, verticesBuffer);
-        
+        // 绘制第一个
         pass.setBindGroup(0, uniformBindGroup1);
         pass.draw(cubeVertexCount);
+        // 绘制第二个
         pass.setBindGroup(0, uniformBindGroup2);
         pass.draw(cubeVertexCount);
         

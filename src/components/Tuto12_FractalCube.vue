@@ -1,3 +1,5 @@
+<!-- 这个小节的 demo 没太搞明白，，， -->
+
 <template>
     <canvas width="512" height="512"></canvas>
 </template>
@@ -137,6 +139,9 @@ const mount_func = onMounted(()=>{
 
     // We will copy the frame's rendering results into this texture and
     // sample it on the next frame.
+    /**
+     *  这部分我们使用分形技术来做纹理采样
+     * */ 
     const cubeTexture = device.createTexture({
         size: [canvas.width, canvas.height],
         format: canvasFormat,
@@ -229,9 +234,10 @@ const mount_func = onMounted(()=>{
             transformationMatrix.buffer,
             transformationMatrix.byteOffset,
             transformationMatrix.byteLength);
-
+        
+        // 将当前渲染的出图作为被采样的texture
         const swapChainTexture = context.getCurrentTexture();
-        // prettier-ignore
+        // prettier-ignore （更加美丽的无视？）
         renderPassDescriptor.colorAttachments[0].view = swapChainTexture.createView();
 
         const encoder = device.createCommandEncoder();

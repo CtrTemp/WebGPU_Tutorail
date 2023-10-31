@@ -14,6 +14,7 @@ struct VertexOutput {
 @vertex
 fn main(@builtin(instance_index) instanceIdx : u32, @location(0) position : vec4<f32>, @location(1) uv : vec2<f32>) -> VertexOutput 
 {
+  // 这里通过绘制实例的序号来确定在 MVP 矩阵数组中的 offset，从而确定当前实例应该应用哪一个MVP矩阵
   var output : VertexOutput;
   output.Position = uniforms.modelViewProjectionMatrix[instanceIdx] * position;
   output.fragUV = uv;

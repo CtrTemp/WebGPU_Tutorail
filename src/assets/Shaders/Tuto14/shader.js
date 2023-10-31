@@ -27,6 +27,7 @@ fn main(
 // Fragment Shader
 const fragment_shader = /* wgsl */`
 @group(0) @binding(1) var mySampler: sampler;
+// 这里注意 myTexture 的类型是 texture_cube ,而一般的 texture 被定一个为 texture_2d 类型
 @group(0) @binding(2) var myTexture: texture_cube<f32>;
 
 @fragment
@@ -37,7 +38,7 @@ fn main(
   // Our camera and the skybox cube are both centered at (0, 0, 0)
   // so we can use the cube geomtry position to get viewing vector to sample the cube texture.
   // The magnitude of the vector doesn't matter.
-  var cubemapVec = fragPosition.xyz - vec3(0.5);
+  var cubemapVec = fragPosition.xyz - vec3(0.5);  // 这句应该怎么理解？？？？
   return textureSample(myTexture, mySampler, cubemapVec);
 }
 `

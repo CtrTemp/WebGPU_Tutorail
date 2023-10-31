@@ -69,11 +69,14 @@ let cubemapTexture;
     });
     const imageBitmaps = await Promise.all(promises);
 
+      // 与一般 texture 创建略有不同，
     cubemapTexture = device.createTexture({
-      dimension: '2d',
+      dimension: '2d', // 这里创建的是 2d texture
       // Create a 2d array texture.
       // Assume each image has the same size.
+      // 可以看到这里我们导入了 6 张 texture，且每个 texture 的 size 是相同的
       size: [imageBitmaps[0].width, imageBitmaps[0].height, 6],
+      // 下面这些均一致
       format: 'rgba8unorm',
       usage:
         GPUTextureUsage.TEXTURE_BINDING |
@@ -81,6 +84,7 @@ let cubemapTexture;
         GPUTextureUsage.RENDER_ATTACHMENT,
     });
 
+    // 为每个device端的texture导入CPU端读入的数据
     for (let i = 0; i < imageBitmaps.length; i++) {
       const imageBitmap = imageBitmaps[i];
       device.queue.copyExternalImageToTexture(
@@ -167,7 +171,9 @@ const mount_func = onMounted(()=>{
             // Since we are seeing from inside of the cube
             // and we are using the regular cube geomtry data with outward-facing normals,
             // the cullMode should be 'front' or 'none'.
-            cullMode: 'none',
+            // 注意这里，我们相当于是在 cube 内部向外看天空盒，故应该剔除的就不能是背面
+            // 所以这里选择的应该是不剔除（none）或剔除正面（front）
+            cullMode: 'front',
         },
         // Enable depth testing so that the fragment closest to the camera
         // is rendered in front.
@@ -194,6 +200,7 @@ const mount_func = onMounted(()=>{
 
 
     // Create a sampler with linear filtering for smooth interpolation.
+    // 对于 cubeMap 同样使用该方法定义 sampler
     const sampler = device.createSampler({
         magFilter: 'linear',
         minFilter: 'linear',
@@ -216,8 +223,9 @@ const mount_func = onMounted(()=>{
       },
       {
         binding: 2,
+        // cubeTexture被视为一个整体，这点与OpenGL是基本一致的
         resource: cubemapTexture.createView({
-          dimension: 'cube',
+          dimension: 'cube', // 这里声明它是一个 cubeTexture
         }),
       },
     ],

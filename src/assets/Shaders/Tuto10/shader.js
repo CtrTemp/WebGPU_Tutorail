@@ -33,6 +33,7 @@ fn main(
   @location(0) fragUV: vec2<f32>,
   @location(1) fragPosition: vec4<f32>
 ) -> @location(0) vec4<f32> {
+  // WGSL 中默认的采样函数。我们只需要为其指定对应的texture、采样方法、UV值即可得到某个点的采样值（颜色）
   return textureSample(myTexture, mySampler, fragUV) * fragPosition;
 }
 `
