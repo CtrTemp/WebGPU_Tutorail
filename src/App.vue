@@ -7,7 +7,7 @@
     <!-- <Tuto05_Triangle/> -->
     <!-- <Tuto06_MSAA/> -->
     <!-- <Tuto07_CanvasResize/> -->
-    <Tuto08_RotatingCube_Own/>
+    <!-- <Tuto08_RotatingCube_Own/> -->
     <!-- <Tuto09_twoCubes/> -->
     <!-- <Tuto10_TexturedCube/> -->
     <!-- <Tuto11_InstancedCube/> -->
@@ -15,6 +15,7 @@
     <!-- <Tuto13_Camera/> -->
     <!-- <Tuto14_CubeMap/> -->
     <!-- <Tuto15_DeferredShading/> -->
+    <Tuto15_ForwardShading/>
     <!-- <Tuto16_ShadowMap/> -->
     <!-- <Tuto17_Particles/> -->
     <!-- <Tuto18_BoidSimulation/> -->
@@ -42,6 +43,8 @@ import Tuto15_DeferredShading from './components/Tuto15_DeferedShading.vue'
 import Tuto16_ShadowMap from './components/Tuto16_ShadowMap.vue';
 import Tuto17_Particles from './components/Tuto17_Particles.vue';
 import Tuto18_BoidSimulation from './components/Tuto18_BoidSimulation.vue';
+
+import Tuto15_ForwardShading from './components/Tuto15_ForwardShading.vue';
 
 
 import { useStore } from 'vuex';

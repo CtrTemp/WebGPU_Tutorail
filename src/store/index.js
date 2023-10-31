@@ -9,7 +9,8 @@ import rotatingCubes from "./Tuto08/rotatingCubes.js";
 // Tutorial 15
 import deferredShadingModel from "./Tuto15/deferred_shading.js"
 
-
+// Forward Shading
+import ForwardShading from "./ForwardShading/ForwardShading.js";
 
 const store = createStore({
   state: {
@@ -27,7 +28,8 @@ const store = createStore({
   modules: {
     Tuto05: basicTestModel,
     Tuto08: rotatingCubes,
-    Tuto15: deferredShadingModel
+    Tuto15: deferredShadingModel,
+    ForwardShading: ForwardShading
   }
 })
 

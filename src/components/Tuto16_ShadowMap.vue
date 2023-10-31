@@ -1,5 +1,5 @@
 <template>
-    <canvas width="512" height="512"></canvas>
+  <canvas width="512" height="512"></canvas>
 </template>
 
 <script setup>
@@ -12,14 +12,14 @@ import { vertex_shader, fragment_shader } from '../assets/Shaders/Tuto16/shader'
 import { shadow_vert } from '../assets/Shaders/Tuto16/shadow'
 
 
-import {mat4, vec3, vec4} from "wgpu-matrix"
+import { mat4, vec3, vec4 } from "wgpu-matrix"
 
 // 查看当前浏览器是否支持 WebGPU
-if(!navigator.gpu){
-    throw new Error("WebGPU not supported on this browser");
+if (!navigator.gpu) {
+  throw new Error("WebGPU not supported on this browser");
 }
-else{
-    console.log("Well done~ your browser can fully support WebGPU");
+else {
+  console.log("Well done~ your browser can fully support WebGPU");
 }
 
 // 当前浏览器是否找到合适的适配器
@@ -34,31 +34,31 @@ const device = await adapter.requestDevice();
 const shadowDepthTextureSize = 1024;
 
 // onMounted
-const mount_func = onMounted(()=>{
-    const canvas = document.querySelector("canvas");
+const mount_func = onMounted(() => {
+  const canvas = document.querySelector("canvas");
 
-    const context = canvas.getContext("webgpu");
+  const context = canvas.getContext("webgpu");
 
-    // 用于全屏模式
-    const window_width = window.innerWidth;
-    const window_height = window.innerHeight;
+  // 用于全屏模式
+  const window_width = window.innerWidth;
+  const window_height = window.innerHeight;
 
-    canvas.width = window_width;
-    canvas.height = window_height;
+  canvas.width = window_width;
+  canvas.height = window_height;
 
-    const aspect = canvas.width / canvas.height;
-    const canvasFormat = navigator.gpu.getPreferredCanvasFormat();
-    
-    context.configure({
-        device: device,
-        format: canvasFormat,
-        alphaMode: 'premultiplied',
-    });
+  const aspect = canvas.width / canvas.height;
+  const canvasFormat = navigator.gpu.getPreferredCanvasFormat();
 
-    const devicePixelRatio = window.devicePixelRatio || 1;
-    canvas.width = canvas.clientWidth * devicePixelRatio;
-    canvas.height = canvas.clientHeight * devicePixelRatio;
-    
+  context.configure({
+    device: device,
+    format: canvasFormat,
+    alphaMode: 'premultiplied',
+  });
+
+  const devicePixelRatio = window.devicePixelRatio || 1;
+  canvas.width = canvas.clientWidth * devicePixelRatio;
+  canvas.height = canvas.clientHeight * devicePixelRatio;
+
 
   // Create the model vertex buffer.
   const vertexBuffer = device.createBuffer({
@@ -458,6 +458,4 @@ const mount_func = onMounted(()=>{
 
 </script>
 
-<style>
-
-</style>
+<style></style>
