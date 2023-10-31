@@ -7,14 +7,14 @@
     <!-- <Tuto05_Triangle/> -->
     <!-- <Tuto06_MSAA/> -->
     <!-- <Tuto07_CanvasResize/> -->
-    <!-- <Tuto08_RotatingCube/> -->
+    <Tuto08_RotatingCube_Own/>
     <!-- <Tuto09_twoCubes/> -->
     <!-- <Tuto10_TexturedCube/> -->
     <!-- <Tuto11_InstancedCube/> -->
     <!-- <Tuto12_FractalCube/> -->
     <!-- <Tuto13_Camera/> -->
     <!-- <Tuto14_CubeMap/> -->
-    <Tuto15_DeferredShading/>
+    <!-- <Tuto15_DeferredShading/> -->
     <!-- <Tuto16_ShadowMap/> -->
     <!-- <Tuto17_Particles/> -->
     <!-- <Tuto18_BoidSimulation/> -->
@@ -31,6 +31,7 @@ import Tuto05_Triangle from './components/Tuto05_Triangle.vue';
 import Tuto06_MSAA from './components/Tuto06_MSAA.vue';
 import Tuto07_CanvasResize from './components/Tuto07_CanvasResize.vue';
 import Tuto08_RotatingCube from './components/Tuto08_RotatingCube.vue';
+import Tuto08_RotatingCube_Own from './components/Tuto08_RotatingCube_Own.vue';
 import Tuto09_twoCubes from './components/Tuto09_twoCubes.vue';
 import Tuto10_TexturedCube from './components/Tuto10_TexturedCube.vue';
 import Tuto11_InstancedCube from './components/Tuto11_InstancedCube.vue';
@@ -43,12 +44,40 @@ import Tuto17_Particles from './components/Tuto17_Particles.vue';
 import Tuto18_BoidSimulation from './components/Tuto18_BoidSimulation.vue';
 
 
-// export default {
-//   name: 'App',
-//   components: {
-//     HelloWorld
-//   }
-// }
+import { useStore } from 'vuex';
+import { provide } from "vue"
+
+
+const store = useStore();
+
+
+// 查看当前浏览器是否支持 WebGPU
+if(!navigator.gpu){
+    throw new Error("WebGPU not supported on this browser");
+}
+else{
+    console.log("Well done~ your browser can fully support WebGPU");
+}
+
+// 应该是通过根节点透传的方式将 device 这类全局变量给到其他节点
+// 选中 GPU 设备
+
+const device = new Promise((resolve, reject)=>{
+  navigator.gpu.requestAdapter().then((adapter)=>{
+
+    if (!adapter) {
+      throw new Error("No appropriate GPUAdapter found.");
+    }
+
+    adapter.requestDevice().then((data)=>{
+      resolve(data);
+      store.state.device = data; // 给全局变量 device 赋值
+    });
+  })
+})
+provide("device", device);
+
+
 </script>
 
 <style>
