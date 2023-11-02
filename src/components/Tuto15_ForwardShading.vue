@@ -24,7 +24,7 @@ onMounted(() => {
   store.dispatch("ForwardShading/manage_pipeline");
 
 
-  // store.dispatch("ForwardShading/renderLoop");
+  store.dispatch("ForwardShading/renderLoop");
 })
 
 

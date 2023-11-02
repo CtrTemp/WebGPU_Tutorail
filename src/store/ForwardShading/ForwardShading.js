@@ -2,6 +2,8 @@ import { vertex_shader, fragment_shader } from '../../assets/Shaders/ForwardShad
 
 import { mesh } from "../../assets/mesh/stanfordDragon.js"
 
+import { getCameraViewProjMatrix } from './utils.js';
+
 export default {
     namespaced: true,
     actions: {
@@ -22,15 +24,16 @@ export default {
             /*  Vertex Buffer Object  */
             // Vertex Buffer on Device
             const vertexBuffer = device.createBuffer({
-                size: mesh.positions.length * 3 * 2 * Float32Array.BYTES_PER_ELEMENT,
+                size: mesh.positions.length * 8 * Float32Array.BYTES_PER_ELEMENT,
                 usage: GPUBufferUsage.VERTEX,
                 mappedAtCreation: true,
             });
             {
                 const mapping = new Float32Array(vertexBuffer.getMappedRange());
                 for (let i = 0; i < mesh.positions.length; ++i) {
-                    mapping.set(mesh.positions[i], 6 * i);
-                    mapping.set(mesh.normals[i], 6 * i + 3);
+                    mapping.set(mesh.positions[i], 8 * i);
+                    mapping.set(mesh.normals[i], 8 * i + 3);
+                    mapping.set(mesh.uvs[i], 8 * i + 6);
                 }
                 vertexBuffer.unmap();
             }
@@ -39,7 +42,7 @@ export default {
 
             // Vertex Buffer Layout
             const VBO_Layout = {
-                arrayStride: Float32Array.BYTES_PER_ELEMENT * 6,
+                arrayStride: Float32Array.BYTES_PER_ELEMENT * 8,
                 attributes: [
                     {
                         // position
@@ -52,6 +55,12 @@ export default {
                         shaderLocation: 1,
                         offset: Float32Array.BYTES_PER_ELEMENT * 3,
                         format: 'float32x3',
+                    },
+                    {
+                        // uv
+                        shaderLocation: 2,
+                        offset: Float32Array.BYTES_PER_ELEMENT * 6,
+                        format: 'float32x2',
                     },
                 ],
             };
@@ -94,12 +103,38 @@ export default {
                     },
                 ],
             });
+
+            const modelBindGroup = device.createBindGroup({
+                layout: UBO_Layout,
+                entries: [
+                    {
+                        binding: 0,
+                        resource: {
+                            buffer: uniformBuffer,
+                        },
+                    },
+                ],
+            });
+
             // 此处仅仅进行创建，并不导入数据
             context.state.UBOs["stanford_dragon"] = uniformBuffer;
             context.state.UBO_Layouts["stanford_dragon"] = UBO_Layout;
+            context.state.bindGroups["stanford_dragon"] = modelBindGroup;
         },
         manage_pipeline(context) {
             const device = context.rootState.device;
+
+
+
+            const depthTexture = device.createTexture({
+                size: [context.state.canvas.width, context.state.canvas.height],
+                format: 'depth24plus',
+                usage: GPUTextureUsage.RENDER_ATTACHMENT,
+            });
+
+            context.state.Textures["depth"] = depthTexture;
+
+
 
             const renderPipelineLayout = device.createPipelineLayout({
                 bindGroupLayouts: [context.state.UBO_Layouts["stanford_dragon"]],
@@ -125,32 +160,94 @@ export default {
                     targets: [{
                         format: context.state.canvasFormat
                     }]
-                }
+                },
+                primitive: { // 指定面元类型，这里默认是三角形，所以不加也可
+                    topology: 'triangle-list',
+                    // Backface culling since the cube is solid piece of geometry.
+                    // Faces pointing away from the camera will be occluded by faces
+                    // pointing toward the camera.
+                    cullMode: 'back',
+                },
+                // Enable depth testing so that the fragment closest to the camera
+                // is rendered in front.
+                depthStencil: {
+                    depthWriteEnabled: true,
+                    depthCompare: 'less',
+                    format: 'depth24plus',
+                },
             });
 
             context.state.renderPipelines["stanford_dragon"] = pipeline;
-        },
-        renderLoop(context) {
-            const device = context.rootState.device;
 
-            const encoder = device.createCommandEncoder();
 
-            const pass = encoder.beginRenderPass({
+
+            const renderPassDescriptor = {
                 colorAttachments: [{
                     view: context.state.GPU_context.getCurrentTexture().createView(),
                     loadOp: "clear",
                     clearValue: [0, 0.5, 0.7, 1],
                     storeOp: "store",
-                }]
-            });
+                }],
+                depthStencilAttachment: {
+                    view: depthTexture.createView(),
 
-            pass.setPipeline(context.state.renderPipelines["base_render_pipeline"]);
-            pass.setVertexBuffer(0, context.state.VBOs["base_VBO"]);
-            pass.draw(context.state.vertices_arr["base_vert"].length / 2); // 6 vertices
+                    depthClearValue: 1.0,
+                    depthLoadOp: 'clear',
+                    depthStoreOp: 'store',
+                },
+            };
+
+            context.state.passDescriptors["stanford_dragon"] = renderPassDescriptor;
+        },
+        renderLoop(context) {
+            const device = context.rootState.device;
+
+            setInterval(() => {
+
+            // 这里要开始生成并更新 MVP 矩阵
+            const cameraViewProj = getCameraViewProjMatrix(context);
+
+            // console.log("camera Matrix = ", cameraViewProj);
+
+            device.queue.writeBuffer(
+                context.state.UBOs["stanford_dragon"],
+                0,
+                cameraViewProj.buffer,
+                cameraViewProj.byteOffset,
+                cameraViewProj.byteLength
+            );
+
+
+
+            const renderPassDescriptor = context.state.passDescriptors["stanford_dragon"];
+
+
+            renderPassDescriptor.colorAttachments[0].view = context.state.GPU_context
+                .getCurrentTexture()
+                .createView();
+
+            const encoder = device.createCommandEncoder();
+
+            const pass = encoder.beginRenderPass(
+                renderPassDescriptor
+            );
+
+            pass.setPipeline(context.state.renderPipelines["stanford_dragon"]);
+
+            pass.setBindGroup(0, context.state.bindGroups["stanford_dragon"]);
+            pass.setVertexBuffer(0, context.state.VBOs["stanford_dragon"]);
+
+
+            pass.setIndexBuffer(context.state.IBOs["stanford_dragon"], 'uint16');
+
+            pass.drawIndexed(mesh.triangles.length * 3);
+
 
             pass.end();
 
             device.queue.submit([encoder.finish()]);
+            }, 33);
+
         }
     },
     mutations: {
@@ -171,7 +268,11 @@ export default {
             IBOs: {},
             UBOs: {},
             UBO_Layouts: {},
-            vertices_arr: {}
+            bindGroups: {},
+            vertices_arr: {},
+            indices_arr: {},  // 暂时不需要
+            Textures: {},
+            passDescriptors: {}
         }
     },
     getters: {}
