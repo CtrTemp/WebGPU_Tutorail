@@ -15,9 +15,10 @@
     <!-- <Tuto13_Camera/> -->
     <!-- <Tuto14_CubeMap/> -->
     <!-- <Tuto15_DeferredShading/> -->
-    <Tuto15_ForwardShading/>
+    <!-- <Tuto15_ForwardShading/> -->
     <!-- <Tuto16_ShadowMap/> -->
     <!-- <Tuto17_Particles/> -->
+    <Tuto17_ParticlesOwn/>
     <!-- <Tuto18_BoidSimulation/> -->
   </Suspense>
     <!-- <WebGPURoot/> -->
@@ -42,6 +43,7 @@ import Tuto14_CubeMap from './components/Tuto14_CubeMap.vue';
 import Tuto15_DeferredShading from './components/Tuto15_DeferedShading.vue'
 import Tuto16_ShadowMap from './components/Tuto16_ShadowMap.vue';
 import Tuto17_Particles from './components/Tuto17_Particles.vue';
+import Tuto17_ParticlesOwn from './components/Tuto17_ParticlesOwn.vue';
 import Tuto18_BoidSimulation from './components/Tuto18_BoidSimulation.vue';
 
 import Tuto15_ForwardShading from './components/Tuto15_ForwardShading.vue';
