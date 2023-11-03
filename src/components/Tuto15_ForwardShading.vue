@@ -6,6 +6,7 @@
 
 import { useStore } from 'vuex';
 import { onMounted } from 'vue';
+import { inject } from 'vue';
 
 const store = useStore();
 

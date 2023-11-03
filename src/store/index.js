@@ -11,6 +11,7 @@ import deferredShadingModel from "./Tuto15/deferred_shading.js"
 
 // Forward Shading
 import ForwardShading from "./ForwardShading/ForwardShading.js";
+import Particles from "./Particles/Particles.js";
 
 const store = createStore({
   state: {
@@ -29,7 +30,8 @@ const store = createStore({
     Tuto05: basicTestModel,
     Tuto08: rotatingCubes,
     Tuto15: deferredShadingModel,
-    ForwardShading: ForwardShading
+    ForwardShading: ForwardShading,
+    Particles: Particles
   }
 })
 
