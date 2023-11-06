@@ -1,5 +1,7 @@
 <template>
-    <canvas width="512" height="512"></canvas>
+    <div class="root-container">
+      <canvas class="main-canvas" width="512" height="512"></canvas>
+    </div>
 </template>
 
 <script setup>
@@ -68,7 +70,7 @@ const mount_func = onMounted(()=>{
 
     
     // 准备开始绘制网格
-    const GRID_SIZE = 128;
+    const GRID_SIZE = 512;
 
     // ?? 计算着色器工作组大小？？类似于CUDA中对Grid中Block Size的设置
     // 只不过CUDA中分了两层，即Grid Size，和Block Size，然而这里仅抽象为了一层
@@ -403,7 +405,7 @@ const mount_func = onMounted(()=>{
         // 选择 vertex buffer
         pass.setVertexBuffer(0, vertexBuffer);
         // 绘制指令（如果改成除以4，则可以看到只绘制三角形的结果）
-        pass.draw(vertices.length / 4, GRID_SIZE * GRID_SIZE);
+        pass.draw(vertices.length / 2, GRID_SIZE * GRID_SIZE);
 
         // End the render pass and submit the command buffer
         pass.end();
@@ -423,5 +425,22 @@ const mount_func = onMounted(()=>{
 </script>
 
 <style>
+
+.root-container{
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  /* 内廓border不额外占用空间 */
+  box-sizing: border-box; 
+  width: 100%;
+  height: 100%;
+  border: solid 10px black;
+  background-color: black;
+}
+
+.main-canvas{
+  width: 100%;
+  height: 100%;
+}
 
 </style>

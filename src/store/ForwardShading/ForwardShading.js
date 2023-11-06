@@ -233,7 +233,8 @@ export default {
                     // 这个view是默认的，将默认渲染到屏幕（我们没有显式的创建这个纹理，GPU会默认创建）
                     view: context.state.GPU_context.getCurrentTexture().createView(),
                     loadOp: "clear",
-                    clearValue: [0, 0.5, 0.7, 1],
+                    // clearValue: [0, 0.5, 0.7, 1],
+                    clearValue: [0, 0.0, 0.0, 1],
                     storeOp: "store",
                 }],
                 depthStencilAttachment: {

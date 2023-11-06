@@ -17,8 +17,8 @@
     <!-- <Tuto15_DeferredShading/> -->
     <!-- <Tuto15_ForwardShading/> -->
     <!-- <Tuto16_ShadowMap/> -->
-    <!-- <Tuto17_Particles/> -->
-    <Tuto17_ParticlesOwn/>
+    <Tuto17_Particles/>
+    <!-- <Tuto17_ParticlesOwn/> -->
     <!-- <Tuto18_BoidSimulation/> -->
   </Suspense>
     <!-- <WebGPURoot/> -->

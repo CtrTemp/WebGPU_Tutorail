@@ -1,5 +1,7 @@
 <template>
-  <canvas width="512" height="512"></canvas>
+  <div class="root-container">
+    <canvas class="main-canvas" width="512" height="512"></canvas>
+  </div>
 </template>
 
 <script setup>
@@ -30,4 +32,23 @@ onMounted(() => {
 
 </script>
 
-<style></style>
+<style>
+
+.root-container{
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  /* 内廓border不额外占用空间 */
+  box-sizing: border-box; 
+  width: 100%;
+  height: 100%;
+  border: solid 10px black;
+  background-color: black;
+}
+
+.main-canvas{
+  width: 100%;
+  height: 100%;
+}
+
+</style>

@@ -1,8 +1,10 @@
 
-import { vertex_shader, fragment_shader, compute_shader } from '../../assets/Shaders/Tuto17/shader';
-import { simulation_compute } from '../../assets/Shaders/Tuto17/compute'
+import { vertex_shader, fragment_shader, compute_shader } from '../../assets/Shaders/Particles/shader';
+import { simulation_compute } from '../../assets/Shaders/Particles/compute'
 
 import { mat4, vec3, vec4 } from "wgpu-matrix"
+
+import { updateCanvas } from "./utils"
 
 // import { getCameraViewProjMatrix, updateCanvas } from './utils.js';
 
@@ -12,28 +14,72 @@ export default {
      *  本工程使用Vue框架，借助WebGPU重构工程，实现前向渲染管线 
      */
     actions: {
+    
+        // 整体框架，内为异步函数，用于简单操控数据异步读取，阻塞式等待。
+        async init_and_render(context, canvas) {
+            const device = context.rootState.device;
+
+            const payload = {
+                canvas: canvas,
+                device: device
+            }
+            context.commit("init_device", payload);
+
+
+            // CPU 读取纹理图片并转化为BitMap
+            const response = await fetch(
+                new URL('../../assets/img/webgpu.png', import.meta.url).toString()
+            );
+            const imageBitmap = await createImageBitmap(await response.blob());
+
+            const data_payload = {
+                imageBitmap: imageBitmap,
+                device: device
+            }
+
+            context.commit("manage_data", data_payload);
+
+            context.commit("manage_pipeline", device);
+
+            context.commit("renderLoop", device);
+        },
+
+
+
+
+    },
+    mutations: {
+
         /**
          *   Stage01：device 相关初始化，选中设备，为device、canvas相关的上下文全局变量赋值
          */
-        init_device(context, canvas) {
-            const device = context.rootState.device;
-            context.state.canvas = canvas;
-            context.state.GPU_context = canvas.getContext("webgpu");
-            context.state.canvasFormat = navigator.gpu.getPreferredCanvasFormat();
+        init_device(state, { canvas, device }) {
+            state.canvas = canvas;
+            state.GPU_context = canvas.getContext("webgpu");
+            state.canvasFormat = navigator.gpu.getPreferredCanvasFormat();
 
-            context.state.GPU_context.configure({
+            state.GPU_context.configure({
                 device: device,
-                format: context.state.canvasFormat,
+                format: state.canvasFormat,
             });
         },
+
 
         /**
          *  Stage02：内存、数据相关的初始化。主要是纹理、顶点数据引入；device上开辟对应buffer
          * 并借助API将CPU读入的数据导入device 
+         *  注意，如果你要从文件异步读取数据，如模型文件、纹理贴图等，需要将init_data函数设置为
+         * 异步函数前加 async 修饰符。
+         *  但这会造成后面的 manage_pipeline 函数在被提交时非阻塞运行，无法保证 init_data 
+         * 函数中所有的文件被读取完，且运行完后面的配置。也就是说，init内部是阻塞的，但在上层
+         * Vue组件中，提交这些函数是非阻塞的，会造成错误，这个应该如何解决呢？？？
+         *  action 中允许异步，则整体架构就应该是一个action用于控制时序+多个mutation用于具
+         * 体执行的形式
          */
-        // 由于要异步读入数据，所以这里使用异步函数 async
-        async init_data(context) {
-            const device = context.rootState.device;
+        manage_data(state, payload) {
+
+            const imageBitmap = payload.imageBitmap;
+            const device = payload.device;
 
             //////////////////////////////////////////////////////////////////////////////
             // Texture
@@ -42,53 +88,61 @@ export default {
             let textureWidth = 1;
             let textureHeight = 1;
             let numMipLevels = 1;
-            {
-                // CPU 读取纹理图片并转化为BitMap
-                const response = await fetch(
-                    new URL('../../assets/img/logo_resized.png', import.meta.url).toString()
-                );
-                const imageBitmap = await createImageBitmap(await response.blob());
 
-                // Calculate number of mip levels required to generate the probability map
-                /**
-                 *  这里 MipMap 具体含义未知
-                 * */
-                while (
-                    textureWidth < imageBitmap.width ||
-                    textureHeight < imageBitmap.height
-                ) {
-                    textureWidth *= 2;
-                    textureHeight *= 2;
-                    numMipLevels++;
-                }
-                texture = device.createTexture({
-                    size: [imageBitmap.width, imageBitmap.height, 1],
-                    mipLevelCount: numMipLevels,
-                    format: 'rgba8unorm',
-                    usage:
-                        GPUTextureUsage.TEXTURE_BINDING |
-                        GPUTextureUsage.STORAGE_BINDING |
-                        GPUTextureUsage.COPY_DST |
-                        GPUTextureUsage.RENDER_ATTACHMENT,
-                });
-                device.queue.copyExternalImageToTexture(
-                    { source: imageBitmap },
-                    { texture: texture },
-                    [imageBitmap.width, imageBitmap.height]
-                );
-                context.state.Textures["logo_template"] = {};
-                context.state.Textures["logo_template"]["texture"] = texture;
-                context.state.Textures["logo_template"]["textureWidth"] = textureWidth;
-                context.state.Textures["logo_template"]["textureHeight"] = textureHeight;
-                context.state.Textures["logo_template"]["numMipLevels"] = numMipLevels;
+            // Calculate number of mip levels required to generate the probability map
+            /**
+             *  对读入的图片生成 MipMap
+             * */
+
+            // 这里计算 mipmap 的最大层级
+            while (
+                textureWidth < imageBitmap.width ||
+                textureHeight < imageBitmap.height
+            ) {
+                textureWidth *= 2;
+                textureHeight *= 2;
+                numMipLevels++;
             }
-            
+            /**
+             *  在device端开辟缓冲区用于存储读入的图片纹理，并指定最大 MipMap 层级，
+             * 最后将CPU端数据传到GPU端。
+             *  注意这里是一个重点！！！与之前的示例不同，这里多指定了一个 mipLevelCount 字段，
+             * 用于指示我们将额外开辟多少的纹理空间，用于存储当前纹理的“缩略图”。
+             *  使用 numMipLevels 表示直接将 MipMap 等级拉到最强，也就是缩略到只有一个像素为止。
+             * 这是由于 MipMap 创建的等级越深实际上每个 level 占用的等级越小。所以一般来说，一旦
+             * 使用 MipMap 就直接拉到最强。
+             * */ 
+            texture = device.createTexture({
+                size: [imageBitmap.width, imageBitmap.height, 1],
+                mipLevelCount: numMipLevels,
+                format: 'rgba8unorm',
+                usage:
+                    GPUTextureUsage.TEXTURE_BINDING |
+                    GPUTextureUsage.STORAGE_BINDING |
+                    GPUTextureUsage.COPY_DST |
+                    GPUTextureUsage.RENDER_ATTACHMENT,
+            });
+            device.queue.copyExternalImageToTexture(
+                { source: imageBitmap },
+                { texture: texture },
+                [imageBitmap.width, imageBitmap.height]
+            );
+            state.Textures["logo_template"] = {};
+            state.Textures["logo_template"]["texture"] = texture;
+            state.Textures["logo_template"]["textureWidth"] = textureWidth;
+            state.Textures["logo_template"]["textureHeight"] = textureHeight;
+            state.Textures["logo_template"]["numMipLevels"] = numMipLevels;
 
 
-            context.state.particle_info["numParticles"] = 5000;
-            context.state.particle_info["particlePositionOffset"] = 0;
-            context.state.particle_info["particleColorOffset"] = 4 * 4;
-            context.state.particle_info["particleInstanceByteSize"] =
+
+            // 指定模拟中的粒子数量
+            state.particle_info["numParticles"] = 150000;
+            state.particle_info["particlePositionOffset"] = 0;
+            state.particle_info["particleColorOffset"] = 4 * 4;
+            /**
+             *  每个粒子包含的属性如下
+             * */ 
+            state.particle_info["particleInstanceByteSize"] =
                 3 * 4 + // position
                 1 * 4 + // lifetime
                 4 * 4 + // color
@@ -97,30 +151,32 @@ export default {
                 0;
 
 
-            // 创建 particlesBuffer 目前含义未知
+            /**
+             *  创建 particlesBuffer 用于表示每个粒子的属性，这里我们将其视为 Vertex Buffer Object
+             * */ 
             const particlesBuffer = device.createBuffer({
-                size: context.state.particle_info["numParticles"] * context.state.particle_info["particleInstanceByteSize"],
+                size: state.particle_info["numParticles"] * state.particle_info["particleInstanceByteSize"],
                 usage: GPUBufferUsage.VERTEX | GPUBufferUsage.STORAGE,
             });
-            // 这里我们将 particles 数据算作是 Storage Buffer Object
-            context.state.VBOs["particles"] = particlesBuffer;
+            state.VBOs["particles"] = particlesBuffer;
 
 
 
-            // 深度纹理
+            // 深度纹理，这里没有搞清楚为什么还需要深度图？？？有明确的遮挡关系吗？？？
             const depthTexture = device.createTexture({
-                size: [context.state.canvas.width, context.state.canvas.height],
+                size: [state.canvas.width, state.canvas.height],
                 format: 'depth24plus',
                 usage: GPUTextureUsage.RENDER_ATTACHMENT,
             });
 
-            context.state.Textures["depth"] = {};
-            context.state.Textures["depth"]["texture"] = depthTexture;
-            context.state.Textures["depth"]["textureWidth"] = context.state.canvas.width;
-            context.state.Textures["depth"]["textureHeight"] = context.state.canvas.height;
+            state.Textures["depth"] = {};
+            state.Textures["depth"]["texture"] = depthTexture;
+            state.Textures["depth"]["textureWidth"] = state.canvas.width;
+            state.Textures["depth"]["textureHeight"] = state.canvas.height;
 
             /**
              *  Uniform Buffer Object
+             *  这里表示用于描述粒子运动的MVP矩阵
              * */
             const uniformBufferSize =
                 4 * 4 * 4 + // modelViewProjectionMatrix : mat4x4<f32>
@@ -170,9 +226,9 @@ export default {
             });
 
 
-            context.state.UBOs["particles"] = uniformBuffer;
-            context.state.UBO_Layouts["particles"] = UBO_Layout;
-            context.state.UBO_bindGroups["particles"] = uniformBindGroup;
+            state.UBOs["particles"] = uniformBuffer;
+            state.UBO_Layouts["particles"] = UBO_Layout;
+            state.UBO_bindGroups["particles"] = uniformBindGroup;
 
 
 
@@ -190,42 +246,48 @@ export default {
             ];
             new Float32Array(quadVertexBuffer.getMappedRange()).set(vertexData);
             quadVertexBuffer.unmap();
-            context.state.VBOs["quad"] = quadVertexBuffer;
+            state.VBOs["quad"] = quadVertexBuffer;
 
         },
 
         /**
          *  Stage03：对渲染的 pipeline 进行定制，一般来说，在渲染过程中不再会对管线进行更改
          * */
-        manage_pipeline(context) {
-            const device = context.rootState.device;
+        manage_pipeline(state, device) {
 
-            console.log("renderPipeline layout = ", context.state.UBO_Layouts["particles"]);
+            const renderPipelineLayout = device.createPipelineLayout({
+                label: "Cell Pipeline Layout",
+                bindGroupLayouts: [state.UBO_Layouts["particles"]],
+            });
 
             const renderPipeline = device.createRenderPipeline({
-                // layout: context.state.UBO_Layouts["particles"],
-                layout: "auto", // 这样写真的好么？？？前后不统一
+                layout: renderPipelineLayout,
                 vertex: {
                     module: device.createShaderModule({
                         code: vertex_shader,
                     }),
                     entryPoint: 'vs_main',
+                    /**
+                     *  Vertex Shader 阶段有两个 Vertex Buffer Object
+                     *  一个是用于指示 Particles 属性的缓冲区
+                     *  另一个是粒子平铺的承接载体，即一个四边形平面
+                     * */ 
                     buffers: [
                         {
                             // instanced particles buffer
-                            arrayStride: context.state.particle_info["particleInstanceByteSize"],
+                            arrayStride: state.particle_info["particleInstanceByteSize"],
                             stepMode: 'instance',
                             attributes: [
                                 {
                                     // position
                                     shaderLocation: 0,
-                                    offset: context.state.particle_info["particlePositionOffset"],
+                                    offset: state.particle_info["particlePositionOffset"],
                                     format: 'float32x3',
                                 },
                                 {
                                     // color
                                     shaderLocation: 1,
-                                    offset: context.state.particle_info["particleColorOffset"],
+                                    offset: state.particle_info["particleColorOffset"],
                                     format: 'float32x4',
                                 },
                             ],
@@ -250,9 +312,13 @@ export default {
                         code: fragment_shader,
                     }),
                     entryPoint: 'fs_main',
+                    /**
+                     *  这里可以看出，每个粒子被视为是半透明体，故引入了alpha blend
+                     * 这也进一步验证了之前定义的depth texture是有必要的
+                     * */ 
                     targets: [
                         {
-                            format: context.state["canvasFormat"],
+                            format: state["canvasFormat"],
                             blend: {
                                 color: {
                                     srcFactor: 'src-alpha',
@@ -278,7 +344,7 @@ export default {
                     format: 'depth24plus',
                 },
             });
-            context.state.renderPipelines["particles"] = renderPipeline;
+            state.renderPipelines["particles"] = renderPipeline;
 
 
 
@@ -292,20 +358,16 @@ export default {
                     },
                 ],
                 depthStencilAttachment: {
-                    view: context.state.Textures["depth"]["texture"].createView(),
+                    view: state.Textures["depth"]["texture"].createView(),
 
                     depthClearValue: 1.0,
                     depthLoadOp: 'clear',
                     depthStoreOp: 'store',
                 },
             };
-            context.state.passDescriptors["particles"] = renderPassDescriptor;
+            state.passDescriptors["particles"] = renderPassDescriptor;
 
 
-
-            /**
-             *  以下这部分开始真正的 Compute Shader
-             * */
 
             //////////////////////////////////////////////////////////////////////////////
             // Probability map generation
@@ -313,6 +375,11 @@ export default {
             // the alpha channel. The mip levels 1..N are generated to hold spawn
             // probabilities up to the top 1x1 mip level.
             //////////////////////////////////////////////////////////////////////////////
+            
+            /**
+             *  以下这部分开始真正的 Compute Shader。
+             *  含义解读：
+             * */
             {
                 const probabilityMapImportLevelPipeline = device.createComputePipeline({
                     layout: 'auto',
@@ -329,11 +396,13 @@ export default {
                     },
                 });
 
-                context.state.renderPipelines["probability_inmport"] = probabilityMapImportLevelPipeline;
+                const textureWidth = state.Textures["logo_template"]["textureWidth"];
+                const textureHeight = state.Textures["logo_template"]["textureHeight"];
 
-                const textureWidth = context.state.Textures["logo_template"]["textureWidth"];
-                const textureHeight = context.state.Textures["logo_template"]["textureHeight"];
 
+                /**
+                 *  问题？ probabilityMap 的作用是什么？？
+                 * */ 
                 const probabilityMapUBOBufferSize =
                     1 * 4 + // stride
                     3 * 4 + // padding
@@ -342,6 +411,10 @@ export default {
                     size: probabilityMapUBOBufferSize,
                     usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
                 });
+
+                // 这两个用作 Storage Buffer 的缓冲区的作用是什么？？？
+                // 它们才应该是真正的 ProbabilityMap 吧？
+                // 不错，这两个才应该是真正的 Probability Map
                 const buffer_a = device.createBuffer({
                     size: textureWidth * textureHeight * 4,
                     usage: GPUBufferUsage.STORAGE,
@@ -350,16 +423,23 @@ export default {
                     size: textureWidth * textureHeight * 4,
                     usage: GPUBufferUsage.STORAGE,
                 });
+                // 其实 UBO 中存的只是一个当前读入图像源文件的texture宽度
                 device.queue.writeBuffer(
                     probabilityMapUBOBuffer,
                     0,
                     new Int32Array([textureWidth])
                 );
+                /**
+                 *  仿真流程是在初始化阶段就预先运行了，而非渲染的运行时
+                 * 搞清楚这部分到底是在做什么：其实是在生成 MipMap
+                 * */ 
                 const commandEncoder = device.createCommandEncoder();
-                const numMipLevels = context.state.Textures["logo_template"]["numMipLevels"];
+                const numMipLevels = state.Textures["logo_template"]["numMipLevels"];
                 for (let level = 0; level < numMipLevels; level++) {
                     const levelWidth = textureWidth >> level;
                     const levelHeight = textureHeight >> level;
+
+                    // 只有在 MipLevel=0 的时候，也就是访问源图像的时候使用 ImportLevelPipeline
                     const pipeline =
                         level == 0
                             ? probabilityMapImportLevelPipeline.getBindGroupLayout(0)
@@ -372,6 +452,7 @@ export default {
                                 binding: 0,
                                 resource: { buffer: probabilityMapUBOBuffer },
                             },
+                            // buffer in / buffer out 二者在互相调换位置
                             {
                                 // buf_in
                                 binding: 1,
@@ -384,8 +465,14 @@ export default {
                             },
                             {
                                 // tex_in / tex_out
+                                /**
+                                 *  注意这里的 baseMipLevel 字段。由于之前我们在创建纹理的时候已经
+                                 * 将其指定创建 MipMap，故实际上为不同的 MipLevel 已经额外分配了一定
+                                 * 的内存空间，故在此循环中，根据不同的 level，会将其指定到不同的纹理
+                                 * 作为当前要写入的空间。
+                                 * */ 
                                 binding: 3,
-                                resource: context.state.Textures["logo_template"]["texture"].createView({
+                                resource: state.Textures["logo_template"]["texture"].createView({
                                     format: 'rgba8unorm',
                                     dimension: '2d',
                                     baseMipLevel: level,
@@ -415,10 +502,10 @@ export default {
                 //////////////////////////////////////////////////////////////////////////////
                 // Simulation compute pipeline
                 //////////////////////////////////////////////////////////////////////////////
-                context.state.simulationParams = {
+                state.simulationParams = {
                     simulate: true,
-                    // deltaTime: 0.04, // by default
-                    deltaTime: 0.1, // 不添加 GUI 可以手动调整这里控制仿真运行速率
+                    deltaTime: 0.04, // by default
+                    // deltaTime: 0.1, // 不添加 GUI 可以手动调整这里控制仿真运行速率
                 };
 
                 const simulationUBOBufferSize =
@@ -431,7 +518,7 @@ export default {
                     usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
                 });
 
-                context.state.UBOs["simulation"] = simulationUBOBuffer;
+                state.UBOs["simulation"] = simulationUBOBuffer;
 
                 // 暂时不添加 GUI
                 // Object.keys(simulationParams).forEach((k) => {
@@ -447,7 +534,7 @@ export default {
                         entryPoint: 'simulate',
                     },
                 });
-                context.state.renderPipelines["compute"] = computePipeline;
+                state.renderPipelines["compute"] = computePipeline;
                 const computeBindGroup = device.createBindGroup({
                     layout: computePipeline.getBindGroupLayout(0),
                     entries: [
@@ -461,38 +548,41 @@ export default {
                             binding: 1,
                             resource: {
                                 // buffer: particlesBuffer,
-                                buffer: context.state.VBOs["particles"],
+                                buffer: state.VBOs["particles"],
                                 offset: 0,
-                                size: context.state.particle_info["numParticles"] * context.state.particle_info["particleInstanceByteSize"],
+                                size: state.particle_info["numParticles"] * state.particle_info["particleInstanceByteSize"],
                             },
                         },
                         {
                             binding: 2,
-                            resource: context.state.Textures["logo_template"]["texture"].createView(),
+                            resource: state.Textures["logo_template"]["texture"].createView(),
                         },
                     ],
                 });
-                context.state.UBO_bindGroups["compute"] = computeBindGroup;
+                state.UBO_bindGroups["compute"] = computeBindGroup;
             }
         },
 
+        /**
+         *  Stage04：启动渲染循环
+         * */
+        renderLoop(state, device) {
 
-        renderLoop(context) {
-            const device = context.rootState.device;
-
-            const aspect = context.state.canvas.width / context.state.canvas.height;
+            const aspect = state.canvas.width / state.canvas.height;
             const projection = mat4.perspective((2 * Math.PI) / 5, aspect, 1, 100.0);
             const view = mat4.create();
             const mvp = mat4.create();
+            setInterval(() => {
+                // /**
+                //  *  更新 canvas 大小。附带要更新对应的texture大小。
+                //  *  函数中将使用新的 canvas 大小分别更新 renderPassDescriptor 中的 colorAttachment 和 depthAttachment
+                //  * */
+                // // 在 class 中直接设置，后续不再进行修改
+                // updateCanvas(state, device);
 
-            {
-
-                // Sample is no longer the active page.
-                // if (!pageState.active) return;
-
-                const simulationParams = context.state.simulationParams;
+                const simulationParams = state.simulationParams;
                 device.queue.writeBuffer(
-                    context.state.UBOs["simulation"],
+                    state.UBOs["simulation"],
                     0,
                     new Float32Array([
                         simulationParams.simulate ? simulationParams.deltaTime : 0.0,
@@ -513,7 +603,7 @@ export default {
 
                 // prettier-ignore
                 device.queue.writeBuffer(
-                    context.state.UBOs["particles"],
+                    state.UBOs["particles"],
                     0,
                     new Float32Array([
                         // modelViewProjectionMatrix
@@ -531,38 +621,36 @@ export default {
                         0, // padding
                     ])
                 );
-                const swapChainTexture = context.state.GPU_context.getCurrentTexture();
+                const swapChainTexture = state.GPU_context.getCurrentTexture();
                 // prettier-ignore
-                context.state.passDescriptors["particles"].colorAttachments[0].view = swapChainTexture.createView();
+                state.passDescriptors["particles"].colorAttachments[0].view = swapChainTexture.createView();
 
-                const numParticles = context.state.particle_info["numParticles"];
+                const numParticles = state.particle_info["numParticles"];
                 const commandEncoder = device.createCommandEncoder();
+                // 先运行 compute shader
                 {
                     const passEncoder = commandEncoder.beginComputePass();
-                    passEncoder.setPipeline(context.state.renderPipelines["compute"]);
-                    passEncoder.setBindGroup(0, context.state.UBO_bindGroups["compute"]);
+                    passEncoder.setPipeline(state.renderPipelines["compute"]);
+                    passEncoder.setBindGroup(0, state.UBO_bindGroups["compute"]);
                     passEncoder.dispatchWorkgroups(Math.ceil(numParticles / 64));
                     passEncoder.end();
                 }
+                // 之后运行 render pass
                 {
-                    const passEncoder = commandEncoder.beginRenderPass(context.state.passDescriptors["particles"]);
-                    passEncoder.setPipeline(context.state.renderPipelines["particles"]);
-                    passEncoder.setBindGroup(0, context.state.UBO_bindGroups["particles"]);
-                    passEncoder.setVertexBuffer(0, context.state.VBOs["particles"]);
-                    passEncoder.setVertexBuffer(1, context.state.VBOs["quad"]);
+                    const passEncoder = commandEncoder.beginRenderPass(state.passDescriptors["particles"]);
+                    passEncoder.setPipeline(state.renderPipelines["particles"]);
+                    passEncoder.setBindGroup(0, state.UBO_bindGroups["particles"]);
+                    passEncoder.setVertexBuffer(0, state.VBOs["particles"]);
+                    passEncoder.setVertexBuffer(1, state.VBOs["quad"]);
                     passEncoder.draw(6, numParticles, 0, 0);
                     passEncoder.end();
                 }
 
                 device.queue.submit([commandEncoder.finish()]);
 
-                // requestAnimationFrame(frame);
-            }
+            }, 25);
 
         }
-    },
-    mutations: {
-
     },
     state() {
         return {

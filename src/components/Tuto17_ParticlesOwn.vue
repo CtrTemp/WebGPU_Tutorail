@@ -1,5 +1,7 @@
 <template>
-  <canvas width="512" height="512"></canvas>
+  <div class="root-container">
+    <canvas class="main-canvas" width="512" height="512"></canvas>
+  </div>
 </template>
 
 <script setup>
@@ -19,23 +21,31 @@ onMounted(() => {
 
   const canvas = document.querySelector("canvas");
 
-  store.dispatch("Particles/init_device", canvas);
-  store.dispatch("Particles/init_data");
+  store.dispatch("Particles/init_and_render", canvas);
+  // store.dispatch("Particles/init_device", canvas);
+  // store.dispatch("Particles/init_data");
 
-  setTimeout(()=>{
-    store.dispatch("Particles/manage_pipeline");
-  }, 1000);  
-  
-  setTimeout(()=>{
-    store.dispatch("Particles/renderLoop");
-  }, 1000);  
-
-
-  // store.dispatch("Particles/renderLoop");
 })
 
 
 
 </script>
 
-<style></style>
+<style>
+.root-container{
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  /* 内廓border不额外占用空间 */
+  box-sizing: border-box; 
+  width: 100%;
+  height: 100%;
+  border: solid 10px black;
+  background-color: black;
+}
+
+.main-canvas{
+  /* width: 100%; */
+  height: 100%;
+}
+</style>
