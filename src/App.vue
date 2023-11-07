@@ -17,9 +17,12 @@
     <!-- <Tuto15_DeferredShading/> -->
     <!-- <Tuto15_ForwardShading/> -->
     <!-- <Tuto16_ShadowMap/> -->
-    <Tuto17_Particles/>
-    <!-- <Tuto17_ParticlesOwn/> -->
+    <!-- <Tuto17_Particles/> -->
+    <Tuto17_ParticlesOwn/>
     <!-- <Tuto18_BoidSimulation/> -->
+
+    <!-- <Flow/> -->
+
   </Suspense>
     <!-- <WebGPURoot/> -->
 </template>
@@ -48,6 +51,7 @@ import Tuto18_BoidSimulation from './components/Tuto18_BoidSimulation.vue';
 
 import Tuto15_ForwardShading from './components/Tuto15_ForwardShading.vue';
 
+import Flow from './components/Flow.vue';
 
 import { useStore } from 'vuex';
 import { provide } from "vue"

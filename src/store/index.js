@@ -11,7 +11,13 @@ import deferredShadingModel from "./Tuto15/deferred_shading.js"
 
 // Forward Shading
 import ForwardShading from "./ForwardShading/ForwardShading.js";
+
+// Particles Simulation
 import Particles from "./Particles/Particles.js";
+
+// Flow Rendering
+import Flow from "./Flow/Flow.js";
+
 
 const store = createStore({
   state: {
@@ -20,8 +26,8 @@ const store = createStore({
   },
   mutations: {
 
-    GLOBAL_INITIALIZATION(state, data){
-        console.log("Commit global initialization", data);
+    GLOBAL_INITIALIZATION(state, data) {
+      console.log("Commit global initialization", data);
     }
 
   },
@@ -31,7 +37,8 @@ const store = createStore({
     Tuto08: rotatingCubes,
     Tuto15: deferredShadingModel,
     ForwardShading: ForwardShading,
-    Particles: Particles
+    Particles: Particles,
+    Flow: Flow
   }
 })
 
