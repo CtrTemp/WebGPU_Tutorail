@@ -1,11 +1,17 @@
 
 import { vertex_shader, fragment_shader } from '../../assets/Shaders/Flow/shader';
+import { simulation_compute } from '../../assets/Shaders/Flow/compute';
 
 import { mat4, vec3, vec4 } from "wgpu-matrix"
 
 import { updateCanvas } from "./utils"
 
+import { gen_straight_line_arr, gen_axis_line_arr } from './gen_curve_line';
+
 // import { getCameraViewProjMatrix, updateCanvas } from './utils.js';
+
+
+
 
 export default {
     namespaced: true,
@@ -22,6 +28,8 @@ export default {
                 canvas: canvas,
                 device: device
             }
+            gen_axis_line_arr(128);
+
             context.commit("init_device", payload);
 
             context.commit("manage_data", payload);
@@ -60,28 +68,56 @@ export default {
 
             const device = payload.device;
 
+            // 全局粒子總數
+            state.particle_info["numParticles"] = 32 * 3;
+            state.particle_info["particleInstanceByteSize"] =
+                4 * 4 + // pos
+                4 * 4 + // color
+                1 * 4 + // life time
+                3 * 4 + // padding
+                0;
 
             /**
              *  VBO
              * */
-            const particles_pos_data = new Float32Array([
-                0.25, 0.25, 0.0, 0.1, 0.9, 0.9,
-                0.25, -0.25, 0.0, 0.1, 0.9, 0.9,
-                -0.25, -0.25, 0.0, 0.9, 0.1, 0.9,
-                -0.25, 0.25, 0.0, 0.9, 0.1, 0.9,
-                0.25, 0.25, 0.0, 0.1, 0.9, 0.9,
-                0.25, -0.25, 0.0, 0.1, 0.9, 0.9,
-            ]);
+            // const pos_arr = gen_straight_line_arr([0, 0, 0], [1, 1, 1], state.particle_info["numParticles"]);
+            const pos_arr = gen_axis_line_arr(32);
+            const particles_data = new Array();
+            // console.log("lenght = ", pos_arr.length);
+            for (let i = 0; i < pos_arr.length; i++) {
+                // position
+                particles_data.push(pos_arr[i][0]);
+                particles_data.push(pos_arr[i][1]);
+                particles_data.push(pos_arr[i][2]);
+                particles_data.push(0.0); // padding
+
+                // color
+                particles_data.push(1.0);
+                particles_data.push(0.0); // padding
+                particles_data.push(0.0); // padding
+                particles_data.push(0.0); // padding
+
+                // life_time
+                // particles_data.push(state.particle_info["numParticles"]);
+                particles_data.push(i);
+                particles_data.push(0.0); // padding
+                particles_data.push(0.0); // padding
+                particles_data.push(0.0); // padding
+            }
+            // 應該將以上轉換成 Float32Arr
+            const writeBufferArr = new Float32Array(particles_data);
+
 
             const particlesBuffer = device.createBuffer({
-                size: particles_pos_data.byteLength,
-                usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
+                size: writeBufferArr.byteLength,
+                // 這裡的 STORAGE 的用途是什麼
+                usage: GPUBufferUsage.VERTEX | GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
             })
-            device.queue.writeBuffer(particlesBuffer, 0, particles_pos_data);
+            device.queue.writeBuffer(particlesBuffer, 0, writeBufferArr);
             state.VBOs["particles"] = particlesBuffer;
 
 
-            
+
             const quadVertexBuffer = device.createBuffer({
                 size: 6 * 2 * 4, // 6x vec2<f32>
                 usage: GPUBufferUsage.VERTEX,
@@ -96,7 +132,6 @@ export default {
             state.VBOs["quad"] = quadVertexBuffer;
 
 
-
             /**
              *  UBO
              * */
@@ -104,45 +139,80 @@ export default {
             const MVP_UBO_Buffer = device.createBuffer({
                 size: MVP_Buffer_size,
                 usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
-            })
+            });
             state.UBOs["mvp"] = MVP_UBO_Buffer;
+
+            const RIGHT_Buffer_size = 3 * 4;
+            const RIGHT_UBO_Buffer = device.createBuffer({
+                size: RIGHT_Buffer_size,
+                usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+            });
+            state.UBOs["right"] = RIGHT_UBO_Buffer;
+
+            const UP_Buffer_size = 3 * 4;
+            const UP_UBO_Buffer = device.createBuffer({
+                size: UP_Buffer_size,
+                usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+            });
+            state.UBOs["up"] = UP_UBO_Buffer;
+
+
+            const simu_Control_UBO_BufferSize =
+                1 * 4 + // deltaTime
+                3 * 4 + // padding
+                4 * 4 + // seed
+                1 * 4 + // particle_nums
+                3 * 4 + // padding
+                0;
+            const simu_Control_UBO_Buffer = device.createBuffer({
+                size: simu_Control_UBO_BufferSize,
+                usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+            });
+            state.UBOs["compute"] = simu_Control_UBO_Buffer;
 
             /**
              *  VBO Layout
              * */
             const particles_VBO_Layout = {
-                arrayStride: 6 * 4, // 这里是否要补全 padding 呢？？？
-                // stepMode: "instance", // 这个设置的含义是什么
+                arrayStride: 12 * 4, // 这里是否要补全 padding 呢？？？
+                stepMode: "instance", // 这个设置的含义是什么
                 attributes: [
                     {
                         // position
                         shaderLocation: 0,
                         offset: 0,
-                        format: 'float32x3',
+                        format: 'float32x4',
                     },
                     {
                         // color
                         shaderLocation: 1,
-                        offset: 3 * 4,
-                        format: 'float32x3'
+                        offset: 4 * 4,
+                        format: 'float32x4'
+                    },
+                    {
+                        // lifetime
+                        shaderLocation: 2,
+                        offset: 8 * 4,
+                        format: 'float32x4'
                     }
                 ]
             };
             state.VBO_Layouts["particles"] = particles_VBO_Layout;
-            
+
             const quad_VBO_Layout = {
                 arrayStride: 2 * 4, // 这里是否要补全 padding 呢？？？
-                // stepMode: "vertex", // 这个设置的含义是什么（注意可能和 instance 有关）
+                stepMode: "vertex", // 这个设置的含义是什么（注意可能和 instance 有关）（默认是vertex）
                 // 这个的设置很有可能与 WebGPU 没有 geometry shader 存在互补性
                 attributes: [
                     {
                         // vertex position
-                        shaderLocation: 2,
+                        shaderLocation: 3,
                         offset: 0,
                         format: 'float32x2',
                     }
                 ]
             };
+            state.VBO_Layouts["quad"] = quad_VBO_Layout;
 
 
             /**
@@ -155,9 +225,41 @@ export default {
                     buffer: {
                         type: "uniform"
                     }
+                }, {
+                    binding: 1,
+                    visibility: GPUShaderStage.VERTEX,
+                    buffer: {
+                        type: "uniform"
+                    }
+                }, {
+                    binding: 2,
+                    visibility: GPUShaderStage.VERTEX,
+                    buffer: {
+                        type: "uniform"
+                    }
                 }]
             });
             state.UBO_Layouts["mvp"] = MVP_UBO_Layout;
+
+            const compute_UBO_Layout = device.createBindGroupLayout({
+                entries: [
+                    {
+                        binding: 0,
+                        visibility: GPUShaderStage.COMPUTE,
+                        buffer: {
+                            type: "uniform"
+                        }
+                    },
+                    {
+                        binding: 1,
+                        visibility: GPUShaderStage.COMPUTE,
+                        buffer: {
+                            type: "storage"
+                        }
+                    }
+                ]
+            });
+            state.UBO_Layouts["compute"] = compute_UBO_Layout;
 
 
             /**
@@ -180,6 +282,8 @@ export default {
          * */
         manage_pipeline(state, device) {
 
+
+            /* ########################### Render Pipeline ########################### */
             const MVP_UBO_BindGroup = device.createBindGroup({
                 layout: state.UBO_Layouts["mvp"],
                 entries: [
@@ -188,17 +292,28 @@ export default {
                         resource: {
                             buffer: state.UBOs["mvp"]
                         }
-                    }
+                    },
+                    {
+                        binding: 1,
+                        resource: {
+                            buffer: state.UBOs["right"]
+                        }
+                    },
+                    {
+                        binding: 2,
+                        resource: {
+                            buffer: state.UBOs["up"]
+                        }
+                    },
                 ]
             });
-            state.UBO_bindGroups["single_mvp"] = MVP_UBO_BindGroup;
+            state.UBO_bindGroups["mvp_pack"] = MVP_UBO_BindGroup;
 
             const particle_Render_Pipeline_Layout = device.createPipelineLayout({
                 bindGroupLayouts: [state.UBO_Layouts["mvp"]]
             });
             state.Pipeline_Layouts["render_particles"] = particle_Render_Pipeline_Layout;
 
-            console.log("VBO_Layouts = ", state.VBO_Layouts["particles"].arrayStride)
 
             const render_particles_pipeline = device.createRenderPipeline({
                 layout: particle_Render_Pipeline_Layout,
@@ -208,7 +323,8 @@ export default {
                     }),
                     entryPoint: "vs_main",
                     buffers: [
-                        state.VBO_Layouts["particles"]
+                        state.VBO_Layouts["particles"],
+                        state.VBO_Layouts["quad"]
                     ]
                 },
                 fragment: {
@@ -218,7 +334,20 @@ export default {
                     entryPoint: "fs_main",
                     targets: [
                         {
-                            format: state["canvasFormat"]
+                            format: state["canvasFormat"],
+                            // 這一步是設置 半透明度 必須的要素
+                            blend: {
+                                color: {
+                                    srcFactor: 'src-alpha',
+                                    dstFactor: 'one',
+                                    operation: 'add',
+                                },
+                                alpha: {
+                                    srcFactor: 'zero',
+                                    dstFactor: 'one',
+                                    operation: 'add',
+                                },
+                            },
                         }
                     ]
                 },
@@ -254,6 +383,48 @@ export default {
 
 
 
+
+            /* ########################### Compute Pipeline ########################### */
+
+            const particle_Compute_Pipeline_Layout = device.createPipelineLayout({
+                bindGroupLayouts: [state.UBO_Layouts["compute"]]
+            });
+            state.Pipeline_Layouts["simu_particles"] = particle_Render_Pipeline_Layout;
+
+            const computePipeline = device.createComputePipeline({
+                layout: particle_Compute_Pipeline_Layout,
+                compute: {
+                    module: device.createShaderModule({
+                        code: simulation_compute,
+                    }),
+                    entryPoint: 'simulate',
+                },
+            });
+            state.Pipelines["simu_particles"] = computePipeline;
+
+            const simu_particles_BindGroup = device.createBindGroup({
+                layout: state.UBO_Layouts["compute"],
+                entries: [
+                    {
+                        binding: 0,
+                        resource: {
+                            buffer: state.UBOs["compute"]
+                        }
+                    },
+                    {
+                        binding: 1,
+                        resource: {
+                            buffer: state.VBOs["particles"],
+                            offset: 0,
+                            size: state.particle_info["numParticles"] * state.particle_info["particleInstanceByteSize"]
+                        }
+                    }
+                ]
+            });
+
+            state.UBO_bindGroups["compute"] = simu_particles_BindGroup;
+
+
         },
 
         /**
@@ -267,8 +438,8 @@ export default {
 
 
             mat4.identity(view);
-            mat4.translate(view, vec3.fromValues(0, 0, -3), view);
-            mat4.rotateX(view, Math.PI * -0.2, view);
+            mat4.translate(view, vec3.fromValues(-0.5, -0.5, -2.5), view);
+            // mat4.rotateX(view, Math.PI * -0.2, view);
             mat4.multiply(projection, view, mvp);
 
             device.queue.writeBuffer(
@@ -279,24 +450,81 @@ export default {
                 mvp.byteLength
             );
 
-            const renderPassDescriptor = state.passDescriptors["render_particles"];
+            device.queue.writeBuffer(
+                state.UBOs["right"],
+                0,
+                new Float32Array([
+                    view[0], view[4], view[8], // right
+                ])
+            );
+            device.queue.writeBuffer(
+                state.UBOs["up"],
+                0,
+                new Float32Array([
+                    view[1], view[5], view[9], // up
+                ])
+            );
 
-            renderPassDescriptor.colorAttachments[0].view = state.GPU_context
-                .getCurrentTexture()
-                .createView();
+            device.queue.writeBuffer(
+                state.UBOs["compute"],
+                0,
+                new Float32Array([
+                    true,
+                    0.0,
+                    0.0,
+                    0.0,// padding
+                    Math.random() * 100,
+                    Math.random() * 100, // seed.xy
+                    1 + Math.random(),
+                    1 + Math.random(), // seed.zw
+                    state.particle_info["numParticles"],
+                    0.0,
+                    0.0,
+                    0.0
+                ])
+            );
 
-            const encoder = device.createCommandEncoder();
-            const pass = encoder.beginRenderPass(renderPassDescriptor);
 
-            pass.setPipeline(state.Pipelines["render_particles"]);
-            pass.setBindGroup(0, state.UBO_bindGroups["single_mvp"]);
-            pass.setVertexBuffer(0, state.VBOs["particles"]);
-            // pass.draw(3, 2, 0, 0); // 四边形里面我只画一个三角形
-            pass.draw(6, 4, 0, 0); // 四边形里面我只画一个三角形
 
-            pass.end();
+            setInterval(() => {
 
-            device.queue.submit([encoder.finish()]);
+                const renderPassDescriptor = state.passDescriptors["render_particles"];
+
+                renderPassDescriptor.colorAttachments[0].view = state.GPU_context
+                    .getCurrentTexture()
+                    .createView();
+
+                const encoder = device.createCommandEncoder();
+
+                /**
+                 *  Simulation Pass
+                 * */
+                {
+                    const pass = encoder.beginComputePass();
+                    pass.setPipeline(state.Pipelines["simu_particles"]);
+                    pass.setBindGroup(0, state.UBO_bindGroups["compute"]);
+                    pass.dispatchWorkgroups(Math.ceil(state.particle_info["numParticles"] / 64));
+                    pass.end();
+                }
+
+
+
+                /**
+                 *  Render Pass
+                 * */
+                {
+                    const pass = encoder.beginRenderPass(renderPassDescriptor);
+                    pass.setPipeline(state.Pipelines["render_particles"]);
+                    pass.setBindGroup(0, state.UBO_bindGroups["mvp_pack"]);
+                    pass.setVertexBuffer(0, state.VBOs["particles"]);
+                    pass.setVertexBuffer(1, state.VBOs["quad"]);
+                    pass.draw(6, state.particle_info["numParticles"], 0, 0); // 四边形里面我只画一个三角形
+
+                    pass.end();
+                }
+
+                device.queue.submit([encoder.finish()]);
+            }, 25);
         }
     },
     state() {

@@ -1,100 +1,88 @@
 
 /**
- *  该文件中的代码用于在预处理阶段生成 MipMap
- * */ 
+ *  用於在每一幀更新粒子的位置坐標
+ * */
+
+/**
+ *  Flow 運動更新策略：
+ * 
+ *  1、在每個可能的位置上每次向下一個位置步進一段距離，需要兩個坐標之間的插值獲取更新後的位置
+ *  2、在每個可能的位置上隨機撒種子，設定一個 life time，讓粒子在設定的坐標數組中向後移動，
+ * 直到其生命終止（但這樣看起來粒子流是不連續的，你是否要考慮設置一個拖尾的效果呢？？？）。不過
+ * 目前看來這種效果應該是最佳的√
+ * 
+ */
 
 // Vertex Shader
 const simulation_compute = /* wgsl */`
-// 其实 UBO 中存的只是一个当前读入图像源文件的texture宽度
-struct UBO {
-  width : u32,
+
+// /**
+//  *  隨機數初始化
+//  * */ 
+// fn init_rand(invocation_id : u32, seed : vec4<f32>) {
+//   rand_seed = seed.xz;
+//   rand_seed = fract(rand_seed * cos(35.456+f32(invocation_id) * seed.yw));
+//   rand_seed = fract(rand_seed * cos(41.235+f32(invocation_id) * seed.xw));
+// }
+
+// fn rand() -> f32 {
+//   rand_seed.x = fract(cos(dot(rand_seed, vec2<f32>(23.14077926, 232.61690225))) * 136.8168);
+//   rand_seed.y = fract(cos(dot(rand_seed, vec2<f32>(54.47856553, 345.84153136))) * 534.7645);
+//   return rand_seed.y;
+// }
+
+
+struct SimulationParams {
+  deltaTime : f32,
+  seed : vec4<f32>,
+  particle_nums: f32
 }
 
-struct Buffer {
-  weights : array<f32>,
+struct Particle {
+  position : vec4<f32>,
+  color    : vec4<f32>,
+  lifetime    : f32,
 }
 
-// binding(0) 位置上的就是 ProbabilityMap 对应的 UBO
-@binding(0) @group(0) var<uniform> ubo : UBO;
-@binding(1) @group(0) var<storage, read> buf_in : Buffer;
-@binding(2) @group(0) var<storage, read_write> buf_out : Buffer;
-// 以下两个字段，根据不同的 MipLevel 会在循环中索引到不同位置的内存区
-// 不同 MipLevel 的内存区已经在纹理被创建时额外创建。
-@binding(3) @group(0) var tex_in : texture_2d<f32>;
-@binding(3) @group(0) var tex_out : texture_storage_2d<rgba8unorm, write>;
+struct Particles {
+  particles : array<Particle>,
+}
+
+@binding(0) @group(0) var<uniform> sim_params : SimulationParams;
+@binding(1) @group(0) var<storage, read_write> data : Particles;
 
 
-////////////////////////////////////////////////////////////////////////////////
-// import_level
-//
-// Loads the alpha channel from a texel of the source image, and writes it to
-// the buf_out.weights.
-// 只有在 MipLevel=0 的时候，也就是访问源图像的时候使用 ImportLevelPipeline
-////////////////////////////////////////////////////////////////////////////////
-/**
- *  global_invocation_id 表示当前线程在计算着色器网格中的全局三维坐标。
- * 在 MipLevel=0 时，也就是访问分辨率最高的原图像时调用这个函数。其作用是将原图像的
- * 第四通道也就是alpha通道原封不动的载入到 buf_out 中
- * */ 
 @compute @workgroup_size(64)
-fn import_level(@builtin(global_invocation_id) coord : vec3<u32>) {
-  _ = &buf_in; // 这句是什么意思没有看懂，但还不能注释掉
-  // 从二维坐标索引转化到线性坐标索引
-  let offset = coord.x + coord.y * ubo.width;
-  // 为当前线程所对应的坐标位置处的 Map 赋值，赋值为读取纹理的 alpha 值（也就是半透明度）
-  buf_out.weights[offset] = textureLoad(tex_in, vec2<i32>(coord.xy), 0).w;
-}
+fn simulate(@builtin(global_invocation_id) global_invocation_id : vec3<u32>) {
+  let idx = global_invocation_id.x;
 
-////////////////////////////////////////////////////////////////////////////////
-// export_level
-//
-// Loads 4 f32 weight values from buf_in.weights, and stores summed value into
-// buf_out.weights, along with the calculated 'probabilty' vec4 values into the
-// mip level of tex_out. See simulate() in particle.wgsl to understand the
-// probability logic.
-// 注意这里的64就代表了64个线程作为一个工作组被提交
-////////////////////////////////////////////////////////////////////////////////
+  // init_rand(idx, sim_params.seed);
 
-/**
- *  在MipLevel!=0的时候调用这个函数，其作用是：
- *  1、使用两个 buf 分别为 buf_a 和 buf_b。让他们轮流做 buf_in 和 buf_out，每次使用上
- * 一个阶段的buf_out作为当前阶段的buf_in，并将下一个MipLevel的图像存入buf_out。这里的
- * 关键点在于offset的确定，你能看懂这个index从二维到一维之间的解码么？
- * */ 
-@compute @workgroup_size(64)
-fn export_level(@builtin(global_invocation_id) coord : vec3<u32>) {
-  // all 函数的意思就是coord的xy两个分项都满足小于的条件
-  if (all(coord.xy < vec2<u32>(textureDimensions(tex_out)))) {
-    let dst_offset = coord.x    + coord.y    * ubo.width;
-    let src_offset = coord.x*2u + coord.y*2u * ubo.width;
+  var particle = data.particles[idx];
 
-    // 注意这里的 buf_in 存的都是纹理的半透明度，也就是第四通道 alpha 值
-    // weights函数意义没搞懂
-    let a = buf_in.weights[src_offset + 0u];
-    let b = buf_in.weights[src_offset + 1u];
-    let c = buf_in.weights[src_offset + 0u + ubo.width];
-    let d = buf_in.weights[src_offset + 1u + ubo.width];
-    // let sum = dot(vec4<f32>(a, b, c, d), vec4<f32>(1.0));
-    // 上面这句不就等同于四者相加么？！
-    // sum 将四个半透明度累加的意义是什么？？？
-    let sum = a+b+c+d;
 
-    buf_out.weights[dst_offset] = sum / 4.0;
+  // // 先嘗試加一個固定值
+  // particle.position = particle.position + vec4(0.01, 0.00, 0.00, 0.0);
 
-    /**
-     *  由于是不同的 MipLevel，tex_out实际上是不同的内存区，不会出现之前担心的纹理被
-     * 重复写覆盖的问题。
-    */
 
-    /**
-     *  现在来阐述一下 probabilitiesMap 的具体含义：
-     *  简单来说，其实这里就是通过不透明度来判定当前粒子所应处的位置，具体请到运行时 shader
-     * 的 compute 模拟处进行查看。
-     * */ 
-    let probabilities = vec4<f32>(a, a+b, a+b+c, a+b+c+d) / max(sum, 0.0001);
-    textureStore(tex_out, vec2<i32>(coord.xy), probabilities);
+  // // Age each particle. Fade out before vanishing.
+  // particle.lifetime = particle.lifetime - sim_params.deltaTime;
+  // // 這句比較關鍵，可以根據其LifeTime自動發揮出漸變效果
+  // particle.color.a = smoothstep(0.0, 0.5, particle.lifetime);
+  particle.color.a = particle.lifetime / sim_params.particle_nums / 3 + 0.15;
+
+  particle.lifetime = particle.lifetime - 1;
+
+  if(particle.lifetime == 0)
+  {
+    particle.lifetime = sim_params.particle_nums;
   }
+
+  // // Store the new particle value
+  data.particles[idx] = particle;
 }
+
+
 `
 
-export{ simulation_compute }
+export { simulation_compute }
