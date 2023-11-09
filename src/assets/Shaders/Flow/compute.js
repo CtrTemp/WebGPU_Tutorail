@@ -33,7 +33,7 @@ const simulation_compute = /* wgsl */`
 
 
 struct SimulationParams {
-  deltaTime : f32,
+  simu_speed : f32, // 一次不仅的步长，可以为小数
   seed : vec4<f32>,
   particle_nums: f32
 }
@@ -41,7 +41,7 @@ struct SimulationParams {
 struct Particle {
   position : vec4<f32>,
   color    : vec4<f32>,
-  lifetime    : f32,
+  lifetime : f32, // 所剩余的显示时间，也是整个position数组的长度，也间接代表了粒子的不透明度
 }
 
 struct Particles {
@@ -61,19 +61,13 @@ fn simulate(@builtin(global_invocation_id) global_invocation_id : vec3<u32>) {
   var particle = data.particles[idx];
 
 
-  // // 先嘗試加一個固定值
-  // particle.position = particle.position + vec4(0.01, 0.00, 0.00, 0.0);
-
-
-  // // Age each particle. Fade out before vanishing.
-  // particle.lifetime = particle.lifetime - sim_params.deltaTime;
   // // 這句比較關鍵，可以根據其LifeTime自動發揮出漸變效果
   // particle.color.a = smoothstep(0.0, 0.5, particle.lifetime);
   particle.color.a = particle.lifetime / sim_params.particle_nums / 3 + 0.15;
 
-  particle.lifetime = particle.lifetime - 1;
+  particle.lifetime = particle.lifetime - sim_params.simu_speed;
 
-  if(particle.lifetime == 0)
+  if(particle.lifetime < 0)
   {
     particle.lifetime = sim_params.particle_nums;
   }

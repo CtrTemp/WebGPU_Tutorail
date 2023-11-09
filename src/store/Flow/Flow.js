@@ -6,7 +6,7 @@ import { mat4, vec3, vec4 } from "wgpu-matrix"
 
 import { updateCanvas } from "./utils"
 
-import { gen_straight_line_arr, gen_axis_line_arr } from './gen_curve_line';
+import { gen_straight_line_arr, gen_axis_line_arr, gen_sin_func_arr } from './gen_curve_line';
 
 // import { getCameraViewProjMatrix, updateCanvas } from './utils.js';
 
@@ -28,7 +28,16 @@ export default {
                 canvas: canvas,
                 device: device
             }
-            gen_axis_line_arr(128);
+            // gen_sin_func_arr(64);
+
+            // 读取json文件
+            // 这里就获取到完整的JSON文件了，下一步就是数据解析
+            const response = await fetch(
+                new URL('../../assets/flow_data/cell/_cell_208.json', import.meta.url).toString()
+            );
+            const imageBitmap = await response.json();
+
+            console.log("response = ", imageBitmap);
 
             context.commit("init_device", payload);
 
@@ -69,7 +78,8 @@ export default {
             const device = payload.device;
 
             // 全局粒子總數
-            state.particle_info["numParticles"] = 32 * 3;
+            state.particle_info["numParticles"] = 256 * 4;
+            state.particle_info["flowLength"] = 256;
             state.particle_info["particleInstanceByteSize"] =
                 4 * 4 + // pos
                 4 * 4 + // color
@@ -80,10 +90,18 @@ export default {
             /**
              *  VBO
              * */
+            /**
+             *  思考particles的数据结构应该是怎样的？？？应该有几个字段？
+             *  每个particles应该有：
+             *  1、flow字段：是一个定长的pos数组
+             *  2、color字段：用于指定渲染颜色
+             *  3、lifetime字段：用于指定当前粒子的剩余显示时间
+             * */
             // const pos_arr = gen_straight_line_arr([0, 0, 0], [1, 1, 1], state.particle_info["numParticles"]);
-            const pos_arr = gen_axis_line_arr(32);
+            const pos_arr = gen_axis_line_arr(state.particle_info["flowLength"]);
+            const sin_pos_arr = gen_sin_func_arr(state.particle_info["flowLength"]);
+
             const particles_data = new Array();
-            // console.log("lenght = ", pos_arr.length);
             for (let i = 0; i < pos_arr.length; i++) {
                 // position
                 particles_data.push(pos_arr[i][0]);
@@ -92,18 +110,52 @@ export default {
                 particles_data.push(0.0); // padding
 
                 // color
-                particles_data.push(1.0);
-                particles_data.push(0.0); // padding
-                particles_data.push(0.0); // padding
+                if (i < state.particle_info["flowLength"] * 1) {
+                    particles_data.push(...[1.0, 0.0, 0.0]);
+                }
+                else if (i < state.particle_info["flowLength"] * 2) {
+                    particles_data.push(...[0.0, 1.0, 0.0]);
+                }
+                else {
+                    particles_data.push(...[0.0, 0.0, 1.0]);
+                }
+                // color
+                // particles_data.push(...[1.0, 0.0, 0.0]);
+                // particles_data.push(1.0);
+                // particles_data.push(0.0);
+                // particles_data.push(0.0);
                 particles_data.push(0.0); // padding
 
                 // life_time
                 // particles_data.push(state.particle_info["numParticles"]);
-                particles_data.push(i);
+                particles_data.push(i % state.particle_info["flowLength"]);
                 particles_data.push(0.0); // padding
                 particles_data.push(0.0); // padding
                 particles_data.push(0.0); // padding
             }
+
+
+            for (let i = 0; i < sin_pos_arr.length; i++) {
+                // position
+                particles_data.push(sin_pos_arr[i][0]);
+                particles_data.push(sin_pos_arr[i][1]);
+                particles_data.push(sin_pos_arr[i][2]);
+                particles_data.push(0.0); // padding
+
+                // color
+                particles_data.push(1.0);
+                particles_data.push(0.0);
+                particles_data.push(1.0);
+                particles_data.push(0.0); // padding
+
+                // life_time
+                // particles_data.push(state.particle_info["numParticles"]);
+                particles_data.push(i % state.particle_info["flowLength"]);
+                particles_data.push(0.0); // padding
+                particles_data.push(0.0); // padding
+                particles_data.push(0.0); // padding
+            }
+
             // 應該將以上轉換成 Float32Arr
             const writeBufferArr = new Float32Array(particles_data);
 
@@ -469,7 +521,7 @@ export default {
                 state.UBOs["compute"],
                 0,
                 new Float32Array([
-                    true,
+                    5.0,
                     0.0,
                     0.0,
                     0.0,// padding
@@ -477,7 +529,7 @@ export default {
                     Math.random() * 100, // seed.xy
                     1 + Math.random(),
                     1 + Math.random(), // seed.zw
-                    state.particle_info["numParticles"],
+                    state.particle_info["flowLength"],
                     0.0,
                     0.0,
                     0.0
