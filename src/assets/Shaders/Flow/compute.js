@@ -61,9 +61,9 @@ fn simulate(@builtin(global_invocation_id) global_invocation_id : vec3<u32>) {
   var particle = data.particles[idx];
 
 
-  // // 這句比較關鍵，可以根據其LifeTime自動發揮出漸變效果
-  // particle.color.a = smoothstep(0.0, 0.5, particle.lifetime);
+  // 這句比較關鍵，可以根據其LifeTime自動發揮出漸變效果
   particle.color.a = particle.lifetime / sim_params.particle_nums / 3 + 0.15;
+  // particle.color.a = 1.0;
 
   particle.lifetime = particle.lifetime - sim_params.simu_speed;
 

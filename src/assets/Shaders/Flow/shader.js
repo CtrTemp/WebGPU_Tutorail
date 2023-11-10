@@ -21,7 +21,7 @@ struct VertexOutput {
 @vertex
 fn vs_main(in : VertexInput) -> VertexOutput {
   var quad_pos = mat2x3<f32>(right, up) * in.quad_pos;
-  var position = in.position.xyz + quad_pos * 0.005;
+  var position = in.position.xyz + quad_pos * 0.002;
   var out : VertexOutput;
   out.position = mvp * vec4<f32>(position, 1.0);
   out.color = in.color;
