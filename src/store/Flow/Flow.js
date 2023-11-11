@@ -37,7 +37,7 @@ export default {
             const lines_data = await response.json();
 
             // const flow_info = read_data_and_gen_line(lines_data, 10, [0.0, 0.5, 1.0, 1.0]);
-            const flow_info = read_data_and_gen_line(lines_data, 100, [1.0, 0.5, 0.0, 1.0], 10, 0);
+            const flow_info = read_data_and_gen_line(lines_data, 100, [1.0, 0.5, 0.0, 1.0], 10, 3);
 
             const payload = {
                 canvas: canvas,

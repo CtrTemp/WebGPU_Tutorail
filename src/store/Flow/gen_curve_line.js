@@ -63,7 +63,7 @@ function gen_sin_func_arr(particle_counts) {
 
 
 // 保证 life time 的赋值正确即可，不需要大量的插值运算
-function read_data_and_gen_line(lines_data, lifetime, color, insert_unit_cnt, down_sample_cnt) {
+function read_data_and_gen_line(lines_data, lifetime, color, insert_unit_cnt, segs) {
 
     let flow_info = {};
 
@@ -77,6 +77,12 @@ function read_data_and_gen_line(lines_data, lifetime, color, insert_unit_cnt, do
         const len = item.position.length;
         const insert_stride = insert_unit_cnt + 1;
         const stride = lifetime / (len - 1) / insert_stride;
+
+        // 设置一个随机的初始化 offset 看起来效果应该会好很多（但这样其实在语义上是错误的）
+        // 这实际上表示你的粒子并非由同一时刻出发
+        const seg_life = lifetime / segs;
+        const rand_offset = Math.random() * seg_life;
+
         // 遍历一条流线中的每个粒子坐标
         // 并进行插值操作（暂不进行下采样）
         const scale = 50;
@@ -102,12 +108,14 @@ function read_data_and_gen_line(lines_data, lifetime, color, insert_unit_cnt, do
 
                 flow_arr.push(...pos_temp);
                 flow_arr.push(...color);
-                flow_arr.push((i * insert_stride + j) * stride);
+
+                const idx = i * insert_stride + j;
+                flow_arr.push((idx * stride + rand_offset) % seg_life);
                 flow_arr.push(...[0, 0, 0]); // padding
             }
-            
+
         }
-        if (cnt > 500) {
+        if (cnt > 1000) {
             break;
         }
     }
@@ -118,7 +126,7 @@ function read_data_and_gen_line(lines_data, lifetime, color, insert_unit_cnt, do
     console.log("cnt = ", cnt);
 
     flow_info["numParticles"] = flow_arr.length / 12;
-    flow_info["lifetime"] = lifetime;
+    flow_info["lifetime"] = lifetime / segs;
 
 
     console.log("flow_info = ", flow_info);
