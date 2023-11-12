@@ -194,6 +194,7 @@ export default {
 
             // 创建渲染流水线
             const pipeline = device.createRenderPipeline({
+                // layout: "auto", // 这里不能使用 auto 那么何时可以使用 auto 呢？
                 layout: renderPipelineLayout,
                 vertex: {
                     module: device.createShaderModule({

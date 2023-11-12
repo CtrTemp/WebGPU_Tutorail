@@ -11,34 +11,67 @@ import { render_frag } from '../../assets/Shaders/Tuto15/render_frag';
 
 import { mat4, vec3, vec4 } from "wgpu-matrix"
 
+import { getCameraViewProjMatrix, updateCanvas } from './utils.js';
 
 
 export default {
     namespaced: true,
     actions: {
-        init_device(context, canvas) {
+        async init_and_render(context, canvas) {
             const device = context.rootState.device;
-            context.state.canvas = canvas;
-            context.state.GPU_context = canvas.getContext("webgpu");
-            context.state.canvasFormat = navigator.gpu.getPreferredCanvasFormat();
-
-            context.state.GPU_context.configure({
+            const payload = {
                 device: device,
-                format: context.state.canvasFormat,
+                canvas, canvas
+            }
+
+            context.commit("init_device", payload);
+
+            context.commit("init_data", payload);
+
+            context.commit("manage_pipeline", payload);
+
+            context.commit("renderLoop", payload);
+        }
+    },
+    mutations: {
+        init_device(state, payload) {
+            const device = payload.device;
+            const canvas = payload.canvas;
+            state.canvas = canvas;
+            state.GPU_context = canvas.getContext("webgpu");
+            state.canvasFormat = navigator.gpu.getPreferredCanvasFormat();
+
+            state.GPU_context.configure({
+                device: device,
+                format: state.canvasFormat,
                 alphaMode: 'premultiplied',
             });
         },
-        init_data(context) {
-            const device = context.rootState.device;
+        init_data(state, payload) {
+            const device = payload.device;
+            const canvas = payload.canvas;
+
+            // 定义全局参数：最大光源数量、光源分布范围
+            const kMaxNumLights = 1024;
+            const lightExtentMin = vec3.fromValues(-50, -30, -50);
+            const lightExtentMax = vec3.fromValues(50, 50, 50);
+
+            state.additional_info["kMaxNumLights"] = kMaxNumLights;
+            state.additional_info["lightExtentMin"] = lightExtentMin;
+            state.additional_info["lightExtentMax"] = lightExtentMax;
+
             // Create the model vertex buffer.
-            
-            const kVertexStride = 8; // 含义是什么
+
+            /**
+             *  VBOs
+             * */
+            const kVertexStride = 3 + 3 + 2; // position: vec3, normal: vec3, uv: vec2
             const vertexBuffer = device.createBuffer({
-                // position: vec3, normal: vec3, uv: vec2
                 size: mesh.positions.length * kVertexStride * Float32Array.BYTES_PER_ELEMENT,
                 usage: GPUBufferUsage.VERTEX,
                 mappedAtCreation: true,
             });
+            // 数据导入，将模型顶点数据从 CPU 导入 GPU
             {
                 const mapping = new Float32Array(vertexBuffer.getMappedRange());
                 for (let i = 0; i < mesh.positions.length; ++i) {
@@ -48,10 +81,40 @@ export default {
                 }
                 vertexBuffer.unmap();
             }
+            state.VBOs["stanford_dragon"] = vertexBuffer;
+
+            /**
+             *  VBO Layouts
+             * */
+            const Dragon_VBO_Layout =
+            {
+                arrayStride: Float32Array.BYTES_PER_ELEMENT * 8,
+                attributes: [
+                    {
+                        // position
+                        shaderLocation: 0,
+                        offset: 0,
+                        format: 'float32x3',
+                    },
+                    {
+                        // normal
+                        shaderLocation: 1,
+                        offset: Float32Array.BYTES_PER_ELEMENT * 3,
+                        format: 'float32x3',
+                    },
+                    {
+                        // uv
+                        shaderLocation: 2,
+                        offset: Float32Array.BYTES_PER_ELEMENT * 6,
+                        format: 'float32x2',
+                    },
+                ],
+            };
+            state.VBO_Layouts["stanford_dragon"] = Dragon_VBO_Layout;
 
             // Create the model index buffer.
             /**
-            *  注意，这里开始使用 index buffer 了
+            *  IBOs
             * */
             const indexCount = mesh.triangles.length * 3;
             const indexBuffer = device.createBuffer({
@@ -59,6 +122,7 @@ export default {
                 usage: GPUBufferUsage.INDEX,
                 mappedAtCreation: true,
             });
+            state.additional_info["index_count"] = indexCount;
             {
                 const mapping = new Uint16Array(indexBuffer.getMappedRange());
                 for (let i = 0; i < mesh.triangles.length; ++i) {
@@ -66,79 +130,615 @@ export default {
                 }
                 indexBuffer.unmap();
             }
-        },
-        manage_pipeline(context) {
-            const device = context.rootState.device;
+            state.IBOs["stanford_dragon"] = indexBuffer;
 
-            const vertexBufferLayout = {
-                arrayStride: 8, // 一个float类型是4个字节，这表示每一个单一数据寻址需要跨越的字节段（一个二维坐标是两个float组成）
-                attributes: [{
-                    format: "float32x2", // GPU可以理解的顶点数据类型格式，这里类似于指定其类型为 vec2 
-                    offset: 0,  // 指定顶点数据与整体数据开始位置的偏移
-                    shaderLocation: 0, // 等到 vertex shader 章节进行介绍
-                }],
+            /**
+             *  Textures
+             * */
+            // GBuffer texture render targets
+            /**
+            *  延迟渲染管线需要 G-Buffer 
+            * 一般至少需要 normal、position、depth 三个 G-Buffer
+            * */
+            const gBufferTexture2DFloat16 = device.createTexture({
+                size: [canvas.width, canvas.height],
+                usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
+                format: 'rgba16float',
+            });
+            const gBufferTextureAlbedo = device.createTexture({
+                size: [canvas.width, canvas.height],
+                usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
+                format: 'bgra8unorm',
+            });
+            const depthTexture = device.createTexture({
+                size: [canvas.width, canvas.height],
+                format: 'depth24plus',
+                usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
+            });
+
+            state.Textures["normal"] = gBufferTexture2DFloat16;
+            state.Textures["albedo"] = gBufferTextureAlbedo;
+            state.Textures["depth"] = depthTexture;
+
+            state.Texture_Views["normal"] = gBufferTexture2DFloat16.createView();
+            state.Texture_Views["albedo"] = gBufferTextureAlbedo.createView();
+            state.Texture_Views["depth"] = depthTexture.createView();
+
+            // const gBufferTextureViews = [
+            //     gBufferTexture2DFloat16.createView(),
+            //     gBufferTextureAlbedo.createView(),
+            //     depthTexture.createView(),
+            // ];
+
+            /**
+             *  Texture Layouts
+             * */
+            const gBufferTexturesBindGroupLayout = device.createBindGroupLayout({
+                entries: [
+                    {
+                        binding: 0,
+                        visibility: GPUShaderStage.FRAGMENT,
+                        texture: {
+                            sampleType: 'unfilterable-float',
+                        },
+                    },
+                    {
+                        binding: 1,
+                        visibility: GPUShaderStage.FRAGMENT,
+                        texture: {
+                            sampleType: 'unfilterable-float',
+                        },
+                    },
+                    {
+                        binding: 2,
+                        visibility: GPUShaderStage.FRAGMENT,
+                        texture: {
+                            sampleType: 'depth',
+                        },
+                    },
+                ],
+            });
+            state.Texture_Layouts["geometry"] = gBufferTexturesBindGroupLayout;
+
+
+            /**
+             *  UBOs
+             * */
+
+            const modelUniformBuffer = device.createBuffer({
+                size: 4 * 16 * 2, // two 4x4 matrix
+                usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+            });
+            state.UBOs["MVP"] = modelUniformBuffer;
+
+            const cameraUniformBuffer = device.createBuffer({
+                size: 4 * 16 * 2, // two 4x4 matrix
+                usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+            });
+            state.UBOs["camera"] = cameraUniformBuffer;
+
+
+            const settings = {
+                mode: 'rendering',
+                numLights: 128,
             };
+            const configUniformBuffer = (() => {
+                const buffer = device.createBuffer({
+                    size: Uint32Array.BYTES_PER_ELEMENT,
+                    mappedAtCreation: true,
+                    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+                });
+                new Uint32Array(buffer.getMappedRange())[0] = settings.numLights;
+                buffer.unmap();
+                return buffer;
+            })();
+            state.UBOs["config"] = configUniformBuffer;
 
-            // 创建渲染流水线
-            const cellPipeline = device.createRenderPipeline({
-                label: "Cell pipeline",
-                layout: "auto",
+
+
+            // Lights data are uploaded in a storage buffer
+            // which could be updated/culled/etc. with a compute shader
+            const extent = vec3.sub(lightExtentMax, lightExtentMin);
+            const lightDataStride = 8;
+            const bufferSizeInByte =
+                Float32Array.BYTES_PER_ELEMENT * lightDataStride * kMaxNumLights;
+            const lightsBuffer = device.createBuffer({
+                size: bufferSizeInByte,
+                usage: GPUBufferUsage.STORAGE,
+                mappedAtCreation: true,
+            });
+            // We randomaly populate lights randomly in a box range
+            // And simply move them along y-axis per frame to show they are
+            // dynamic lightings
+            const lightData = new Float32Array(lightsBuffer.getMappedRange());
+            const tmpVec4 = vec4.create();
+            let offset = 0;
+            for (let i = 0; i < kMaxNumLights; i++) {
+                offset = lightDataStride * i;
+                // position
+                for (let i = 0; i < 3; i++) {
+                    tmpVec4[i] = Math.random() * extent[i] + lightExtentMin[i];
+                }
+                tmpVec4[3] = 1;
+                lightData.set(tmpVec4, offset);
+                // color
+                tmpVec4[0] = Math.random() * 2;
+                tmpVec4[1] = Math.random() * 2;
+                tmpVec4[2] = Math.random() * 2;
+                // radius
+                tmpVec4[3] = 20.0;
+                lightData.set(tmpVec4, offset + 4);
+            }
+            lightsBuffer.unmap();
+            state.UBOs["storage_light"] = lightsBuffer;
+
+            // Light extent
+            const lightExtentBuffer = device.createBuffer({
+                size: 4 * 8,
+                usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+            });
+            const lightExtentData = new Float32Array(8);
+            lightExtentData.set(lightExtentMin, 0);
+            lightExtentData.set(lightExtentMax, 4);
+            device.queue.writeBuffer(
+                lightExtentBuffer,
+                0,
+                lightExtentData.buffer,
+                lightExtentData.byteOffset,
+                lightExtentData.byteLength
+            );
+            state.UBOs["light_extent"] = lightsBuffer;
+
+            /**
+             *  UBO Layouts
+             * */
+            const lightsBufferBindGroupLayout = device.createBindGroupLayout({
+                entries: [
+                    {
+                        binding: 0,
+                        visibility: GPUShaderStage.FRAGMENT | GPUShaderStage.COMPUTE,
+                        buffer: {
+                            type: 'read-only-storage',
+                        },
+                    },
+                    {
+                        binding: 1,
+                        visibility: GPUShaderStage.FRAGMENT | GPUShaderStage.COMPUTE,
+                        buffer: {
+                            type: 'uniform',
+                        },
+                    },
+                    {
+                        binding: 2,
+                        visibility: GPUShaderStage.FRAGMENT,
+                        buffer: {
+                            type: 'uniform',
+                        },
+                    },
+                ],
+            });
+            state.UBO_Layouts["light"] = lightsBufferBindGroupLayout;
+
+            const geometryBufferBindGroupLayout = device.createBindGroupLayout({
+                entries: [
+                    {
+                        binding: 0,
+                        visibility: GPUShaderStage.VERTEX,
+                        buffer: {
+                            type: 'uniform',
+                        },
+                    },
+                    {
+                        binding: 1,
+                        visibility: GPUShaderStage.VERTEX,
+                        buffer: {
+                            type: 'uniform',
+                        },
+                    },
+                ],
+            });
+            state.UBO_Layouts["geometry"] = geometryBufferBindGroupLayout;
+
+            /**
+             *  Bind Groups
+             * */
+            const sceneUniformBindGroup = device.createBindGroup({
+                // 这里有问题需要改???
+                layout: state.UBO_Layouts["geometry"],
+                entries: [
+                    {
+                        binding: 0,
+                        resource: {
+                            buffer: modelUniformBuffer,
+                        },
+                    },
+                    {
+                        binding: 1,
+                        resource: {
+                            buffer: cameraUniformBuffer,
+                        },
+                    },
+                ],
+            });
+            state.BindGroups["geometry"] = sceneUniformBindGroup;
+
+            const gBufferTexturesBindGroup = device.createBindGroup({
+                layout: state.Texture_Layouts["geometry"],
+                entries: [
+                    {
+                        binding: 0,
+                        resource: state.Texture_Views["normal"],
+                    },
+                    {
+                        binding: 1,
+                        resource: state.Texture_Views["albedo"],
+                    },
+                    {
+                        binding: 2,
+                        resource: state.Texture_Views["depth"],
+                    },
+                ],
+            });
+            state.BindGroups["texture"] = gBufferTexturesBindGroup;
+
+
+            const lightsBufferBindGroup = device.createBindGroup({
+                layout: state.UBO_Layouts["light"],
+                entries: [
+                    {
+                        binding: 0,
+                        resource: {
+                            buffer: lightsBuffer,
+                        },
+                    },
+                    {
+                        binding: 1,
+                        resource: {
+                            buffer: configUniformBuffer,
+                        },
+                    },
+                    {
+                        binding: 2,
+                        resource: {
+                            buffer: cameraUniformBuffer,
+                        },
+                    },
+                ],
+            });
+            state.BindGroups["light"] = lightsBufferBindGroup;
+
+
+            const lightsBufferComputeBindGroup = device.createBindGroup({
+                // 这里有问题，后续要修改
+                layout: state.UBO_Layouts["light"],
+                // layout: lightUpdateComputePipeline.getBindGroupLayout(0),
+                entries: [
+                    {
+                        binding: 0,
+                        resource: {
+                            buffer: lightsBuffer,
+                        },
+                    },
+                    {
+                        binding: 1,
+                        resource: {
+                            buffer: configUniformBuffer,
+                        },
+                    },
+                    {
+                        binding: 2,
+                        resource: {
+                            buffer: lightExtentBuffer,
+                        },
+                    },
+                ],
+            });
+            state.BindGroups["update_light"] = lightsBufferComputeBindGroup;
+
+
+        },
+        manage_pipeline(state, payload) {
+            const device = payload.device;
+            const canvas = payload.canvas;
+            /**
+             *  Geometry Pass
+             * */
+            // 会有多个 layout 吗？ 后面又相似的例子，的确有多个 layout
+            // 感觉这里肯定会出问题
+            const G_renderPipelineLayout = device.createPipelineLayout({
+                bindGroupLayouts: [state.UBO_Layouts["geometry"]],
+            });
+            const G_Pass_Pipeline = device.createRenderPipeline({
+                // layout: 'auto', // 这里不能是 auto 后面进行更改
+                layout: G_renderPipelineLayout, // 这里不能是 auto 后面进行更改
                 vertex: {
                     module: device.createShaderModule({
-                        code: vertex_shader
+                        code: geom_vert,
                     }),
-                    entryPoint: "vertexMain",   // 指定 vertex shader 入口函数
-                    buffers: [vertexBufferLayout]
+                    entryPoint: 'main',
+                    // 注意buffers是数组的形式传入参数，已经是第二次写错这里了
+                    buffers: [state.VBO_Layouts["stanford_dragon"]],
                 },
                 fragment: {
                     module: device.createShaderModule({
-                        code: fragment_shader
+                        code: geom_frag,
                     }),
-                    entryPoint: "fragmentMain", // 指定 fragment shader 入口函数
-                    targets: [{
-                        format: context.state.canvasFormat
-                    }]
-                }
-            });
+                    entryPoint: 'main',
 
-            context.state.renderPipelines.push(cellPipeline);
+                    // 看来只有两个输出的G-Buffer，分别是normal和albedo（反照率？？颜色？？）
+                    targets: [
+                        // normal
+                        { format: 'rgba16float' },
+                        // albedo
+                        { format: 'bgra8unorm' },
+                    ],
+                },
+                depthStencil: {
+                    depthWriteEnabled: true,
+                    depthCompare: 'less',
+                    format: 'depth24plus',
+                },
+                primitive: {
+                    topology: 'triangle-list',
+                    cullMode: 'back',
+                },
+            });
+            state.Pipelines["geometry"] = G_Pass_Pipeline;
+
+
+
+            /**
+             *  Debug Pass
+             * */
+            const gBuffersDebugViewPipeline = device.createRenderPipeline({
+                layout: device.createPipelineLayout({
+                    bindGroupLayouts: [state.Texture_Layouts["geometry"]],
+                }),
+                vertex: {
+                    module: device.createShaderModule({
+                        code: quad_vert,
+                    }),
+                    entryPoint: 'main',
+                },
+                fragment: {
+                    module: device.createShaderModule({
+                        code: debug_frag,
+                    }),
+                    entryPoint: 'main',
+                    targets: [
+                        {
+                            format: state.canvasFormat,
+                        },
+                    ],
+                    constants: {
+                        canvasSizeWidth: canvas.width,
+                        canvasSizeHeight: canvas.height,
+                    },
+                },
+                primitive: {
+                    topology: 'triangle-list',
+                    cullMode: 'back',
+                },
+            });
+            state.Pipelines["debug"] = gBuffersDebugViewPipeline;
+
+
+            /**
+             *  Light Pass
+             * */
+            const deferredRenderPipeline = device.createRenderPipeline({
+                layout: device.createPipelineLayout({
+                    bindGroupLayouts: [
+                        state.Texture_Layouts["geometry"],
+                        state.UBO_Layouts["light"],
+                    ],
+                }),
+                vertex: {
+                    module: device.createShaderModule({
+                        code: quad_vert,
+                    }),
+                    entryPoint: 'main',
+                },
+                fragment: {
+                    module: device.createShaderModule({
+                        code: render_frag,
+                    }),
+                    entryPoint: 'main',
+                    targets: [
+                        {
+                            format: state.canvasFormat,
+                        },
+                    ],
+                },
+                primitive: {
+                    topology: 'triangle-list',
+                    cullMode: 'back',
+                },
+            });
+            state.Pipelines["light"] = deferredRenderPipeline;
+
+
+            /**
+             *  Update Light (Compute Pass)
+             * */
+            const lightUpdateComputePipeline = device.createComputePipeline({
+                layout: 'auto',
+                compute: {
+                    module: device.createShaderModule({
+                        code: compute_shader,
+                    }),
+                    entryPoint: 'main',
+                },
+            });
+            state.Pipelines["update_light"] = lightUpdateComputePipeline;
+
+
+            /**
+             *  Pass Descriptor
+             * */
+            const writeGBufferPassDescriptor = {
+                colorAttachments: [
+                    {
+                        // 这里有问题，记录的应该是view！！！
+                        view: state.Texture_Views["normal"],
+
+                        clearValue: { r: 0.0, g: 0.0, b: 1.0, a: 1.0 },
+                        loadOp: 'clear',
+                        storeOp: 'store',
+                    },
+                    {
+                        view: state.Texture_Views["albedo"],
+
+                        clearValue: { r: 0.0, g: 0.0, b: 0.0, a: 1.0 },
+                        loadOp: 'clear',
+                        storeOp: 'store',
+                    },
+                ],
+                depthStencilAttachment: {
+                    view: state.Texture_Views["depth"],
+
+                    depthClearValue: 1.0,
+                    depthLoadOp: 'clear',
+                    depthStoreOp: 'store',
+                },
+            };
+            state.passDescriptors["geometry"] = writeGBufferPassDescriptor;
+
+
+            const textureQuadPassDescriptor = {
+                colorAttachments: [
+                    {
+                        // view is acquired and set in render loop.
+                        view: undefined,
+
+                        clearValue: { r: 0.0, g: 0.0, b: 0.0, a: 1.0 },
+                        loadOp: 'clear',
+                        storeOp: 'store',
+                    },
+                ],
+            };
+            state.passDescriptors["quad"] = textureQuadPassDescriptor;
+
+
+
         },
-        renderLoop(context) {
-            const device = context.rootState.device;
 
-            const encoder = device.createCommandEncoder();
 
-            const pass = encoder.beginRenderPass({
-                colorAttachments: [{
-                    view: context.state.GPU_context.getCurrentTexture().createView(),
-                    loadOp: "clear",
-                    clearValue: [0, 0.5, 0.7, 1],
-                    storeOp: "store",
-                }]
-            });
 
-            pass.setPipeline(context.state.renderPipelines[0]);
-            pass.setVertexBuffer(0, context.state.VBOs[0]);
-            pass.draw(context.state.vertices_arr[0].length / 2); // 6 vertices
+        renderLoop(state, payload) {
+            const device = payload.device;
+            const canvas = payload.canvas;
 
-            pass.end();
+            const cameraViewProj = getCameraViewProjMatrix(state);
+            device.queue.writeBuffer(
+                state.UBOs["camera"],
+                0,
+                cameraViewProj.buffer,
+                cameraViewProj.byteOffset,
+                cameraViewProj.byteLength
+            );
+            const cameraInvViewProj = mat4.invert(cameraViewProj);
+            device.queue.writeBuffer(
+                state.UBOs["camera"],
+                64,
+                cameraInvViewProj.buffer,
+                cameraInvViewProj.byteOffset,
+                cameraInvViewProj.byteLength
+            );
 
-            device.queue.submit([encoder.finish()]);
+            const commandEncoder = device.createCommandEncoder();
+            {
+                // Write position, normal, albedo etc. data to gBuffers
+                const gBufferPass = commandEncoder.beginRenderPass(
+                    state.passDescriptors["geometry"]
+                );
+                gBufferPass.setPipeline(state.Pipelines["geometry"]);
+                gBufferPass.setBindGroup(0, state.BindGroups["geometry"]);
+                gBufferPass.setVertexBuffer(0, state.VBOs["stanford_dragon"]);
+                gBufferPass.setIndexBuffer(state.IBOs["stanford_dragon"], 'uint16');
+                gBufferPass.drawIndexed(state.additional_info["index_count"]);
+                gBufferPass.end();
+            }
+            {
+                // Update lights position
+                const lightPass = commandEncoder.beginComputePass();
+                lightPass.setPipeline(state.Pipelines["update_light"]);
+                lightPass.setBindGroup(0, state.BindGroups["update_light"]);
+                lightPass.dispatchWorkgroups(Math.ceil(state.additional_info["kMaxNumLights"] / 64));
+                lightPass.end();
+            }
+
+
+
+            const settings = {
+                mode: 'rendering',
+                numLights: 128,
+            };
+            const textureQuadPassDescriptor = state.passDescriptors["quad"];
+            {
+                if (settings.mode === 'gBuffers view') {
+                    // GBuffers debug view
+                    // Left: depth
+                    // Middle: normal
+                    // Right: albedo (use uv to mimic a checkerboard texture)
+                    textureQuadPassDescriptor.colorAttachments[0].view = context
+                        .getCurrentTexture()
+                        .createView();
+                    const debugViewPass = commandEncoder.beginRenderPass(
+                        textureQuadPassDescriptor
+                    );
+                    debugViewPass.setPipeline(state.Pipelines["debug"]);
+                    debugViewPass.setBindGroup(0, state.BindGroups["texture"]);
+                    debugViewPass.draw(6);
+                    debugViewPass.end();
+                }
+                else {
+                    // Deferred rendering
+                    textureQuadPassDescriptor.colorAttachments[0].view = state.GPU_context
+                        .getCurrentTexture()
+                        .createView();
+                    const deferredRenderingPass = commandEncoder.beginRenderPass(
+                        textureQuadPassDescriptor
+                    );
+                    deferredRenderingPass.setPipeline(state.Pipelines["light"]);
+                    deferredRenderingPass.setBindGroup(0, state.BindGroups["texture"]);
+                    deferredRenderingPass.setBindGroup(1, state.BindGroups["light"]);
+                    deferredRenderingPass.draw(6);
+                    deferredRenderingPass.end();
+                }
+            }
+            device.queue.submit([commandEncoder.finish()]);
         }
-    },
-    mutations: {
-
     },
     state() {
         return {
-            void_info: "info: deferred shading",
+            // 我們假定目前只有一個 canvas
             canvas: null,
             canvasFormat: null,
+            // 指向當前GPU上下文，所以只需要一個 
             GPU_context: null,
-            renderPipelines: [],
-            VBOs: [],
-            UBOS: [],
-            vertices_arr: []
+            // 渲染管線可以有多條，我們使用一個對象來定義
+            Pipelines: {},
+            Pipeline_Layouts: {},
+            // 各类纹理
+            Textures: {},
+            Texture_Views: {},
+            Texture_Layouts: {},
+            // VBO、UBO這些都可能有多個，所以同樣使用對象來定義
+            VBOs: {},
+            VBO_Layouts: {},
+            IBOs: {},
+            UBOs: {},
+            UBO_Layouts: {},
+            BindGroups: {},
+            SBOs: {}, // Storage Buffer Object
+            vertices_arr: {},
+            indices_arr: {},  // 暂时不需要
+            passDescriptors: {},
+            simulationParams: {}, // 仿真运行参数
+
+            additional_info: {},
+
         }
     },
     getters: {}
