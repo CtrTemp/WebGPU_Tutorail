@@ -9,7 +9,7 @@ struct Scene {
 struct Model {
   modelMatrix: mat4x4<f32>,
 }
-
+// 注意这里使用两个 bind group 分开算
 @group(0) @binding(0) var<uniform> scene : Scene;
 @group(1) @binding(0) var<uniform> model : Model;
 

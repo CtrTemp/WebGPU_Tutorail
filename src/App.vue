@@ -14,9 +14,9 @@
     <!-- <Tuto12_FractalCube/> -->
     <!-- <Tuto13_Camera/> -->
     <!-- <Tuto14_CubeMap/> -->
-    <Tuto15_DeferredShading/>
+    <!-- <Tuto15_DeferredShading/> -->
     <!-- <Tuto15_ForwardShading/> -->
-    <!-- <Tuto16_ShadowMap/> -->
+    <Tuto16_ShadowMap/>
     <!-- <Tuto17_Particles/> -->
     <!-- <Tuto17_ParticlesOwn/> -->
     <!-- <Tuto18_BoidSimulation/> -->

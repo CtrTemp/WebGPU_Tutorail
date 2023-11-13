@@ -6,8 +6,11 @@ import basicTestModel from "./Tuto05/triangle.js"
 // Tutorial 08
 import rotatingCubes from "./Tuto08/rotatingCubes.js";
 
-// Tutorial 15
+// Tutorial 15 延迟渲染
 import deferredShadingModel from "./Tuto15/deferred_shading.js"
+
+// Tutorial 16 阴影
+import shadowMapModel from "./Tuto16/shadowMap.js"
 
 // Forward Shading
 import ForwardShading from "./ForwardShading/ForwardShading.js";
@@ -36,6 +39,7 @@ const store = createStore({
     Tuto05: basicTestModel,
     Tuto08: rotatingCubes,
     Tuto15: deferredShadingModel,
+    Tuto16: shadowMapModel,
     ForwardShading: ForwardShading,
     Particles: Particles,
     Flow: Flow
