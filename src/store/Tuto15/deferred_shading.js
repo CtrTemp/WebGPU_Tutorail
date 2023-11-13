@@ -319,6 +319,38 @@ export default {
             });
             state.UBO_Layouts["light"] = lightsBufferBindGroupLayout;
 
+            /**
+             *  布局是一样的，唯一区别是更新灯光值的shader layout需要可以对storage buffer
+             * 进行写操作
+             * */
+            const lightsUpdateBufferBindGroupLayout = device.createBindGroupLayout({
+                entries: [
+                    {
+                        binding: 0,
+                        visibility: GPUShaderStage.COMPUTE,
+                        buffer: {
+                            type: 'storage', // storage 默认为可读可写
+                        },
+                    },
+                    {
+                        binding: 1,
+                        visibility: GPUShaderStage.COMPUTE,
+                        buffer: {
+                            type: 'uniform',
+                        },
+                    },
+                    {
+                        binding: 2,
+                        visibility: GPUShaderStage.COMPUTE,
+                        buffer: {
+                            type: 'uniform',
+                        },
+                    },
+                ],
+            });
+            state.UBO_Layouts["update_light"] = lightsUpdateBufferBindGroupLayout;
+
+
             const geometryBufferBindGroupLayout = device.createBindGroupLayout({
                 entries: [
                     {
@@ -410,7 +442,7 @@ export default {
 
             const lightsBufferComputeBindGroup = device.createBindGroup({
                 // 这里有问题，后续要修改
-                layout: state.UBO_Layouts["light"],
+                layout: state.UBO_Layouts["update_light"],
                 // layout: lightUpdateComputePipeline.getBindGroupLayout(0),
                 entries: [
                     {
@@ -528,6 +560,7 @@ export default {
              * */
             const deferredRenderPipeline = device.createRenderPipeline({
                 layout: device.createPipelineLayout({
+                    // 如果数组中有两个组件，就说明有两个 binding group
                     bindGroupLayouts: [
                         state.Texture_Layouts["geometry"],
                         state.UBO_Layouts["light"],
@@ -562,7 +595,13 @@ export default {
              *  Update Light (Compute Pass)
              * */
             const lightUpdateComputePipeline = device.createComputePipeline({
-                layout: 'auto',
+                // 要进行修改，不能为默认布局
+                // layout: 'auto',
+                layout: device.createPipelineLayout({
+                    bindGroupLayouts: [
+                        state.UBO_Layouts["update_light"],
+                    ],
+                }),
                 compute: {
                     module: device.createShaderModule({
                         code: compute_shader,
@@ -624,90 +663,134 @@ export default {
         },
 
 
-
         renderLoop(state, payload) {
             const device = payload.device;
             const canvas = payload.canvas;
 
-            const cameraViewProj = getCameraViewProjMatrix(state);
+
+            const aspect = canvas.width / canvas.height;
+
+            // Scene matrices
+            const eyePosition = vec3.fromValues(0, 50, -100);
+            const upVector = vec3.fromValues(0, 1, 0);
+            const origin = vec3.fromValues(0, 0, 0);
+
+            const projectionMatrix = mat4.perspective(
+                (2 * Math.PI) / 5,
+                aspect,
+                1,
+                2000.0
+            );
+
+            const viewMatrix = mat4.inverse(mat4.lookAt(eyePosition, origin, upVector));
+
+            const viewProjMatrix = mat4.multiply(projectionMatrix, viewMatrix);
+
+            // Move the model so it's centered.
+            const modelMatrix = mat4.translation([0, -45, 0]);
+
+
+            const modelData = modelMatrix;
             device.queue.writeBuffer(
-                state.UBOs["camera"],
+                state.UBOs["MVP"],
                 0,
-                cameraViewProj.buffer,
-                cameraViewProj.byteOffset,
-                cameraViewProj.byteLength
+                modelData.buffer,
+                modelData.byteOffset,
+                modelData.byteLength
             );
-            const cameraInvViewProj = mat4.invert(cameraViewProj);
+            const invertTransposeModelMatrix = mat4.invert(modelMatrix);
+            mat4.transpose(invertTransposeModelMatrix, invertTransposeModelMatrix);
+            const normalModelData = invertTransposeModelMatrix;
             device.queue.writeBuffer(
-                state.UBOs["camera"],
+                state.UBOs["MVP"],
                 64,
-                cameraInvViewProj.buffer,
-                cameraInvViewProj.byteOffset,
-                cameraInvViewProj.byteLength
+                normalModelData.buffer,
+                normalModelData.byteOffset,
+                normalModelData.byteLength
             );
 
-            const commandEncoder = device.createCommandEncoder();
-            {
-                // Write position, normal, albedo etc. data to gBuffers
-                const gBufferPass = commandEncoder.beginRenderPass(
-                    state.passDescriptors["geometry"]
+            setInterval(() => {
+                const cameraViewProj = getCameraViewProjMatrix(state, viewProjMatrix);
+                device.queue.writeBuffer(
+                    state.UBOs["camera"],
+                    0,
+                    cameraViewProj.buffer,
+                    cameraViewProj.byteOffset,
+                    cameraViewProj.byteLength
                 );
-                gBufferPass.setPipeline(state.Pipelines["geometry"]);
-                gBufferPass.setBindGroup(0, state.BindGroups["geometry"]);
-                gBufferPass.setVertexBuffer(0, state.VBOs["stanford_dragon"]);
-                gBufferPass.setIndexBuffer(state.IBOs["stanford_dragon"], 'uint16');
-                gBufferPass.drawIndexed(state.additional_info["index_count"]);
-                gBufferPass.end();
-            }
-            {
-                // Update lights position
-                const lightPass = commandEncoder.beginComputePass();
-                lightPass.setPipeline(state.Pipelines["update_light"]);
-                lightPass.setBindGroup(0, state.BindGroups["update_light"]);
-                lightPass.dispatchWorkgroups(Math.ceil(state.additional_info["kMaxNumLights"] / 64));
-                lightPass.end();
-            }
+                const cameraInvViewProj = mat4.invert(cameraViewProj);
+                device.queue.writeBuffer(
+                    state.UBOs["camera"],
+                    64,
+                    cameraInvViewProj.buffer,
+                    cameraInvViewProj.byteOffset,
+                    cameraInvViewProj.byteLength
+                );
 
-
-
-            const settings = {
-                mode: 'rendering',
-                numLights: 128,
-            };
-            const textureQuadPassDescriptor = state.passDescriptors["quad"];
-            {
-                if (settings.mode === 'gBuffers view') {
-                    // GBuffers debug view
-                    // Left: depth
-                    // Middle: normal
-                    // Right: albedo (use uv to mimic a checkerboard texture)
-                    textureQuadPassDescriptor.colorAttachments[0].view = context
-                        .getCurrentTexture()
-                        .createView();
-                    const debugViewPass = commandEncoder.beginRenderPass(
-                        textureQuadPassDescriptor
+                const commandEncoder = device.createCommandEncoder();
+                {
+                    // Write position, normal, albedo etc. data to gBuffers
+                    const gBufferPass = commandEncoder.beginRenderPass(
+                        state.passDescriptors["geometry"]
                     );
-                    debugViewPass.setPipeline(state.Pipelines["debug"]);
-                    debugViewPass.setBindGroup(0, state.BindGroups["texture"]);
-                    debugViewPass.draw(6);
-                    debugViewPass.end();
+                    gBufferPass.setPipeline(state.Pipelines["geometry"]);
+                    gBufferPass.setBindGroup(0, state.BindGroups["geometry"]);
+                    gBufferPass.setVertexBuffer(0, state.VBOs["stanford_dragon"]);
+                    gBufferPass.setIndexBuffer(state.IBOs["stanford_dragon"], 'uint16');
+                    gBufferPass.drawIndexed(state.additional_info["index_count"]);
+                    gBufferPass.end();
                 }
-                else {
-                    // Deferred rendering
-                    textureQuadPassDescriptor.colorAttachments[0].view = state.GPU_context
-                        .getCurrentTexture()
-                        .createView();
-                    const deferredRenderingPass = commandEncoder.beginRenderPass(
-                        textureQuadPassDescriptor
-                    );
-                    deferredRenderingPass.setPipeline(state.Pipelines["light"]);
-                    deferredRenderingPass.setBindGroup(0, state.BindGroups["texture"]);
-                    deferredRenderingPass.setBindGroup(1, state.BindGroups["light"]);
-                    deferredRenderingPass.draw(6);
-                    deferredRenderingPass.end();
+                {
+                    // Update lights position
+                    const lightUpdatePass = commandEncoder.beginComputePass();
+                    lightUpdatePass.setPipeline(state.Pipelines["update_light"]);
+                    lightUpdatePass.setBindGroup(0, state.BindGroups["update_light"]);
+                    lightUpdatePass.dispatchWorkgroups(Math.ceil(state.additional_info["kMaxNumLights"] / 64));
+                    lightUpdatePass.end();
                 }
-            }
-            device.queue.submit([commandEncoder.finish()]);
+
+
+
+                const settings = {
+                    mode: 'rendering',
+                    numLights: 128,
+                };
+                const textureQuadPassDescriptor = state.passDescriptors["quad"];
+                {
+                    if (settings.mode === 'gBuffers view') {
+                        // GBuffers debug view
+                        // Left: depth
+                        // Middle: normal
+                        // Right: albedo (use uv to mimic a checkerboard texture)
+                        textureQuadPassDescriptor.colorAttachments[0].view = context
+                            .getCurrentTexture()
+                            .createView();
+                        const debugViewPass = commandEncoder.beginRenderPass(
+                            textureQuadPassDescriptor
+                        );
+                        debugViewPass.setPipeline(state.Pipelines["debug"]);
+                        debugViewPass.setBindGroup(0, state.BindGroups["texture"]);
+                        debugViewPass.draw(6);
+                        debugViewPass.end();
+                    }
+                    else {
+                        // Deferred rendering
+                        textureQuadPassDescriptor.colorAttachments[0].view = state.GPU_context
+                            .getCurrentTexture()
+                            .createView();
+                        const deferredRenderingPass = commandEncoder.beginRenderPass(
+                            textureQuadPassDescriptor
+                        );
+                        deferredRenderingPass.setPipeline(state.Pipelines["light"]);
+                        deferredRenderingPass.setBindGroup(0, state.BindGroups["texture"]);
+                        deferredRenderingPass.setBindGroup(1, state.BindGroups["light"]);
+                        deferredRenderingPass.draw(6);
+                        deferredRenderingPass.end();
+                    }
+                }
+                device.queue.submit([commandEncoder.finish()]);
+            }, 25);
+
         }
     },
     state() {
