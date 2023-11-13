@@ -468,7 +468,7 @@ export default {
 
 
 
-            setTimeout(() => {
+            setInterval(() => {
                 const cameraViewProj = getCameraViewProjMatrix(state, viewProjMatrix);
                 device.queue.writeBuffer(
                     state.UBOs["scene"],
@@ -509,7 +509,7 @@ export default {
                 }
                 device.queue.submit([commandEncoder.finish()]);
 
-            }, 10);
+            }, 25);
 
 
         }

@@ -1,7 +1,7 @@
 <template>
   <div class="root-container">
     <!-- 设置width height以增加分辨率 -->
-    <canvas class="main-canvas" width="1024" height="1024"></canvas>
+    <canvas class="main-canvas" width="1440" height="800"></canvas>
   </div>
 </template>
 
