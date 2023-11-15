@@ -5,73 +5,74 @@
 <script setup>
 
 import { onMounted } from 'vue';
-import {vertex_shader, fragment_shader } from '../assets/Shaders/Tuto10/shader.js'
+import { vertex_shader, fragment_shader } from '../assets/Shaders/Tuto10/shader.js'
 import {
-    cubeVertexSize, 
-    cubePositionOffset, 
-    cubeColorOffset, 
-    cubeUVOffset, 
-    cubeVertexCount, 
-    cubeVertexArray} from "../assets/Shaders/Tuto10/cube_info.js"
+    cubeVertexSize,
+    cubePositionOffset,
+    cubeColorOffset,
+    cubeUVOffset,
+    cubeVertexCount,
+    cubeVertexArray
+} from "../assets/Shaders/Tuto10/cube_info.js"
 
-import {mat4, vec3} from "wgpu-matrix"
+import { mat4, vec3 } from "wgpu-matrix"
 
 // 查看当前浏览器是否支持 WebGPU
-if(!navigator.gpu){
+if (!navigator.gpu) {
     throw new Error("WebGPU not supported on this browser");
 }
-else{
+else {
     console.log("Well done~ your browser can fully support WebGPU");
 }
 
 // 当前浏览器是否找到合适的适配器
 const adapter = await navigator.gpu.requestAdapter();
 if (!adapter) {
-  throw new Error("No appropriate GPUAdapter found.");
+    throw new Error("No appropriate GPUAdapter found.");
 }
 
 // 选中 GPU 设备
 const device = await adapter.requestDevice();
 
-  // Fetch the image and upload it into a GPUTexture.
-  let cubeTexture;
-    // CPU 端读入图片，并创建bitmap
-    const response = await fetch(
-      new URL('../assets/logo.png', import.meta.url).toString()
-    );
-    const imageBitmap = await createImageBitmap(await response.blob());
+// Fetch the image and upload it into a GPUTexture.
+let cubeTexture;
+// CPU 端读入图片，并创建bitmap
+const response = await fetch(
+    new URL('../assets/logo.png', import.meta.url).toString()
+);
+const imageBitmap = await createImageBitmap(await response.blob());
 
-    // GPU端开辟texture存储区
-    cubeTexture = device.createTexture({
-      size: [imageBitmap.width, imageBitmap.height, 1],
-      format: 'rgba8unorm', // 格式
-      usage:
+// GPU端开辟texture存储区
+cubeTexture = device.createTexture({
+    size: [imageBitmap.width, imageBitmap.height, 1],
+    format: 'rgba8unorm', // 格式
+    usage:
         GPUTextureUsage.TEXTURE_BINDING |
         GPUTextureUsage.COPY_DST |
         GPUTextureUsage.RENDER_ATTACHMENT, // 这个字段的真实含义会不会是作为渲染pipeline的附件？
-    });
-    // 将CPU数据导入到GPU上开辟的texture存储区
-    device.queue.copyExternalImageToTexture(
-      { source: imageBitmap }, // src
-      { texture: cubeTexture }, // dst
-      [imageBitmap.width, imageBitmap.height] // size
-    );
+});
+// 将CPU数据导入到GPU上开辟的texture存储区
+device.queue.copyExternalImageToTexture(
+    { source: imageBitmap }, // src
+    { texture: cubeTexture }, // dst
+    [imageBitmap.width, imageBitmap.height] // size
+);
 
-  // Create a sampler with linear filtering for smooth interpolation.
-    //   创建线性插值采样器（MipMap相关？）
-  const sampler = device.createSampler({
+// Create a sampler with linear filtering for smooth interpolation.
+//   创建线性插值采样器（MipMap相关？）
+const sampler = device.createSampler({
     magFilter: 'linear',
     minFilter: 'linear',
-  });
+});
 
 
 // onMounted
-const mount_func = onMounted(()=>{
+const mount_func = onMounted(() => {
     const canvas = document.querySelector("canvas");
 
     const context = canvas.getContext("webgpu");
     const canvasFormat = navigator.gpu.getPreferredCanvasFormat();
-    
+
     context.configure({
         device: device,
         format: canvasFormat,
@@ -91,8 +92,8 @@ const mount_func = onMounted(()=>{
     new Float32Array(verticesBuffer.getMappedRange()).set(cubeVertexArray);
     verticesBuffer.unmap();
 
-    
-    
+
+
 
     // 创建渲染流水线
     const cellPipeline = device.createRenderPipeline({
@@ -100,7 +101,7 @@ const mount_func = onMounted(()=>{
         layout: "auto",
         vertex: {
             module: device.createShaderModule({
-                code:vertex_shader
+                code: vertex_shader
             }),
             entryPoint: "main",
             buffers: [
@@ -125,7 +126,7 @@ const mount_func = onMounted(()=>{
         },
         fragment: {
             module: device.createShaderModule({
-                code:fragment_shader
+                code: fragment_shader
             }),
             entryPoint: "main",
             targets: [{
@@ -164,7 +165,7 @@ const mount_func = onMounted(()=>{
 
     /**
      *  这里注意
-     * */ 
+     * */
     const uniformBindGroup = device.createBindGroup({
         layout: cellPipeline.getBindGroupLayout(0),
         entries: [
@@ -197,13 +198,13 @@ const mount_func = onMounted(()=>{
 
     const renderPassDescriptor = {
         colorAttachments: [
-        {
-            view: undefined, // Assigned later
+            {
+                view: undefined, // Assigned later
 
-            clearValue: { r: 0.5, g: 0.5, b: 0.5, a: 1.0 },
-            loadOp: 'clear',
-            storeOp: 'store',
-        },
+                clearValue: { r: 0.5, g: 0.5, b: 0.5, a: 1.0 },
+                loadOp: 'clear',
+                storeOp: 'store',
+            },
         ],
         depthStencilAttachment: {
             view: depthTexture.createView(),
@@ -244,8 +245,7 @@ const mount_func = onMounted(()=>{
         return modelViewProjectionMatrix;
     }
 
-    function renderFrame()
-    {
+    function renderFrame() {
         const transformationMatrix = getTransformationMatrix();
         device.queue.writeBuffer(
             uniformBuffer,
@@ -256,25 +256,25 @@ const mount_func = onMounted(()=>{
         );
 
         renderPassDescriptor.colorAttachments[0].view = context
-        .getCurrentTexture()
-        .createView();
+            .getCurrentTexture()
+            .createView();
 
 
         const encoder = device.createCommandEncoder();
         const pass = encoder.beginRenderPass(renderPassDescriptor);
 
         pass.setPipeline(cellPipeline);
-        
+
         pass.setBindGroup(0, uniformBindGroup);
         pass.setVertexBuffer(0, verticesBuffer);
         pass.draw(cubeVertexCount);
-        
+
         pass.end();
 
         device.queue.submit([encoder.finish()]);
     }
 
-    
+
     setInterval(() => {
         renderFrame();
     }, 15);
@@ -284,6 +284,4 @@ const mount_func = onMounted(()=>{
 
 </script>
 
-<style>
-
-</style>
+<style></style>

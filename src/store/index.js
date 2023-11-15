@@ -21,6 +21,8 @@ import Particles from "./Particles/Particles.js";
 // Flow Rendering
 import Flow from "./Flow/Flow.js";
 
+// Textured Instance Simulation
+import InstanceSimu from "./Prj01/instanceSimu.js";
 
 const store = createStore({
   state: {
@@ -42,7 +44,8 @@ const store = createStore({
     Tuto16: shadowMapModel,
     ForwardShading: ForwardShading,
     Particles: Particles,
-    Flow: Flow
+    Flow: Flow,
+    InstanceSimu: InstanceSimu
   }
 })
 

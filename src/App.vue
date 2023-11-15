@@ -2,7 +2,7 @@
   <Suspense>
     <!-- <WebGPURoot/> -->
     <!-- <Tuto02_RenderGrid/> -->
-    <!-- <Tuto03_RenderState/> -->
+    <!-- <Tuto03_RenderState /> -->
     <!-- <Tuto04_ConwayLifeGame/> -->
     <!-- <Tuto05_Triangle/> -->
     <!-- <Tuto06_MSAA/> -->
@@ -16,15 +16,19 @@
     <!-- <Tuto14_CubeMap/> -->
     <!-- <Tuto15_DeferredShading/> -->
     <!-- <Tuto15_ForwardShading/> -->
-    <Tuto16_ShadowMap/>
+    <!-- <Tuto16_ShadowMap/> -->
     <!-- <Tuto17_Particles/> -->
     <!-- <Tuto17_ParticlesOwn/> -->
     <!-- <Tuto18_BoidSimulation/> -->
 
     <!-- <Flow/> -->
 
+
+    <Prj01_InstanceMoving />
+
+
   </Suspense>
-    <!-- <WebGPURoot/> -->
+  <!-- <WebGPURoot/> -->
 </template>
 
 <script setup>
@@ -51,6 +55,8 @@ import Tuto18_BoidSimulation from './components/Tuto18_BoidSimulation.vue';
 
 import Tuto15_ForwardShading from './components/Tuto15_ForwardShading.vue';
 
+import Prj01_InstanceMoving from './components/Prj01_InstanceMoving.vue';
+
 import Flow from './components/Flow.vue';
 
 import { useStore } from 'vuex';
@@ -61,24 +67,24 @@ const store = useStore();
 
 
 // 查看当前浏览器是否支持 WebGPU
-if(!navigator.gpu){
-    throw new Error("WebGPU not supported on this browser");
+if (!navigator.gpu) {
+  throw new Error("WebGPU not supported on this browser");
 }
-else{
-    console.log("Well done~ your browser can fully support WebGPU");
+else {
+  console.log("Well done~ your browser can fully support WebGPU");
 }
 
 // 应该是通过根节点透传的方式将 device 这类全局变量给到其他节点
 // 选中 GPU 设备
 
-const device = new Promise((resolve, reject)=>{
-  navigator.gpu.requestAdapter().then((adapter)=>{
+const device = new Promise((resolve, reject) => {
+  navigator.gpu.requestAdapter().then((adapter) => {
 
     if (!adapter) {
       throw new Error("No appropriate GPUAdapter found.");
     }
 
-    adapter.requestDevice().then((data)=>{
+    adapter.requestDevice().then((data) => {
       resolve(data);
       store.state.device = data; // 给全局变量 device 赋值
     });
