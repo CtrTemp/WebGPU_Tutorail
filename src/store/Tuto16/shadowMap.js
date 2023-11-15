@@ -4,7 +4,6 @@ import { shadow_vert } from '../../assets/Shaders/Tuto16/shadow'
 
 import { mesh } from "../../assets/mesh/stanfordDragon.js"
 
-
 import { mat4, vec3, vec4 } from "wgpu-matrix"
 
 import { getCameraViewProjMatrix } from './utils.js';

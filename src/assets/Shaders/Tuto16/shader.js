@@ -72,6 +72,7 @@ const ambientFactor = 0.2;
 fn main(input : FragmentInput) -> @location(0) vec4<f32> {
   // Percentage-closer filtering. Sample texels in the region
   // to smooth the result.
+  // 注意这里应用了 PCF
   var visibility = 0.0;
   let oneOverShadowDepthTextureSize = 1.0 / shadowDepthTextureSize;
   for (var y = -1; y <= 1; y++) {

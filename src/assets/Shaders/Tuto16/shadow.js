@@ -1,12 +1,15 @@
 // Vertex Shader
 const shadow_vert = /* wgsl */`
 
+// 在shadow的shader中，只需要使用其中的 lightViewProjMatrix 分量
 struct Scene {
     lightViewProjMatrix: mat4x4<f32>,
     cameraViewProjMatrix: mat4x4<f32>,
     lightPos: vec3<f32>,
   }
   
+  // 这里将 MVP 矩阵中的 Model 分离出来了，因为它是可以复用的
+  // 在 shadow shader 和 render shader 中它表示同一个矩阵
   struct Model {
     modelMatrix: mat4x4<f32>,
   }
