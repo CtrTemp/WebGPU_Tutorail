@@ -24,7 +24,8 @@
     <!-- <Flow/> -->
 
 
-    <Prj01_InstanceMoving />
+    <!-- <Prj01_InstanceMoving /> -->
+    <Prj02_InstanceFlowing />
 
 
   </Suspense>
@@ -55,7 +56,9 @@ import Tuto18_BoidSimulation from './components/Tuto18_BoidSimulation.vue';
 
 import Tuto15_ForwardShading from './components/Tuto15_ForwardShading.vue';
 
-import Prj01_InstanceMoving from './components/Prj01_InstanceMoving.vue';
+// import Prj01_InstanceMoving from './components/Prj01_InstanceMoving.vue';
+
+import Prj02_InstanceFlowing from './components/Prj02_InstanceFlowing.vue';
 
 import Flow from './components/Flow.vue';
 
