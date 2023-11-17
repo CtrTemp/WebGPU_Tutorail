@@ -3,11 +3,14 @@ const vertex_shader = /* wgsl */`
 // 自定义 shader 输入输出
 struct VertInput {
     @location(0) pos: vec2f,
+    @location(1) uv: vec2f,
     @builtin(instance_index) instance: u32,
 };
 struct VertOutput {
     @builtin(position) pos: vec4f,
     @location(0) cell: vec2f, // 传入到 fragment shader 中的部分
+    @location(1) fragUV : vec2f,
+
 };
 
 
@@ -16,6 +19,8 @@ struct VertOutput {
 
 // storage 也可以作为全局变量来看待么？和 uniform 不同点在于啥？
 @group(0) @binding(1) var<storage> cellState: array<u32>;
+@group(0) @binding(2) var mySampler: sampler;
+@group(0) @binding(3) var myTexture: texture_2d<f32>;
 
 
 @vertex 
@@ -34,6 +39,7 @@ fn vertexMain(input: VertInput) -> VertOutput  {
 
     var output: VertOutput;
     output.pos = vec4f(gridPos, 0, 1);
+    output.fragUV = input.uv;
     output.cell = vec2f(col, row);
 
     return output;
@@ -49,17 +55,22 @@ const fragment_shader = /* wgsl */`
 // storage 也可以作为全局变量来看待么？和 uniform 不同点在于啥？
 @group(0) @binding(1) var<storage> cellState: array<u32>;
 
+@group(0) @binding(2) var mySampler: sampler;
+@group(0) @binding(3) var myTexture: texture_2d<f32>;
+
 struct FragInput {
     @location(0) cell: vec2f,
+    @location(1) fragUV : vec2f,
 };
 
 
 @fragment
 fn fragmentMain(input : FragInput) -> @location(0) vec4f {
     let local_cell = input.cell/grid;
-    return vec4f(local_cell, 1-local_cell.x, 1);
+    return textureSample(myTexture, mySampler, input.fragUV);
+    // return vec4f(local_cell, 1-local_cell.x, 1);
 }
 `
 
 
-export{ vertex_shader, fragment_shader }
+export { vertex_shader, fragment_shader }

@@ -15,10 +15,33 @@ export default {
             const device = context.rootState.device;
             const payload = {
                 device: device,
-                canvas, canvas
+                canvas, canvas,
+                img: undefined
             }
 
             context.commit("init_device", payload);
+
+
+            // CPU 端读入图片，并创建bitmap
+            const response = await fetch(
+                new URL('../../assets/img/webgpu.png', import.meta.url).toString()
+                // new URL('../../assets/img/eye.jpeg', import.meta.url).toString()
+            );
+            const imageBitmap = await createImageBitmap(await response.blob());
+            let cubeTexture = device.createTexture({
+                size: [imageBitmap.width, imageBitmap.height, 1],
+                format: 'rgba8unorm', // 格式
+                usage:
+                    GPUTextureUsage.TEXTURE_BINDING |
+                    GPUTextureUsage.COPY_DST |
+                    GPUTextureUsage.RENDER_ATTACHMENT,
+            });
+            device.queue.copyExternalImageToTexture(
+                { source: imageBitmap }, // src
+                { texture: cubeTexture }, // dst
+                [imageBitmap.width, imageBitmap.height] // size
+            );
+            payload["img"] = imageBitmap;
 
             context.commit("init_data", payload);
 
@@ -52,18 +75,18 @@ export default {
             // init vertices
             const vertices = new Float32Array([
                 //   X,    Y,
-                -0.8, -0.8, // Triangle 1
-                0.8, -0.8,
-                0.8, 0.8,
+                -0.8, -0.8, 0.0, 1.0, // Triangle 1
+                0.8, -0.8, 1.0, 1.0,
+                0.8, 0.8, 1.0, 0.0,
 
-                -0.8, -0.8, // Triangle 2
-                0.8, 0.8,
-                -0.8, 0.8,
+                -0.8, -0.8, 0.0, 1.0, // Triangle 2
+                0.8, 0.8, 1.0, 0.0,
+                -0.8, 0.8, 0.0, 0.0
             ]);
             state.additional_info["verticesCount"] = vertices.length;
 
             const vertexBuffer = device.createBuffer({
-                size: vertices.byteLength,
+                size: vertices.byteLength * 2, // 疑惑？？？
                 usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
             });
             device.queue.writeBuffer(vertexBuffer, /*bufferOffset=*/0, vertices);
@@ -73,12 +96,21 @@ export default {
              *  VBO Layouts
              * */
             const vertexBufferLayout = {
-                arrayStride: 8,
-                attributes: [{
-                    format: "float32x2",
-                    offset: 0,
-                    shaderLocation: 0,
-                }],
+                arrayStride: 2 * 4 + 2 * 4,
+                attributes: [
+                    // 2d position
+                    {
+                        shaderLocation: 0,
+                        offset: 0,
+                        format: "float32x2",
+                    },
+                    // uv
+                    {
+                        shaderLocation: 1,
+                        offset: 2 * 4,
+                        format: "float32x2",
+                    }
+                ],
             };
             state.VBO_Layouts["quad"] = vertexBufferLayout;
 
@@ -86,7 +118,7 @@ export default {
             /**
              * UBOs
              * */
-            const GRID_SIZE = 16;
+            const GRID_SIZE = 8;
             state.additional_info["GRID_SIZE"] = GRID_SIZE;
             const uniformArray = new Float32Array([GRID_SIZE, GRID_SIZE]);
             const uniformBuffer = device.createBuffer({
@@ -136,8 +168,28 @@ export default {
 
             /**
              *  Textures
-             * */ 
-            
+             * */
+            const imageBitmap = payload.img;
+            const instanceTexture = device.createTexture({
+                size: [imageBitmap.width, imageBitmap.height, 1],
+                format: 'rgba8unorm',
+                usage:
+                    GPUTextureUsage.TEXTURE_BINDING |
+                    GPUTextureUsage.COPY_DST |
+                    GPUTextureUsage.RENDER_ATTACHMENT,
+            });
+            device.queue.copyExternalImageToTexture(
+                { source: imageBitmap }, // src
+                { texture: instanceTexture }, // dst
+                [imageBitmap.width, imageBitmap.height] // size
+            );
+
+            // Create a sampler with linear filtering for smooth interpolation.
+            const sampler = device.createSampler({
+                magFilter: 'linear',
+                minFilter: 'linear',
+            });
+
 
 
             /**
@@ -158,9 +210,25 @@ export default {
                         buffer: {
                             type: 'read-only-storage',
                         },
+                    },
+                    {
+                        binding: 2,
+                        visibility: GPUShaderStage.FRAGMENT | GPUShaderStage.VERTEX,
+                        // sampler 类型应该如何表达？？？看文档
+                        sampler: {
+                            type: "filtering"
+                        }
+                    },
+                    {
+                        binding: 3,
+                        visibility: GPUShaderStage.FRAGMENT | GPUShaderStage.VERTEX,
+                        texture: {
+                            sampleType: 'float',
+                        }
                     }
                 ],
             });
+
             state.Layouts["state"] = state_BindGroup_Layout;
 
 
@@ -181,6 +249,16 @@ export default {
                         {
                             binding: 1,
                             resource: { buffer: cellStateStorage[0] }
+                        },
+                        // texture sampler
+                        {
+                            binding: 2,
+                            resource: sampler
+                        },
+                        // instance sampler
+                        {
+                            binding: 3,
+                            resource: instanceTexture.createView()
                         }
                     ],
                 }),
@@ -195,6 +273,16 @@ export default {
                         {
                             binding: 1,
                             resource: { buffer: cellStateStorage[1] }
+                        },
+                        // texture sampler
+                        {
+                            binding: 2,
+                            resource: sampler
+                        },
+                        // instance sampler
+                        {
+                            binding: 3,
+                            resource: instanceTexture.createView()
                         }
                     ],
                 })
@@ -214,11 +302,11 @@ export default {
             const cellPipeline = device.createRenderPipeline({
                 // 这里不能是 auto 后续要写成显式的模式
                 // layout: "auto",
-                layout : device.createPipelineLayout({
+                layout: device.createPipelineLayout({
                     bindGroupLayouts: [
                         state.Layouts["state"]
                     ],
-                }), 
+                }),
                 vertex: {
                     module: device.createShaderModule({
                         code: vertex_shader
@@ -246,7 +334,7 @@ export default {
                 colorAttachments: [{
                     view: undefined, // create later
                     loadOp: "clear",
-                    clearValue: { r: 0, g: 0, b: 0.4, a: 1.0 },
+                    clearValue: { r: 0, g: 0, b: 0.0, a: 1.0 },
                     storeOp: "store",
                 }]
             };

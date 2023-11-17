@@ -163,6 +163,7 @@ const mount_func = onMounted(() => {
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     });
 
+    console.log("current layout = ", cellPipeline.getBindGroupLayout(0));
     /**
      *  这里注意
      * */
