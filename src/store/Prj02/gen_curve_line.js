@@ -76,7 +76,8 @@ function gen_plane_instance(col, row, range) {
     const default_color = [0.8, 0.6, 0.0, 1.0];
     for (let i = -row; i < row; i++) {
         for (let j = -col; j < col; j++) {
-            const time = Math.random(); // 用于模拟随机粒子运动初始化值
+            let time = Math.random(); // 用于模拟随机粒子运动初始化值
+            time = 0.25;
             let pos_x = (j + 0.5) * row_step;
             let pos_y = (i + 0.5) * col_step;
             let pos_z = Math.sin(2 * Math.PI * time); // rand value

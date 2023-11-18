@@ -60,9 +60,9 @@ fn simulate(@builtin(global_invocation_id) global_invocation_id : vec3<u32>) {
   // do nothing for now
   var particle = data.particles[idx];
 
-  particle.lifetime += 0.01;
+  // particle.lifetime += 0.01;
 
-  particle.position.z = sin(particle.lifetime*2*3.1415);
+  // particle.position.z = sin(particle.lifetime*2*3.1415);
 
 
   // // 這句比較關鍵，可以根據其LifeTime自動發揮出漸變效果

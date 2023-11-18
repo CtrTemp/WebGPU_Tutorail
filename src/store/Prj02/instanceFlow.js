@@ -4,6 +4,9 @@ import { simulation_compute } from '../../assets/Shaders/Prj02/compute';
 
 import { mat4, vec3, vec4 } from "wgpu-matrix"
 
+// GUI
+import * as dat from "dat.gui"
+
 
 import {
     gen_straight_line_arr,
@@ -31,12 +34,14 @@ export default {
 
             const flow_info = gen_plane_instance(10, 10, 3.0);
 
-            // console.log("flow info = ", flow_info_sin);
+            // 创建 GUI
+            const gui = new dat.GUI();
 
             const payload = {
                 canvas: canvas,
                 device: device,
-                flow_info: flow_info
+                flow_info: flow_info,
+                gui: gui
             }
 
             context.commit("init_device", payload);
@@ -67,7 +72,7 @@ export default {
 
             context.commit("manage_pipeline", device);
 
-            context.commit("renderLoop", device);
+            context.commit("renderLoop", payload);
         },
 
 
@@ -532,40 +537,12 @@ export default {
         /**
          *  Stage04：启动渲染循环
          * */
-        renderLoop(state, device) {
-            const aspect = state.canvas.width / state.canvas.height;
-            const projection = mat4.perspective((2 * Math.PI) / 5, aspect, 1, 100.0);
-            const view = mat4.create(); // 默认创建的是全 0 矩阵
-            const mvp = mat4.create();
+        renderLoop(state, payload) {
+
+            const device = payload.device;
 
 
-            mat4.identity(view); // 创建单位矩阵
-            mat4.translate(view, vec3.fromValues(-0.00, -0.00, -5.0), view);
-            // mat4.rotateX(view, Math.PI * -0.2, view);
-            mat4.multiply(projection, view, mvp);
 
-            device.queue.writeBuffer(
-                state.UBOs["mvp"],
-                0,
-                mvp.buffer,
-                mvp.byteOffset,
-                mvp.byteLength
-            );
-
-            device.queue.writeBuffer(
-                state.UBOs["right"],
-                0,
-                new Float32Array([
-                    view[0], view[4], view[8], // right
-                ])
-            );
-            device.queue.writeBuffer(
-                state.UBOs["up"],
-                0,
-                new Float32Array([
-                    view[1], view[5], view[9], // up
-                ])
-            );
 
             device.queue.writeBuffer(
                 state.UBOs["compute"],
@@ -587,8 +564,61 @@ export default {
             );
 
 
+            const gui = payload.gui;
+            const camera_pos = {
+                x: 0.0,
+                y: 0.0,
+                z: -5.0
+            }
+            gui.add(camera_pos, 'x', -1.0, 1.0);
+            gui.add(camera_pos, 'y', -1.0, 1.0);
+            gui.add(camera_pos, 'z', -10.0, 0.0);
 
             setInterval(() => {
+
+                /**
+                 *  可控的 MVP 矩阵更新
+                 * */
+
+
+                const aspect = state.canvas.width / state.canvas.height;
+                const projection = mat4.perspective((2 * Math.PI) / 5, aspect, 1, 100.0);
+                const view = mat4.create(); // 默认创建的是全 0 矩阵
+                const mvp = mat4.create();
+
+
+
+
+                mat4.identity(view); // 创建单位矩阵
+                mat4.translate(view, vec3.fromValues(
+                    camera_pos.x,
+                    camera_pos.y,
+                    camera_pos.z), view);
+                // mat4.rotateX(view, Math.PI * -0.2, view);
+                mat4.multiply(projection, view, mvp);
+
+                device.queue.writeBuffer(
+                    state.UBOs["mvp"],
+                    0,
+                    mvp.buffer,
+                    mvp.byteOffset,
+                    mvp.byteLength
+                );
+
+                device.queue.writeBuffer(
+                    state.UBOs["right"],
+                    0,
+                    new Float32Array([
+                        view[0], view[4], view[8], // right
+                    ])
+                );
+                device.queue.writeBuffer(
+                    state.UBOs["up"],
+                    0,
+                    new Float32Array([
+                        view[1], view[5], view[9], // up
+                    ])
+                );
 
                 const renderPassDescriptor = state.passDescriptors["render_particles"];
 

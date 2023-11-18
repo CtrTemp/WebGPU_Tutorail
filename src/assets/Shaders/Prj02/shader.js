@@ -25,8 +25,8 @@ struct VertexOutput {
 @vertex
 fn vs_main(in : VertexInput) -> VertexOutput {
   var quad_pos = mat2x3<f32>(right, up) * in.quad_pos;
-  // var position = in.position.xyz + quad_pos * 0.1; // 不改变quad大小
-  var position = in.position.xyz + quad_pos * (in.position.z+0.5)*0.05; // 随着z值更改quad大小
+  var position = in.position.xyz + quad_pos * 0.125; // 不改变quad大小
+  // var position = in.position.xyz + quad_pos * (in.position.z+0.5)*0.05; // 随着z值更改quad大小
   var out : VertexOutput;
   out.position = mvp * vec4<f32>(position, 1.0);
   out.color = in.color;
@@ -57,10 +57,8 @@ struct FragIutput {
 @fragment
 fn fs_main(in : FragIutput) -> @location(0) vec4<f32> {
   var color = in.color;
-  // color.a = color.a * max(1.0 - length(in.quad_pos), 0.0);
-  // return vec4(color.rgb, 0.25);
+  
   // return color;
-  // return vec4(in.quad_uv, 0.0, 1.0);
   return textureSample(myTexture, mySampler, in.quad_uv);
 }
 `
