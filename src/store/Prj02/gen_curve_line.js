@@ -77,7 +77,7 @@ function gen_plane_instance(col, row, range) {
     for (let i = -row; i < row; i++) {
         for (let j = -col; j < col; j++) {
             let time = Math.random(); // 用于模拟随机粒子运动初始化值
-            time = 0.25;
+            // time = 0.25; // 给以指定值统一大小
             let pos_x = (j + 0.5) * row_step;
             let pos_y = (i + 0.5) * col_step;
             let pos_z = Math.sin(2 * Math.PI * time); // rand value

@@ -16,21 +16,6 @@
 // Vertex Shader
 const simulation_compute = /* wgsl */`
 
-// /**
-//  *  隨機數初始化
-//  * */ 
-// fn init_rand(invocation_id : u32, seed : vec4<f32>) {
-//   rand_seed = seed.xz;
-//   rand_seed = fract(rand_seed * cos(35.456+f32(invocation_id) * seed.yw));
-//   rand_seed = fract(rand_seed * cos(41.235+f32(invocation_id) * seed.xw));
-// }
-
-// fn rand() -> f32 {
-//   rand_seed.x = fract(cos(dot(rand_seed, vec2<f32>(23.14077926, 232.61690225))) * 136.8168);
-//   rand_seed.y = fract(cos(dot(rand_seed, vec2<f32>(54.47856553, 345.84153136))) * 534.7645);
-//   return rand_seed.y;
-// }
-
 
 struct SimulationParams {
   simu_speed : f32, // 一次不仅的步长，可以为小数
@@ -60,14 +45,14 @@ fn simulate(@builtin(global_invocation_id) global_invocation_id : vec3<u32>) {
   // do nothing for now
   var particle = data.particles[idx];
 
-  // particle.lifetime += 0.01;
+  particle.lifetime += 0.01;
 
-  // particle.position.z = sin(particle.lifetime*2*3.1415);
+  particle.position.z = sin(particle.lifetime*2*3.1415)-0.5;
 
 
   // // 這句比較關鍵，可以根據其LifeTime自動發揮出漸變效果
   // particle.color.a = particle.lifetime / sim_params.particle_nums / 3 + 0.05;
-  // // particle.color.a = 1.0;
+  // // // particle.color.a = 1.0;
 
   // particle.lifetime = particle.lifetime - sim_params.simu_speed;
 
