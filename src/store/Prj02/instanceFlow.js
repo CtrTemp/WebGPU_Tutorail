@@ -12,7 +12,7 @@ import { manage_Texture } from "./04_manage_Texture";
 import { set_Layout } from "./11_set_Layout";
 import { set_BindGroup } from "./12_set_BindGroup";
 import { set_Pipeline } from "./13_set_Pipeline";
-import { init_Camera } from "./xx_set_camera.js"
+import { init_Camera, moveCamera, defocusCamera, focusCamera } from "./xx_set_camera.js"
 
 import {
     gen_straight_line_arr,
@@ -191,7 +191,10 @@ export default {
             /**
              *  初始化设置相机参数
              * */
-            init_Camera(state, device);
+
+            // 注意，这里是单向控制的GUI，只能通过页面交互观察参数，还未实现通过GUI进行控制
+            const gui = payload.gui;
+            init_Camera(state, device, gui);
 
             const view = state.prim_camera["view"];
             const projection = state.prim_camera["projection"];
@@ -221,16 +224,6 @@ export default {
             );
 
 
-            
-            const gui = payload.gui;
-            const camera_pos = {
-                x: 0.0,
-                y: 0.0,
-                z: -5.0
-            }
-            gui.add(camera_pos, 'x', -10.0, 10.0);
-            gui.add(camera_pos, 'y', -10.0, 10.0);
-            gui.add(camera_pos, 'z', -10.0, 10.0);
 
             /**
              *  Canvas 键鼠交互事件注册
@@ -238,13 +231,22 @@ export default {
              * */
 
             // canvas 注册鼠标交互事件
-            canvasMouseInteraction(state, device);
+            canvasMouseInteraction(state, device, gui);
 
             // canvas 注册键盘交互事件
-            canvasKeyboardInteraction(state, device);
+            canvasKeyboardInteraction(state, device, gui);
 
+            // 初始化相机
+            setTimeout(()=>{
+                defocusCamera(state, device, gui);
+            },200);
+            setTimeout(()=>{
+                focusCamera(state, device, gui);
+            },800);
 
             setInterval(() => {
+
+                // moveCamera(state, device);
 
                 const renderPassDescriptor = state.passDescriptors["render_particles"];
 

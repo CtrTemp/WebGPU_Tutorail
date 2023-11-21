@@ -1,6 +1,34 @@
+import { reactive } from "vue";
 import { mat4, vec3, vec4 } from "wgpu-matrix"
 
-function init_Camera(state, device) {
+
+function observe(data) {
+    if (!data || typeof data !== 'object') {
+        return;
+    }
+    // 取出所有属性遍历
+    Object.keys(data).forEach(function (key) {
+        defineReactive(data, key, data[key]);
+    });
+};
+
+function defineReactive(data, key, val) {
+    observe(val); // 监听子属性
+    Object.defineProperty(data, key, {
+        enumerable: false, // 可枚举
+        configurable: false, // 不能再define
+        get: function () {
+            return val;
+        },
+        set: function (newVal) {
+            // console.log('哈哈哈，监听到值变化了 ', val, ' --> ', newVal);
+            val = newVal;
+        }
+    });
+}
+
+
+function init_Camera(state, device, gui) {
 
     let camera = state.prim_camera;
 
@@ -12,7 +40,7 @@ function init_Camera(state, device) {
     let projection = mat4.perspective(fov, aspect, z_near, z_far);
 
 
-    const lookFrom = vec3.fromValues(0.0, 0.0, -3.5);
+    const lookFrom = vec3.fromValues(0.0, 0.0, -2);
     const viewDir = vec3.fromValues(0.0, 0.0, 1.0);
     const lookAt = vec3.add(lookFrom, viewDir);
     const up = vec3.fromValues(0, 1, 0);
@@ -43,6 +71,12 @@ function init_Camera(state, device) {
     camera["lookFrom"] = lookFrom;  // 相机/观察者位点
     camera["viewDir"] = viewDir;    // 单位向量
     camera["up"] = up;              // 相机相对向上向量
+    // 为了监测相机坐标，单独设置一个结构体
+    camera["pos"] = {
+        x: lookFrom.at(0),
+        y: lookFrom.at(1),
+        z: lookFrom.at(2),
+    }
 
     // 相机矩阵（需要根据相机基本参数计算得到）
     camera["matrix"] = viewProjectionMatrix;
@@ -56,8 +90,11 @@ function init_Camera(state, device) {
     state.mouse_info["lastY"] = 0;
 
     // // 解算得到的相机方位角
-    camera["yaw"] = Math.PI / 2;
-    camera["pitch"] = 0.0;
+    // camera["yaw"] = Math.PI / 2;
+    // camera["pitch"] = 0.0;
+
+    defineReactive(state.prim_camera, "yaw", Math.PI / 2);
+    defineReactive(state.prim_camera, "pitch", 0.0);
     // 如果没有滚转角更新，则可以不考虑相机up方向的更新，也不会影响解算right方向
     // camera["roll"] = 0.0; // 不需要 roll
 
@@ -66,16 +103,29 @@ function init_Camera(state, device) {
     state.mouse_info["wheel_speed"] = 0.005;
     state.keyboard_info["speed"] = 0.25;
 
+    /**
+     *  GUI para 
+     * */
+
+    gui.add(state.prim_camera, 'pitch', -2.0, 2.0, 0.01);
+    gui.add(state.prim_camera, 'yaw', -2.0, 2.0, 0.01);
+    gui.add(state.prim_camera.pos, "x", -10.0, 10.0, 0.01);
+    gui.add(state.prim_camera.pos, "y", -10.0, 10.0, 0.01);
+    gui.add(state.prim_camera.pos, "z", -10.0, 10.0, 0.01);
+
 }
 
 
-// 
 /**
  *  更新相机参数
  *  根据相机的基本参数，更新相机矩阵
  * */
-function updateCamera(state, device) {
+function updateCamera(state, device, gui) {
     let camera = state.prim_camera;
+
+    camera.pos.x = camera.lookFrom.at(0);
+    camera.pos.y = camera.lookFrom.at(1);
+    camera.pos.z = camera.lookFrom.at(2);
 
     let projection = mat4.perspective(
         camera["fov"],
@@ -120,9 +170,126 @@ function updateCamera(state, device) {
             view[1], view[5], view[9], // up
         ])
     );
+
+
+    // !!! 注意这里必须手动触发更新才行
+    gui.updateDisplay();
 }
 
 
+function moveCamera(state, device) {
+    let camera = state.prim_camera;
+    camera["lookFrom"][2] = Math.sin(Date.now() / 1000) * 2 - 5;
+    updateCamera(state, device, gui);
+}
+
+/**
+ *  将相机移动到默认原位观察点
+ * */
+function defocusCamera(state, device, gui) {
+    let step = 20;
+    let time_stride = 25; // 25ms 一次坐标更新（尽量保证与帧率一致或小于帧率）
+
+    let camera = state.prim_camera;
+
+    const current_camera_pos = camera.lookFrom;  // vec3
+    const targets_camera_pos = vec3.fromValues(0.0, 0.0, -5.0);
+    let dir_vec = vec3.sub(targets_camera_pos, current_camera_pos);
+    let dir_vec_unit = vec3.divScalar(dir_vec, step);
 
 
-export { init_Camera, updateCamera }
+    const current_camera_pitch = camera.pitch;
+    const targets_camera_pitch = 0;
+    let pitch_unit = (targets_camera_pitch - current_camera_pitch) / step;
+
+
+    const current_camera_yaw = camera.yaw;
+    const targets_camera_yaw = 1.57;
+    let yaw_unit = (targets_camera_yaw - current_camera_yaw) / step;
+
+    let timer = setInterval(() => {
+
+        // 更新 lookFrom
+        camera["lookFrom"] = vec3.add(camera["lookFrom"], dir_vec_unit);
+
+        // 更新 pitch 和 yaw
+        state.prim_camera["yaw"] += yaw_unit;
+        state.prim_camera["pitch"] += pitch_unit;
+
+        // 进一步更新 viewDir
+        let new_view_dir = vec3.fromValues(
+            Math.cos(state.prim_camera["yaw"]) * Math.cos(state.prim_camera["pitch"]),
+            Math.sin(state.prim_camera["pitch"]),
+            Math.sin(state.prim_camera["yaw"]) * Math.cos(state.prim_camera["pitch"])
+        );
+
+        state.prim_camera["viewDir"] = new_view_dir;
+
+
+        updateCamera(state, device, gui);
+
+
+    }, time_stride);
+
+    setTimeout(() => {
+        console.log("haha, timer = ", timer);
+        clearInterval(timer);
+    }, step * time_stride);
+
+}
+
+
+function focusCamera(state, device, gui) {
+    let step = 20;
+    let time_stride = 25; // 25ms 一次坐标更新（尽量保证与帧率一致或小于帧率）
+
+    let camera = state.prim_camera;
+
+    const current_camera_pos = camera.lookFrom;  // vec3
+    const targets_camera_pos = vec3.fromValues(3.1, 1.98, -1.36);
+
+    let dir_vec = vec3.sub(targets_camera_pos, current_camera_pos);
+    let dir_vec_unit = vec3.divScalar(dir_vec, step);
+
+
+    const current_camera_pitch = camera.pitch;
+    const targets_camera_pitch = -0.55;
+    let pitch_unit = (targets_camera_pitch - current_camera_pitch) / step;
+
+
+    const current_camera_yaw = camera.yaw;
+    const targets_camera_yaw = 2.23;
+    let yaw_unit = (targets_camera_yaw - current_camera_yaw) / step;
+
+
+    let timer = setInterval(() => {
+
+        // 更新 lookFrom
+        camera["lookFrom"] = vec3.add(camera["lookFrom"], dir_vec_unit);
+
+        // 更新 pitch 和 yaw
+        state.prim_camera["yaw"] += yaw_unit;
+        state.prim_camera["pitch"] += pitch_unit;
+
+        // 进一步更新 viewDir
+        let new_view_dir = vec3.fromValues(
+            Math.cos(state.prim_camera["yaw"]) * Math.cos(state.prim_camera["pitch"]),
+            Math.sin(state.prim_camera["pitch"]),
+            Math.sin(state.prim_camera["yaw"]) * Math.cos(state.prim_camera["pitch"])
+        );
+
+        state.prim_camera["viewDir"] = new_view_dir;
+
+
+        updateCamera(state, device, gui);
+
+    }, time_stride);
+
+    setTimeout(() => {
+        console.log("haha, timer = ", timer);
+        clearInterval(timer);
+    }, step * time_stride);
+}
+
+
+export { init_Camera, updateCamera, moveCamera, defocusCamera, focusCamera }

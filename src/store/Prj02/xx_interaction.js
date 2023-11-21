@@ -1,11 +1,11 @@
 
 import { mat4, vec3, vec4 } from "wgpu-matrix"
-import { updateCamera } from "./xx_set_camera";
+import { updateCamera, defocusCamera, focusCamera } from "./xx_set_camera";
 
 /**
  *  Dragging
  * */
-function mouseMovingCallback(state, device, event) {
+function mouseMovingCallback(state, device, event, gui) {
     if (!state.mouse_info["dragging"]) {
         // console.log("invalid mouse moving~ ");
         return;
@@ -22,6 +22,7 @@ function mouseMovingCallback(state, device, event) {
     xoffset *= state.mouse_info["drag_speed"];
     yoffset *= state.mouse_info["drag_speed"];
 
+    // 这里的改变没有触发GUI的更新
     state.prim_camera["yaw"] += xoffset;
     state.prim_camera["pitch"] -= yoffset;
 
@@ -42,29 +43,26 @@ function mouseMovingCallback(state, device, event) {
 
     // console.log("camera = ", state.prim_camera["viewDir"]);
 
-    updateCamera(state, device);
+    updateCamera(state, device, gui);
 }
 
 /**
  *  Click
  * */
 function mouseClickCallback(state, flag) {
-    console.log("mouse is clicked~");
     if (flag == "down") {
         state.mouse_info["dragging"] = true;
         state.mouse_info["firstMouse"] = true;
-        console.log("down");
     }
     else if (flag == "up") {
         state.mouse_info["dragging"] = false;
-        console.log("up");
     }
 }
 
 /**
  *  Wheel
  * */
-function mouseWheelCallback(state, device, deltaY) {
+function mouseWheelCallback(state, device, deltaY, gui) {
     let camera = state.prim_camera;
     camera["lookFrom"] = vec3.addScaled(
         camera["lookFrom"],
@@ -72,21 +70,21 @@ function mouseWheelCallback(state, device, deltaY) {
         -state.mouse_info["wheel_speed"] * deltaY
     );
 
-    updateCamera(state, device);
+    updateCamera(state, device, gui);
 }
 
 /**
  *  Mouse
  * */
-function canvasMouseInteraction(state, device) {
+function canvasMouseInteraction(state, device, gui) {
 
     let canvas = state.canvas;
-    let camera = state.prim_camera
+    let camera = state.prim_camera;
 
     canvas.addEventListener("mousemove", (event) => {
         // 这里的一个优点在于可以直接获取鼠标的移动距离信息
         // console.log("event = ", event.movementX);
-        mouseMovingCallback(state, device, event);
+        mouseMovingCallback(state, device, event, gui);
     })
 
 
@@ -98,7 +96,7 @@ function canvasMouseInteraction(state, device) {
     })
 
     canvas.addEventListener("mousewheel", (event) => {
-        mouseWheelCallback(state, device, event.deltaY);
+        mouseWheelCallback(state, device, event.deltaY, gui);
     })
 
 }
@@ -108,7 +106,7 @@ function canvasMouseInteraction(state, device) {
 /**
  *  Key Down
  * */
-function leftMovingCallback(state, device) {
+function leftMovingCallback(state, device, gui) {
     let camera = state.prim_camera;
     const leftDir = vec3.normalize(vec3.cross(camera["up"], camera["viewDir"]));
 
@@ -118,10 +116,10 @@ function leftMovingCallback(state, device) {
         state.keyboard_info["speed"]
     );
 
-    updateCamera(state, device);
+    updateCamera(state, device, gui);
 }
 
-function rightMovingCallback(state, device) {
+function rightMovingCallback(state, device, gui) {
     let camera = state.prim_camera;
     const rightDir = vec3.normalize(vec3.cross(camera["viewDir"], camera["up"]));
 
@@ -131,10 +129,10 @@ function rightMovingCallback(state, device) {
         state.keyboard_info["speed"]
     );
 
-    updateCamera(state, device);
+    updateCamera(state, device, gui);
 }
 
-function frontMovingCallback(state, device) {
+function frontMovingCallback(state, device, gui) {
     let camera = state.prim_camera;
     camera["lookFrom"] = vec3.addScaled(
         camera["lookFrom"],
@@ -142,10 +140,10 @@ function frontMovingCallback(state, device) {
         state.keyboard_info["speed"]
     );
 
-    updateCamera(state, device);
+    updateCamera(state, device, gui);
 }
 
-function backMovingCallback(state, device) {
+function backMovingCallback(state, device, gui) {
     let camera = state.prim_camera;
     camera["lookFrom"] = vec3.addScaled(
         camera["lookFrom"],
@@ -153,10 +151,10 @@ function backMovingCallback(state, device) {
         -state.keyboard_info["speed"]
     );
 
-    updateCamera(state, device);
+    updateCamera(state, device, gui);
 }
 
-function upMovingCallback(state, device) {
+function upMovingCallback(state, device, gui) {
     let camera = state.prim_camera;
     camera["lookFrom"] = vec3.addScaled(
         camera["lookFrom"],
@@ -164,10 +162,10 @@ function upMovingCallback(state, device) {
         state.keyboard_info["speed"]
     );
 
-    updateCamera(state, device);
+    updateCamera(state, device, gui);
 }
 
-function downMovingCallback(state, device) {
+function downMovingCallback(state, device, gui) {
     let camera = state.prim_camera;
     camera["lookFrom"] = vec3.addScaled(
         camera["lookFrom"],
@@ -175,13 +173,13 @@ function downMovingCallback(state, device) {
         -state.keyboard_info["speed"]
     );
 
-    updateCamera(state, device);
+    updateCamera(state, device, gui);
 }
 
 /**
  *  Keyboard
  * */
-function canvasKeyboardInteraction(state, device) {
+function canvasKeyboardInteraction(state, device, gui) {
 
     let camera = state.prim_camera;
 
@@ -189,22 +187,29 @@ function canvasKeyboardInteraction(state, device) {
 
         switch (event.keyCode) {
             case "A".charCodeAt(0):
-                leftMovingCallback(state, device);
+                leftMovingCallback(state, device, gui);
                 break;
             case "D".charCodeAt(0):
-                rightMovingCallback(state, device);
+                rightMovingCallback(state, device, gui);
                 break;
             case "W".charCodeAt(0):
-                frontMovingCallback(state, device);
+                frontMovingCallback(state, device, gui);
                 break;
             case "S".charCodeAt(0):
-                backMovingCallback(state, device);
+                backMovingCallback(state, device, gui);
                 break;
             case "Q".charCodeAt(0):
-                downMovingCallback(state, device);
+                downMovingCallback(state, device, gui);
                 break;
             case "E".charCodeAt(0):
-                upMovingCallback(state, device);
+                upMovingCallback(state, device, gui);
+                break;
+            // defocus
+            case "K".charCodeAt(0):
+                defocusCamera(state, device, gui);
+                break;
+            case "F".charCodeAt(0):
+                focusCamera(state, device, gui);
                 break;
 
             default:
