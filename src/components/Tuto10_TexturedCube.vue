@@ -40,7 +40,17 @@ let cubeTexture;
 const response = await fetch(
     new URL('../assets/logo.png', import.meta.url).toString()
 );
+
+console.log("response = ", response);
+
+// response.blob().then(data=>{
+//     console.log("blob = ", data);
+// })
+
+
 const imageBitmap = await createImageBitmap(await response.blob());
+
+console.log("bitMap = ", imageBitmap);
 
 // GPU端开辟texture存储区
 cubeTexture = device.createTexture({

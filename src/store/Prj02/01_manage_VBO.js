@@ -8,7 +8,8 @@ function manage_VBO(state, payload) {
         4 * 4 + // pos
         4 * 4 + // color
         1 * 4 + // life time
-        3 * 4 + // padding
+        1 * 4 + // idx for instanced texture
+        2 * 4 + // padding
         0;
 
 
@@ -76,7 +77,13 @@ function manage_VBO_Layout(state, payload) {
                 // lifetime
                 shaderLocation: 2,
                 offset: 8 * 4,
-                format: 'float32x4'
+                format: 'float32'
+            },
+            {
+                // idx for instanced texture
+                shaderLocation: 3,
+                offset: 9 * 4,
+                format: 'float32'
             }
         ]
     };
@@ -89,13 +96,13 @@ function manage_VBO_Layout(state, payload) {
         attributes: [
             {
                 // vertex position
-                shaderLocation: 3,
+                shaderLocation: 4,
                 offset: 0,
                 format: 'float32x2',
             },
             {
                 // vertex uv
-                shaderLocation: 4,
+                shaderLocation: 5,
                 offset: 2 * 4,
                 format: 'float32x2',
             },

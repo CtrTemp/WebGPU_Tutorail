@@ -16,12 +16,32 @@ import { mat4, vec3, vec4 } from "wgpu-matrix"
 const device = await inject("device");
 const store = useStore();
 
+const ws = store.state.ws;
+
 // onMounted
 onMounted(() => {
 
-    const canvas = document.querySelector("canvas");
+    const cmd_json = {
+        cmd: "fetch_instanced_texture",
+        count: 100, // 索取图片数量 
+    }
 
-    store.dispatch("InstanceFlow/init_and_render", canvas);
+    // 这将初始化读入texture
+    setTimeout(() => {
+        ws.send(JSON.stringify(cmd_json));
+    }, 1000);
+
+
+    // 时序把控正确，后面再进行绘制
+
+    setTimeout(() => {
+
+        const canvas = document.querySelector("canvas");
+
+        store.dispatch("InstanceFlow/init_and_render", canvas);
+    }, 1500);
+
+
 
 })
 

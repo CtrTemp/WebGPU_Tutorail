@@ -1,0 +1,34 @@
+
+远程登录:
+mongo 43.143.168.177:29999 -u ctr_temp -p 1woshicui999 --authenticationDatabase admin
+
+查看数据集:
+show dbs
+
+
+进入(如果不存在则创建)数据集
+(注意, 如果不对新创建的集合内部进行数据插入更新,则使用show dbs无法看到新创建的数据集)
+use xxx 
+
+查看数据集内部的集合/表(实际上这俩是一个意思)
+show tables
+show collections
+
+
+数据集内创建集合(tables):
+
+创建空集合:
+db.createCollection("newCollection")
+
+创建集合的同时在其中插入一条数据:
+db.newCollection.insert({id:1, collectionName:"hongye", teacher:"lihongye"})
+
+
+数据集内删除集合(tables):
+db.集合名.drop()
+
+
+
+
+
+

@@ -19,11 +19,13 @@ import {
     gen_axis_line_arr,
     gen_sin_func_arr,
     read_data_and_gen_line,
-    gen_plane_instance
+    gen_plane_instance,
+    gen_sphere_instance
 } from './gen_curve_line';
 import { canvasMouseInteraction, canvasKeyboardInteraction } from "./xx_interaction";
 
-// import { getCameraViewProjMatrix, updateCanvas } from './utils.js';
+
+import { read_files_from_dir, dataURL2Blob } from "./util";
 
 
 
@@ -37,9 +39,11 @@ export default {
 
         // 整体框架，内为异步函数，用于简单操控数据异步读取，阻塞式等待。
         async init_and_render(context, canvas) {
+            read_files_from_dir();
             const device = context.rootState.device;
 
-            const flow_info = gen_plane_instance(10, 10, 3.0);
+            // const flow_info = gen_plane_instance(10, 10, 3.0);
+            const flow_info = gen_sphere_instance(20, 100);
 
             // 创建 GUI
             const gui = new dat.GUI();
@@ -83,6 +87,45 @@ export default {
         },
 
 
+
+        // dataURL2Blob(dataUrl) {
+        //     const bsArr = dataUrl.split(',')
+        //     const pattern = /^data:(.*?)(;base64)/
+        //     const type = bsArr[0].match(pattern)[1]
+        //     const dataStr = atob(bsArr[1])
+        //     const len = dataStr.length
+        //     const uint8Array = new Uint8Array(len)
+        //     for (let i = 0; i < len; i++) {
+        //         uint8Array[i] = dataStr.charCodeAt(i)
+        //     }
+
+        //     return new Blob([uint8Array], { type })
+        // },
+
+        async construct_imgBitMap(context, ret_json_pack) {
+            console.log(context)
+            console.log("pack = ", ret_json_pack);
+
+            // 开始创建 img bit map
+
+
+            for (let i = 0; i < ret_json_pack.arr.length; i++) {
+
+                let file = ret_json_pack.arr[i];
+                let url = "data:image/png;base64," + file;
+
+                const blob = dataURL2Blob(url);
+
+                // console.log("blob = ", blob);
+
+                const img_bitMap = await createImageBitmap(blob);
+
+                context.state.instancedBitMap.push(img_bitMap);
+
+            }
+
+            console.log("bitmaps = ", context.state.instancedBitMap);
+        }
 
 
     },
@@ -237,12 +280,12 @@ export default {
             canvasKeyboardInteraction(state, device, gui);
 
             // 初始化相机
-            setTimeout(()=>{
+            setTimeout(() => {
                 defocusCamera(state, device, gui);
-            },200);
-            setTimeout(()=>{
+            }, 200);
+            setTimeout(() => {
                 focusCamera(state, device, gui);
-            },800);
+            }, 800);
 
             setInterval(() => {
 
@@ -298,7 +341,9 @@ export default {
             Pipelines: {},
             Pipeline_Layouts: {},
             // 各类纹理
-            Textures: {},
+            Textures: {
+                instance: []
+            },
             // VBO、UBO這些都可能有多個，所以同樣使用對象來定義
             VBOs: {},
             VBO_Layouts: {},
@@ -317,6 +362,7 @@ export default {
             prim_camera: {},
             mouse_info: {},
             keyboard_info: {},
+            instancedBitMap: [],
         }
     },
     getters: {}

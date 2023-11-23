@@ -82,9 +82,12 @@ function gen_plane_instance(col, row, range) {
             let pos_y = (i + 0.5) * col_step;
             let pos_z = Math.sin(2 * Math.PI * time); // rand value
             const pos = [pos_x, pos_y, pos_z, 1.0];
+            const idx = parseInt(Math.random() * 9);
             ret_arr = ret_arr.concat(pos);                      // position
             ret_arr = ret_arr.concat(default_color);            // color
-            ret_arr = ret_arr.concat([time, 0.0, 0.0, 0.0]);    // liftime padding
+            ret_arr = ret_arr.concat([time, idx, 0.0, 0.0]);    // liftime + idx + padding
+
+            // flow_info["idx"] =  // in use
         }
     }
 
@@ -92,6 +95,36 @@ function gen_plane_instance(col, row, range) {
 
     flow_info["flow_arr"] = ret_arr;
     flow_info["numParticles"] = ret_arr.length / 12;
+    flow_info["lifetime"] = 10.0; // not used
+
+    return flow_info;
+}
+
+function gen_sphere_instance(radius, counts) {
+
+    let ret_arr = [];
+    const default_color = [0.8, 0.6, 0.0, 1.0];
+    for (let i = 0; i < counts; i++) {
+        const r1 = radius;
+        let pos_x = (Math.random() * 2 - 1) * r1;
+        const r2 = Math.sqrt(radius * radius - pos_x * pos_x);
+        let pos_y = (Math.random() * 2 - 1) * r2;
+        const r3 = Math.sqrt(radius * radius - pos_x * pos_x - pos_y * pos_y);
+        let pos_z = (Math.random() * 2 - 1) * r3;
+        let time = Math.random(); // not used
+        const idx = parseInt(Math.random() * 9);
+
+        ret_arr = ret_arr.concat([pos_x, pos_y, pos_z, 0.0]);
+        ret_arr = ret_arr.concat(default_color);            // color
+        ret_arr = ret_arr.concat([time, idx, 0.0, 0.0]);    // liftime + idx + padding
+
+    }
+
+
+    let flow_info = {};
+
+    flow_info["flow_arr"] = ret_arr;
+    flow_info["numParticles"] = counts;
     flow_info["lifetime"] = 10.0; // not used
 
     return flow_info;
@@ -199,6 +232,7 @@ export {
     gen_axis_line_arr,
     gen_sin_func_arr,
     read_data_and_gen_line,
-    gen_plane_instance
+    gen_plane_instance,
+    gen_sphere_instance
 };
 

@@ -27,7 +27,7 @@ import InstanceFlow from "./Prj02/instanceFlow.js";
 
 const store = createStore({
   state: {
-    // ws: new WebSocket(`ws://${window.location.hostname}:3008`),
+    ws: new WebSocket(`ws://${window.location.hostname}:3008`),
     device: null,
   },
   mutations: {

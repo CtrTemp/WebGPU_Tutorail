@@ -11,6 +11,7 @@
     "@webgpu/types": "^0.1.38",
     "core-js": "^3.8.3",
     "dat.gui": "^0.7.9",
+    "fs": "^0.0.1-security",
     "stanford-dragon": "^1.1.1",
     "teapot": "^1.0.0",
     "vue": "^3.2.13",

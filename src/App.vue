@@ -26,6 +26,7 @@
 
     <!-- <Prj01_InstanceMoving /> -->
     <Prj02_InstanceFlowing />
+    <!-- <Temp /> -->
 
 
   </Suspense>
@@ -60,7 +61,8 @@ import Tuto15_ForwardShading from './components/Tuto15_ForwardShading.vue';
 
 import Prj02_InstanceFlowing from './components/Prj02_InstanceFlowing.vue';
 
-import Flow from './components/Flow.vue';
+import Temp from "./components/Temp.vue";
+
 
 import { useStore } from 'vuex';
 import { provide } from "vue"
@@ -94,6 +96,26 @@ const device = new Promise((resolve, reject) => {
   })
 })
 provide("device", device);
+
+
+
+// 这里负责接收服务器回传的消息
+store.state.ws.onmessage = function (e) {
+  const json_pack = JSON.parse(e.data);
+  console.log(json_pack);
+
+  // 这里只负责更新组件状态, 具体业务逻辑在各个组件中, 通过监视组件状态的改变执行对应操作
+  // 而源数据的获取, 即与server进行通信获取message的部分, 在server_link.js中
+  switch (json_pack.cmd) {
+    case "instanced_texture_pack":
+      console.log("haha, msg received");
+      store.dispatch("InstanceFlow/construct_imgBitMap", json_pack);
+      break;
+
+    default:
+      console.log("server source message header invalid");
+  }
+};
 
 
 </script>

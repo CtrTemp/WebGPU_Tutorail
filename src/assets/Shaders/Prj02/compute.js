@@ -27,6 +27,7 @@ struct Particle {
   position : vec4<f32>,
   color    : vec4<f32>,
   lifetime : f32, // 所剩余的显示时间，也是整个position数组的长度，也间接代表了粒子的不透明度
+  idx      : f32,
 }
 
 struct Particles {

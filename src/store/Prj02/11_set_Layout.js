@@ -40,7 +40,66 @@ function set_Layout(state, device) {
                 texture: {
                     sampleType: 'float'
                 }
-            }]
+            },
+            // instance texture
+            {
+                binding: 2,
+                visibility: GPUShaderStage.FRAGMENT,
+                texture: {
+                    sampleType: 'float'
+                }
+            },
+            {
+                binding: 3,
+                visibility: GPUShaderStage.FRAGMENT,
+                texture: {
+                    sampleType: 'float'
+                }
+            },
+            {
+                binding: 4,
+                visibility: GPUShaderStage.FRAGMENT,
+                texture: {
+                    sampleType: 'float'
+                }
+            },
+            {
+                binding: 5,
+                visibility: GPUShaderStage.FRAGMENT,
+                texture: {
+                    sampleType: 'float'
+                }
+            },
+            {
+                binding: 6,
+                visibility: GPUShaderStage.FRAGMENT,
+                texture: {
+                    sampleType: 'float'
+                }
+            },
+            {
+                binding: 7,
+                visibility: GPUShaderStage.FRAGMENT,
+                texture: {
+                    sampleType: 'float'
+                }
+            },
+            {
+                binding: 8,
+                visibility: GPUShaderStage.FRAGMENT,
+                texture: {
+                    sampleType: 'float'
+                }
+            },
+            {
+                binding: 9,
+                visibility: GPUShaderStage.FRAGMENT,
+                texture: {
+                    sampleType: 'float'
+                }
+            }
+
+        ]
     });
     state.Layouts["sample"] = Sample_UBO_Layout;
 

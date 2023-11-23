@@ -2,30 +2,30 @@ import { reactive } from "vue";
 import { mat4, vec3, vec4 } from "wgpu-matrix"
 
 
-function observe(data) {
-    if (!data || typeof data !== 'object') {
-        return;
-    }
-    // 取出所有属性遍历
-    Object.keys(data).forEach(function (key) {
-        defineReactive(data, key, data[key]);
-    });
-};
+// function observe(data) {
+//     if (!data || typeof data !== 'object') {
+//         return;
+//     }
+//     // 取出所有属性遍历
+//     Object.keys(data).forEach(function (key) {
+//         defineReactive(data, key, data[key]);
+//     });
+// };
 
-function defineReactive(data, key, val) {
-    observe(val); // 监听子属性
-    Object.defineProperty(data, key, {
-        enumerable: false, // 可枚举
-        configurable: false, // 不能再define
-        get: function () {
-            return val;
-        },
-        set: function (newVal) {
-            // console.log('哈哈哈，监听到值变化了 ', val, ' --> ', newVal);
-            val = newVal;
-        }
-    });
-}
+// function defineReactive(data, key, val) {
+//     observe(val); // 监听子属性
+//     Object.defineProperty(data, key, {
+//         enumerable: false, // 可枚举
+//         configurable: false, // 不能再define
+//         get: function () {
+//             return val;
+//         },
+//         set: function (newVal) {
+//             // console.log('哈哈哈，监听到值变化了 ', val, ' --> ', newVal);
+//             val = newVal;
+//         }
+//     });
+// }
 
 
 function init_Camera(state, device, gui) {
@@ -89,12 +89,12 @@ function init_Camera(state, device, gui) {
     state.mouse_info["lastX"] = 0;
     state.mouse_info["lastY"] = 0;
 
-    // // 解算得到的相机方位角
-    // camera["yaw"] = Math.PI / 2;
-    // camera["pitch"] = 0.0;
+    // 解算得到的相机方位角
+    camera["yaw"] = Math.PI / 2;
+    camera["pitch"] = 0.0;
 
-    defineReactive(state.prim_camera, "yaw", Math.PI / 2);
-    defineReactive(state.prim_camera, "pitch", 0.0);
+    // defineReactive(state.prim_camera, "yaw", Math.PI / 2);
+    // defineReactive(state.prim_camera, "pitch", 0.0);
     // 如果没有滚转角更新，则可以不考虑相机up方向的更新，也不会影响解算right方向
     // camera["roll"] = 0.0; // 不需要 roll
 
@@ -106,12 +106,12 @@ function init_Camera(state, device, gui) {
     /**
      *  GUI para 
      * */
-
+    const range = 20;
     gui.add(state.prim_camera, 'pitch', -2.0, 2.0, 0.01);
     gui.add(state.prim_camera, 'yaw', -2.0, 2.0, 0.01);
-    gui.add(state.prim_camera.pos, "x", -10.0, 10.0, 0.01);
-    gui.add(state.prim_camera.pos, "y", -10.0, 10.0, 0.01);
-    gui.add(state.prim_camera.pos, "z", -10.0, 10.0, 0.01);
+    gui.add(state.prim_camera.pos, "x", -range, range, 0.01);
+    gui.add(state.prim_camera.pos, "y", -range, range, 0.01);
+    gui.add(state.prim_camera.pos, "z", -range, range, 0.01);
 
 }
 
@@ -232,7 +232,6 @@ function defocusCamera(state, device, gui) {
     }, time_stride);
 
     setTimeout(() => {
-        console.log("haha, timer = ", timer);
         clearInterval(timer);
     }, step * time_stride);
 
@@ -246,19 +245,19 @@ function focusCamera(state, device, gui) {
     let camera = state.prim_camera;
 
     const current_camera_pos = camera.lookFrom;  // vec3
-    const targets_camera_pos = vec3.fromValues(3.1, 1.98, -1.36);
+    const targets_camera_pos = vec3.fromValues(9.15, 8.22, -8.91);
 
     let dir_vec = vec3.sub(targets_camera_pos, current_camera_pos);
     let dir_vec_unit = vec3.divScalar(dir_vec, step);
 
 
     const current_camera_pitch = camera.pitch;
-    const targets_camera_pitch = -0.55;
+    const targets_camera_pitch = -0.57;
     let pitch_unit = (targets_camera_pitch - current_camera_pitch) / step;
 
 
     const current_camera_yaw = camera.yaw;
-    const targets_camera_yaw = 2.23;
+    const targets_camera_yaw = 2.28;
     let yaw_unit = (targets_camera_yaw - current_camera_yaw) / step;
 
 
@@ -286,7 +285,6 @@ function focusCamera(state, device, gui) {
     }, time_stride);
 
     setTimeout(() => {
-        console.log("haha, timer = ", timer);
         clearInterval(timer);
     }, step * time_stride);
 }
