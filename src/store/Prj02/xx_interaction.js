@@ -1,6 +1,11 @@
 
 import { mat4, vec3, vec4 } from "wgpu-matrix"
-import { updateCamera, defocusCamera, focusCamera } from "./xx_set_camera";
+import {
+    updateCamera,
+    defocusCamera,
+    focusCamera,
+    focusOnRandomPic,
+} from "./xx_set_camera";
 
 /**
  *  Dragging
@@ -179,7 +184,7 @@ function downMovingCallback(state, device, gui) {
 /**
  *  Keyboard
  * */
-function canvasKeyboardInteraction(state, device, gui) {
+function canvasKeyboardInteraction(state, device, gui, flow_info) {
 
     let camera = state.prim_camera;
 
@@ -209,7 +214,8 @@ function canvasKeyboardInteraction(state, device, gui) {
                 defocusCamera(state, device, gui);
                 break;
             case "F".charCodeAt(0):
-                focusCamera(state, device, gui);
+                // focusCamera(state, device, gui);
+                focusOnRandomPic(state, device, gui, flow_info);
                 break;
 
             default:

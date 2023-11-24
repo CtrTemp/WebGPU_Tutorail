@@ -82,7 +82,7 @@ function gen_plane_instance(col, row, range) {
             let pos_y = (i + 0.5) * col_step;
             let pos_z = Math.sin(2 * Math.PI * time); // rand value
             const pos = [pos_x, pos_y, pos_z, 1.0];
-            const idx = parseInt(Math.random() * 9);
+            const idx = Math.floor(Math.random() * 10);
             ret_arr = ret_arr.concat(pos);                      // position
             ret_arr = ret_arr.concat(default_color);            // color
             ret_arr = ret_arr.concat([time, idx, 0.0, 0.0]);    // liftime + idx + padding
@@ -112,7 +112,7 @@ function gen_sphere_instance(radius, counts) {
         const r3 = Math.sqrt(radius * radius - pos_x * pos_x - pos_y * pos_y);
         let pos_z = (Math.random() * 2 - 1) * r3;
         let time = Math.random(); // not used
-        const idx = parseInt(Math.random() * 9);
+        const idx = Math.random() * 9;
 
         ret_arr = ret_arr.concat([pos_x, pos_y, pos_z, 0.0]);
         ret_arr = ret_arr.concat(default_color);            // color
@@ -126,6 +126,9 @@ function gen_sphere_instance(radius, counts) {
     flow_info["flow_arr"] = ret_arr;
     flow_info["numParticles"] = counts;
     flow_info["lifetime"] = 10.0; // not used
+
+    // console.log("counts = ", counts);
+    // console.log("counts = ", ret_arr.length / 12);
 
     return flow_info;
 }

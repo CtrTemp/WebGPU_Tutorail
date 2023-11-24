@@ -102,13 +102,13 @@ provide("device", device);
 // 这里负责接收服务器回传的消息
 store.state.ws.onmessage = function (e) {
   const json_pack = JSON.parse(e.data);
-  console.log(json_pack);
+  // console.log(json_pack);
 
   // 这里只负责更新组件状态, 具体业务逻辑在各个组件中, 通过监视组件状态的改变执行对应操作
   // 而源数据的获取, 即与server进行通信获取message的部分, 在server_link.js中
   switch (json_pack.cmd) {
     case "instanced_texture_pack":
-      console.log("haha, msg received");
+      // console.log("haha, msg received");
       store.dispatch("InstanceFlow/construct_imgBitMap", json_pack);
       break;
 

@@ -12,7 +12,13 @@ import { manage_Texture } from "./04_manage_Texture";
 import { set_Layout } from "./11_set_Layout";
 import { set_BindGroup } from "./12_set_BindGroup";
 import { set_Pipeline } from "./13_set_Pipeline";
-import { init_Camera, moveCamera, defocusCamera, focusCamera } from "./xx_set_camera.js"
+import {
+    init_Camera,
+    moveCamera,
+    defocusCamera,
+    focusCamera,
+    focusOnRandomPic
+} from "./xx_set_camera.js"
 
 import {
     gen_straight_line_arr,
@@ -103,12 +109,10 @@ export default {
         // },
 
         async construct_imgBitMap(context, ret_json_pack) {
-            console.log(context)
-            console.log("pack = ", ret_json_pack);
+            // console.log(context)
+            // console.log("pack = ", ret_json_pack);
 
             // 开始创建 img bit map
-
-
             for (let i = 0; i < ret_json_pack.arr.length; i++) {
 
                 let file = ret_json_pack.arr[i];
@@ -124,7 +128,7 @@ export default {
 
             }
 
-            console.log("bitmaps = ", context.state.instancedBitMap);
+            // console.log("bitmaps = ", context.state.instancedBitMap);
         }
 
 
@@ -277,14 +281,14 @@ export default {
             canvasMouseInteraction(state, device, gui);
 
             // canvas 注册键盘交互事件
-            canvasKeyboardInteraction(state, device, gui);
+            canvasKeyboardInteraction(state, device, gui, payload.flow_info);
 
             // 初始化相机
             setTimeout(() => {
                 defocusCamera(state, device, gui);
             }, 200);
             setTimeout(() => {
-                focusCamera(state, device, gui);
+                focusOnRandomPic(state, device, gui, payload.flow_info);
             }, 800);
 
             setInterval(() => {

@@ -36,7 +36,6 @@ function manage_Texture(state, payload) {
     for (let i = 0; i < instance_len; i++) {
         const imageBitmap = state.instancedBitMap[i];
 
-        console.log("width = ", imageBitmap.width);
         const instanceTexture = device.createTexture({
             size: [imageBitmap.width, imageBitmap.height, 1],
             // size: [512, 512, 1], // 固定长宽无法适用

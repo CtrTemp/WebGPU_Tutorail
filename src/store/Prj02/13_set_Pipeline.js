@@ -38,6 +38,7 @@ function set_Pipeline(state, device) {
                 {
                     format: state["canvasFormat"],
                     // // 這一步是設置 半透明度 必須的要素（取消设置，得到默认遮挡）
+                    // // 如果使用半透明，则将以下 depthStencil 中 depthWriteEnabled 字段设为 false
                     // blend: {
                     //     color: {
                     //         srcFactor: 'src-alpha',
@@ -55,9 +56,11 @@ function set_Pipeline(state, device) {
         },
         primitive: {
             topology: "triangle-list",
+            cullMode: "back"
         },
         depthStencil: {
-            depthWriteEnabled: false,
+            // 如果使能以上的半透明，则将以下的 depthWriteEnabled 字段改为 false
+            depthWriteEnabled: true,
             depthCompare: 'less',
             format: 'depth24plus',
         },

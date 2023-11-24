@@ -107,8 +107,8 @@ function init_Camera(state, device, gui) {
      *  GUI para 
      * */
     const range = 20;
-    gui.add(state.prim_camera, 'pitch', -2.0, 2.0, 0.01);
-    gui.add(state.prim_camera, 'yaw', -2.0, 2.0, 0.01);
+    gui.add(state.prim_camera, 'pitch', -2 * Math.PI, 2 * Math.PI, 0.01);
+    gui.add(state.prim_camera, 'yaw', -2 * Math.PI, 2 * Math.PI, 0.01);
     gui.add(state.prim_camera.pos, "x", -range, range, 0.01);
     gui.add(state.prim_camera.pos, "y", -range, range, 0.01);
     gui.add(state.prim_camera.pos, "z", -range, range, 0.01);
@@ -193,7 +193,7 @@ function defocusCamera(state, device, gui) {
     let camera = state.prim_camera;
 
     const current_camera_pos = camera.lookFrom;  // vec3
-    const targets_camera_pos = vec3.fromValues(0.0, 0.0, -5.0);
+    const targets_camera_pos = vec3.fromValues(1.22, 5.46, -19.1);
     let dir_vec = vec3.sub(targets_camera_pos, current_camera_pos);
     let dir_vec_unit = vec3.divScalar(dir_vec, step);
 
@@ -290,4 +290,80 @@ function focusCamera(state, device, gui) {
 }
 
 
-export { init_Camera, updateCamera, moveCamera, defocusCamera, focusCamera }
+/**
+ *  任选一张图片进行 focus 查看，定制查看路径
+ *  目前假设为球投影
+ *  回来修改速度函数~
+ * */
+function focusOnRandomPic(state, device, gui, flow_info) {
+    let step = 50;
+    let time_stride = 25; // 25ms 一次坐标更新（尽量保证与帧率一致或小于帧率）
+
+    let camera = state.prim_camera;
+
+
+    const particle_counts = flow_info["numParticles"];
+    const rand_idx = Math.floor(Math.random() * particle_counts) * 12; // 12 是数据包大小
+
+    const p_x = flow_info.flow_arr[rand_idx + 0];
+    const p_y = flow_info.flow_arr[rand_idx + 1];
+    const p_z = flow_info.flow_arr[rand_idx + 2];
+
+
+    // view dir 直接更新，不用再计算方位角
+    const cur_view_dir = state.prim_camera["viewDir"];
+    const new_view_dir = vec3.normalize(vec3.fromValues(-p_x, -p_y, -p_z));
+    const view_dir_unit = vec3.divScalar(vec3.sub(new_view_dir, cur_view_dir), step);
+
+
+    // 相机摆放位置离图片的距离（正对距离）
+    const distance = 1.15;
+    const current_camera_pos = camera.lookFrom;  // vec3
+    const reverse_view_dir = vec3.normalize(vec3.fromValues(p_x, p_y, p_z));
+    const targets_camera_pos = vec3.add(vec3.fromValues(p_x, p_y, p_z), vec3.mulScalar(reverse_view_dir, distance));
+
+    let dir_vec = vec3.sub(targets_camera_pos, current_camera_pos);
+    let dir_vec_unit = vec3.divScalar(dir_vec, step);
+
+
+    let step_count = 0;
+    let timer = setInterval(() => {
+
+        const speed = Math.cos(Math.PI * step_count / step) - Math.cos(Math.PI * (step_count + 1) / step);
+
+        dir_vec_unit = vec3.mulScalar(dir_vec, speed / 2);
+        // 更新 lookFrom
+        camera["lookFrom"] = vec3.add(camera["lookFrom"], dir_vec_unit);
+
+        // 更新 viewDir
+        let new_view_dir = (vec3.add(state.prim_camera["viewDir"], view_dir_unit));
+
+        // 进而更新方位角
+        const x = new_view_dir[0];
+        const y = new_view_dir[1];
+        camera["pitch"] = Math.asin(y);
+        camera["yaw"] = Math.acos(x / (Math.sqrt(1 - y * y)));
+
+        state.prim_camera["viewDir"] = new_view_dir;
+
+        updateCamera(state, device, gui);
+        step_count++;
+
+    }, time_stride);
+
+
+
+    setTimeout(() => {
+        clearInterval(timer);
+    }, step * time_stride);
+}
+
+
+export {
+    init_Camera,
+    updateCamera,
+    moveCamera,
+    defocusCamera,
+    focusCamera,
+    focusOnRandomPic,
+}

@@ -97,6 +97,8 @@ fn fs_main(in : FragIutput) -> @location(0) vec4<f32> {
   color = select(color, textureSample(myTexture_id6, mySampler, in.quad_uv), idx>6.0);
   color = select(color, textureSample(myTexture_id7, mySampler, in.quad_uv), idx>7.0);
   color = select(color, textureSample(myTexture_id8, mySampler, in.quad_uv), idx>8.0);
+  color = select(color, textureSample(myTexture_id9, mySampler, in.quad_uv), idx>9.0);
+
   
 
   return color;
