@@ -293,13 +293,40 @@ export default {
 
             setInterval(() => {
 
-                // moveCamera(state, device);
+                // 自适应 canvas 大小
+
+                // console.log(window.innerWidth);
+
+                const window_width = window.innerWidth;
+                const window_height = window.innerHeight;
+                state.canvas.width = window_width;
+                state.canvas.height = window_height;
+
 
                 const renderPassDescriptor = state.passDescriptors["render_particles"];
 
                 renderPassDescriptor.colorAttachments[0].view = state.GPU_context
                     .getCurrentTexture()
                     .createView();
+                console.log(state.GPU_context
+                    .getCurrentTexture()
+                    );
+
+
+
+                // depth texture 重建
+                state.Textures["depth"].destroy();
+                state.Textures["depth"] = device.createTexture({
+                    size: [window_width, window_height],
+                    format: 'depth24plus',
+                    usage: GPUTextureUsage.RENDER_ATTACHMENT,
+                })
+
+                renderPassDescriptor.depthStencilAttachment.view = state.Textures["depth"].createView();
+
+
+                // camera aspect 更新
+                state.prim_camera["aspect"] = window_width / window_height;
 
                 const encoder = device.createCommandEncoder();
 
