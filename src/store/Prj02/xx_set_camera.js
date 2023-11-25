@@ -2,31 +2,6 @@ import { reactive } from "vue";
 import { mat4, vec3, vec4 } from "wgpu-matrix"
 
 
-// function observe(data) {
-//     if (!data || typeof data !== 'object') {
-//         return;
-//     }
-//     // 取出所有属性遍历
-//     Object.keys(data).forEach(function (key) {
-//         defineReactive(data, key, data[key]);
-//     });
-// };
-
-// function defineReactive(data, key, val) {
-//     observe(val); // 监听子属性
-//     Object.defineProperty(data, key, {
-//         enumerable: false, // 可枚举
-//         configurable: false, // 不能再define
-//         get: function () {
-//             return val;
-//         },
-//         set: function (newVal) {
-//             // console.log('哈哈哈，监听到值变化了 ', val, ' --> ', newVal);
-//             val = newVal;
-//         }
-//     });
-// }
-
 
 function init_Camera(state, device, gui) {
 
@@ -106,7 +81,7 @@ function init_Camera(state, device, gui) {
     /**
      *  GUI para 
      * */
-    const range = 20;
+    const range = 50;
     gui.add(state.prim_camera, 'pitch', -2 * Math.PI, 2 * Math.PI, 0.01);
     gui.add(state.prim_camera, 'yaw', -2 * Math.PI, 2 * Math.PI, 0.01);
     gui.add(state.prim_camera.pos, "x", -range, range, 0.01);
@@ -185,36 +160,43 @@ function moveCamera(state, device) {
 
 /**
  *  将相机移动到默认原位观察点
+ *  回来之后将这个改好就行~ 初始化相机移动轨迹自适应速度平滑~
  * */
 function defocusCamera(state, device, gui) {
-    let step = 20;
+    let step = 50;
     let time_stride = 25; // 25ms 一次坐标更新（尽量保证与帧率一致或小于帧率）
 
     let camera = state.prim_camera;
 
     const current_camera_pos = camera.lookFrom;  // vec3
-    const targets_camera_pos = vec3.fromValues(1.22, 5.46, -19.1);
+    const targets_camera_pos = vec3.fromValues(27.45, 28.94, -31.91);
+
     let dir_vec = vec3.sub(targets_camera_pos, current_camera_pos);
-    let dir_vec_unit = vec3.divScalar(dir_vec, step);
 
 
     const current_camera_pitch = camera.pitch;
-    const targets_camera_pitch = 0;
-    let pitch_unit = (targets_camera_pitch - current_camera_pitch) / step;
+    const targets_camera_pitch = -0.68;
+    const pitch_diff = targets_camera_pitch - current_camera_pitch;
 
 
     const current_camera_yaw = camera.yaw;
-    const targets_camera_yaw = 1.57;
-    let yaw_unit = (targets_camera_yaw - current_camera_yaw) / step;
+    const targets_camera_yaw = 2.37;
+    const yaw_diff = targets_camera_yaw - current_camera_yaw;
 
+    let step_count = 0;
     let timer = setInterval(() => {
 
+        const speed = Math.cos(Math.PI * step_count / step) - Math.cos(Math.PI * (step_count + 1) / step);
+
+        const dir_vec_unit = vec3.mulScalar(dir_vec, speed / 2);
+        const pitch_unit = pitch_diff * speed / 2;
+        const yaw_unit = yaw_diff * speed / 2;
         // 更新 lookFrom
         camera["lookFrom"] = vec3.add(camera["lookFrom"], dir_vec_unit);
 
-        // 更新 pitch 和 yaw
-        state.prim_camera["yaw"] += yaw_unit;
-        state.prim_camera["pitch"] += pitch_unit;
+        // 更新方位角
+        camera["pitch"] += pitch_unit;
+        camera["yaw"] += yaw_unit;
 
         // 进一步更新 viewDir
         let new_view_dir = vec3.fromValues(
@@ -225,15 +207,48 @@ function defocusCamera(state, device, gui) {
 
         state.prim_camera["viewDir"] = new_view_dir;
 
-
         updateCamera(state, device, gui);
 
-
+        step_count++;
     }, time_stride);
 
     setTimeout(() => {
         clearInterval(timer);
     }, step * time_stride);
+
+
+
+
+
+    setTimeout(() => {
+        clearInterval(timer);
+    }, step * time_stride);
+
+
+    /**
+     *  最后开始 animation 
+     * */
+
+    state.simu_pause = 0.0;
+
+    device.queue.writeBuffer(
+        state.UBOs["compute"],
+        0,
+        new Float32Array([
+            1.0,
+            0.0,
+            0.0,
+            0.0,// padding
+            Math.random() * 100,
+            Math.random() * 100, // seed.xy
+            1 + Math.random(),
+            1 + Math.random(), // seed.zw
+            state.particle_info["lifetime"],
+            state.simu_pause, // pause = false
+            0.0, // paddings 
+            0.0
+        ])
+    );
 
 }
 
@@ -263,22 +278,22 @@ function focusCamera(state, device, gui) {
 
     let timer = setInterval(() => {
 
+        const speed = Math.cos(Math.PI * step_count / step) - Math.cos(Math.PI * (step_count + 1) / step);
+
+        dir_vec_unit = vec3.mulScalar(dir_vec, speed / 2);
         // 更新 lookFrom
         camera["lookFrom"] = vec3.add(camera["lookFrom"], dir_vec_unit);
 
-        // 更新 pitch 和 yaw
-        state.prim_camera["yaw"] += yaw_unit;
-        state.prim_camera["pitch"] += pitch_unit;
+        // 更新 viewDir
+        let new_view_dir = (vec3.add(state.prim_camera["viewDir"], view_dir_unit));
 
-        // 进一步更新 viewDir
-        let new_view_dir = vec3.fromValues(
-            Math.cos(state.prim_camera["yaw"]) * Math.cos(state.prim_camera["pitch"]),
-            Math.sin(state.prim_camera["pitch"]),
-            Math.sin(state.prim_camera["yaw"]) * Math.cos(state.prim_camera["pitch"])
-        );
+        // 进而更新方位角
+        const x = new_view_dir[0];
+        const y = new_view_dir[1];
+        camera["pitch"] = Math.asin(y);
+        camera["yaw"] = Math.acos(x / (Math.sqrt(1 - y * y)));
 
         state.prim_camera["viewDir"] = new_view_dir;
-
 
         updateCamera(state, device, gui);
 
@@ -296,24 +311,60 @@ function focusCamera(state, device, gui) {
  *  回来修改速度函数~
  * */
 function focusOnRandomPic(state, device, gui, flow_info) {
+    /**
+     *  首先暂停 animation 
+     * */
+
+    state.simu_pause = 1.0;
+
+    device.queue.writeBuffer(
+        state.UBOs["compute"],
+        0,
+        new Float32Array([
+            1.0,
+            0.0,
+            0.0,
+            0.0,// padding
+            Math.random() * 100,
+            Math.random() * 100, // seed.xy
+            1 + Math.random(),
+            1 + Math.random(), // seed.zw
+            state.particle_info["lifetime"],
+            state.simu_pause, // pause = false
+            0.0, // paddings 
+            0.0
+        ])
+    );
+
     let step = 50;
     let time_stride = 25; // 25ms 一次坐标更新（尽量保证与帧率一致或小于帧率）
 
     let camera = state.prim_camera;
 
 
+    /**
+     *  再根据仿真时间，找到粒子的位置
+     * */
     const particle_counts = flow_info["numParticles"];
     const rand_idx = Math.floor(Math.random() * particle_counts) * 12; // 12 是数据包大小
 
-    const p_x = flow_info.flow_arr[rand_idx + 0];
-    const p_y = flow_info.flow_arr[rand_idx + 1];
-    const p_z = flow_info.flow_arr[rand_idx + 2];
+    let p_x = flow_info.flow_arr[rand_idx + 0];
+    let p_y = flow_info.flow_arr[rand_idx + 1];
+    let p_z = flow_info.flow_arr[rand_idx + 2];
+    let life_time = flow_info.flow_arr[rand_idx + 8];
+
+    const radius = Math.sqrt(p_x * p_x + p_z * p_z);
+    p_z = radius * Math.sin(life_time + state.simu_time);
+    p_x = radius * Math.cos(life_time + state.simu_time);
+
 
 
     // view dir 直接更新，不用再计算方位角
     const cur_view_dir = state.prim_camera["viewDir"];
     const new_view_dir = vec3.normalize(vec3.fromValues(-p_x, -p_y, -p_z));
     const view_dir_unit = vec3.divScalar(vec3.sub(new_view_dir, cur_view_dir), step);
+
+
 
 
     // 相机摆放位置离图片的距离（正对距离）

@@ -29,7 +29,8 @@ function manage_UBO(state, payload) {
         3 * 4 + // padding
         4 * 4 + // seed
         1 * 4 + // particle_nums
-        3 * 4 + // padding
+        1 * 4 + // pause simulation
+        2 * 4 + // padding
         0;
     const simu_Control_UBO_Buffer = device.createBuffer({
         size: simu_Control_UBO_BufferSize,

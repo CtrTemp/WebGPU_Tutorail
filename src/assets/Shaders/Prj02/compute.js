@@ -20,7 +20,8 @@ const simulation_compute = /* wgsl */`
 struct SimulationParams {
   simu_speed : f32, // 一次不仅的步长，可以为小数
   seed : vec4<f32>,
-  particle_nums: f32
+  particle_nums: f32,
+  pause: f32,
 }
 
 struct Particle {
@@ -40,29 +41,26 @@ struct Particles {
 
 @compute @workgroup_size(64)
 fn simulate(@builtin(global_invocation_id) global_invocation_id : vec3<u32>) {
+
+  if(sim_params.pause != 0.0)
+  {
+    return;
+  }
   let idx = global_invocation_id.x;
 
-
-  // do nothing for now
   var particle = data.particles[idx];
 
-  // particle.lifetime += 0.01;
+  /**
+   *  模拟运动：绕 y 轴旋转
+   * */ 
+  let cur_x = particle.position.x;
+  let cur_z = particle.position.z;
+  var radius = sqrt(cur_x*cur_x+cur_z*cur_z);
 
-  // particle.position.z = sin(particle.lifetime*2*3.1415)-0.5;
+  particle.lifetime += 0.01;
+  particle.position.z = radius * sin(particle.lifetime);
+  particle.position.x = radius * cos(particle.lifetime);
 
-
-  // // 這句比較關鍵，可以根據其LifeTime自動發揮出漸變效果
-  // particle.color.a = particle.lifetime / sim_params.particle_nums / 3 + 0.05;
-  // // // particle.color.a = 1.0;
-
-  // particle.lifetime = particle.lifetime - sim_params.simu_speed;
-
-  // if(particle.lifetime < 0)
-  // {
-  //   particle.lifetime = sim_params.particle_nums;
-  // }
-
-  // // Store the new particle value
   data.particles[idx] = particle;
 }
 

@@ -181,6 +181,30 @@ function downMovingCallback(state, device, gui) {
     updateCamera(state, device, gui);
 }
 
+function pauseBrowseAnimation(state, device)
+{
+    state.simu_pause = !state.simu_pause;
+    
+    device.queue.writeBuffer(
+        state.UBOs["compute"],
+        0,
+        new Float32Array([
+            1.0,
+            0.0,
+            0.0,
+            0.0,// padding
+            Math.random() * 100,
+            Math.random() * 100, // seed.xy
+            1 + Math.random(),
+            1 + Math.random(), // seed.zw
+            state.particle_info["lifetime"],
+            state.simu_pause, // pause = false
+            0.0, // paddings 
+            0.0
+        ])
+    );
+}
+
 /**
  *  Keyboard
  * */
@@ -216,6 +240,9 @@ function canvasKeyboardInteraction(state, device, gui, flow_info) {
             case "F".charCodeAt(0):
                 // focusCamera(state, device, gui);
                 focusOnRandomPic(state, device, gui, flow_info);
+                break;
+            case "P".charCodeAt(0):
+                pauseBrowseAnimation(state, device)
                 break;
 
             default:

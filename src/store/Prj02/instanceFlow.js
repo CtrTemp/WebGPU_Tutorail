@@ -49,7 +49,7 @@ export default {
             const device = context.rootState.device;
 
             // const flow_info = gen_plane_instance(10, 10, 3.0);
-            const flow_info = gen_sphere_instance(20, 100);
+            const flow_info = gen_sphere_instance(50, 1000);
 
             // 创建 GUI
             const gui = new dat.GUI();
@@ -208,7 +208,7 @@ export default {
             const device = payload.device;
 
 
-
+            state.simu_pause = 0.0;
 
             device.queue.writeBuffer(
                 state.UBOs["compute"],
@@ -223,8 +223,8 @@ export default {
                     1 + Math.random(),
                     1 + Math.random(), // seed.zw
                     state.particle_info["lifetime"],
-                    0.0,
-                    0.0,
+                    state.simu_pause, // pause = false
+                    0.0, // paddings 
                     0.0
                 ])
             );
@@ -287,9 +287,9 @@ export default {
             setTimeout(() => {
                 defocusCamera(state, device, gui);
             }, 200);
-            setTimeout(() => {
-                focusOnRandomPic(state, device, gui, payload.flow_info);
-            }, 800);
+            // setTimeout(() => {
+            //     focusOnRandomPic(state, device, gui, payload.flow_info);
+            // }, 800);
 
             setInterval(() => {
 
@@ -308,11 +308,6 @@ export default {
                 renderPassDescriptor.colorAttachments[0].view = state.GPU_context
                     .getCurrentTexture()
                     .createView();
-                console.log(state.GPU_context
-                    .getCurrentTexture()
-                    );
-
-
 
                 // depth texture 重建
                 state.Textures["depth"].destroy();
@@ -358,6 +353,10 @@ export default {
                 }
 
                 device.queue.submit([encoder.finish()]);
+                if(state.simu_pause == 0.0)
+                {
+                    state.simu_time += 0.01;
+                }
             }, 25);
         }
     },
@@ -394,6 +393,8 @@ export default {
             mouse_info: {},
             keyboard_info: {},
             instancedBitMap: [],
+            simu_pause: 0.0,
+            simu_time: 0.0,
         }
     },
     getters: {}

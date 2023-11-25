@@ -27,7 +27,7 @@ struct VertexOutput {
 @vertex
 fn vs_main(in : VertexInput) -> VertexOutput {
   var quad_pos = mat2x3<f32>(right, up) * in.quad_pos;
-  var position = in.position.xyz + quad_pos; // 不改变quad大小
+  var position = in.position.xyz + quad_pos * 1.0; // 不改变quad大小
   // var position = in.position.xyz + quad_pos * (-in.position.z+0.5)*0.05; // 随着z值更改quad大小
   var out : VertexOutput;
   out.position = mvp * vec4<f32>(position, 1.0);

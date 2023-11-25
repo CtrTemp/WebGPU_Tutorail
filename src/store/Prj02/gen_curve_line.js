@@ -103,7 +103,8 @@ function gen_plane_instance(col, row, range) {
 function gen_sphere_instance(radius, counts) {
 
     let ret_arr = [];
-    const default_color = [0.8, 0.6, 0.0, 1.0];
+    // const default_color = [0.8, 0.6, 0.0, 1.0];
+    const default_color = [0.1, 0.8, 1.0, 1.0];
     for (let i = 0; i < counts; i++) {
         const r1 = radius;
         let pos_x = (Math.random() * 2 - 1) * r1;
@@ -111,7 +112,12 @@ function gen_sphere_instance(radius, counts) {
         let pos_y = (Math.random() * 2 - 1) * r2;
         const r3 = Math.sqrt(radius * radius - pos_x * pos_x - pos_y * pos_y);
         let pos_z = (Math.random() * 2 - 1) * r3;
-        let time = Math.random(); // not used
+        let time = Math.asin(pos_z / Math.sqrt(pos_x * pos_x + pos_z * pos_z)); // rotating
+        // console.log("time = ", time);
+        // 这里是均衡 arcsin 只能取值 [-PI/2, PI/2] 的问题
+        if (Math.random() > 0.5) {
+            time += Math.PI;
+        }
         const idx = Math.random() * 9;
 
         ret_arr = ret_arr.concat([pos_x, pos_y, pos_z, 0.0]);
