@@ -229,13 +229,13 @@ function defocusCamera(state, device, gui) {
      *  最后开始 animation 
      * */
 
-    state.simu_pause = 0.0;
+    state.simu_info["simu_pause"] = 0.0;
 
     device.queue.writeBuffer(
         state.UBOs["compute"],
         0,
         new Float32Array([
-            1.0,
+            state.simu_info["simu_speed"],
             0.0,
             0.0,
             0.0,// padding
@@ -244,7 +244,7 @@ function defocusCamera(state, device, gui) {
             1 + Math.random(),
             1 + Math.random(), // seed.zw
             state.particle_info["lifetime"],
-            state.simu_pause, // pause = false
+            state.simu_info["simu_pause"], // pause = false
             0.0, // paddings 
             0.0
         ])
@@ -315,13 +315,13 @@ function focusOnRandomPic(state, device, gui, flow_info) {
      *  首先暂停 animation 
      * */
 
-    state.simu_pause = 1.0;
+    state.simu_info["simu_pause"] = 1.0;
 
     device.queue.writeBuffer(
         state.UBOs["compute"],
         0,
         new Float32Array([
-            1.0,
+            state.simu_info["simu_speed"],
             0.0,
             0.0,
             0.0,// padding
@@ -330,7 +330,7 @@ function focusOnRandomPic(state, device, gui, flow_info) {
             1 + Math.random(),
             1 + Math.random(), // seed.zw
             state.particle_info["lifetime"],
-            state.simu_pause, // pause = false
+            state.simu_info["simu_pause"], // pause = false
             0.0, // paddings 
             0.0
         ])
@@ -354,8 +354,8 @@ function focusOnRandomPic(state, device, gui, flow_info) {
     let life_time = flow_info.flow_arr[rand_idx + 8];
 
     const radius = Math.sqrt(p_x * p_x + p_z * p_z);
-    p_z = radius * Math.sin(life_time + state.simu_time);
-    p_x = radius * Math.cos(life_time + state.simu_time);
+    p_z = radius * Math.sin(life_time + state.simu_info["simu_time"]);
+    p_x = radius * Math.cos(life_time + state.simu_info["simu_time"]);
 
 
 

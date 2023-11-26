@@ -208,13 +208,14 @@ export default {
             const device = payload.device;
 
 
-            state.simu_pause = 0.0;
+            state.simu_info["simu_pause"] = 0.0;
+            state.simu_info["simu_speed"] = 0.001;
 
             device.queue.writeBuffer(
                 state.UBOs["compute"],
                 0,
                 new Float32Array([
-                    1.0,
+                    state.simu_info["simu_speed"],
                     0.0,
                     0.0,
                     0.0,// padding
@@ -223,7 +224,7 @@ export default {
                     1 + Math.random(),
                     1 + Math.random(), // seed.zw
                     state.particle_info["lifetime"],
-                    state.simu_pause, // pause = false
+                    state.simu_info["simu_pause"], // pause = false
                     0.0, // paddings 
                     0.0
                 ])
@@ -353,9 +354,9 @@ export default {
                 }
 
                 device.queue.submit([encoder.finish()]);
-                if(state.simu_pause == 0.0)
-                {
-                    state.simu_time += 0.01;
+                if (state.simu_info["simu_pause"] == 0.0) {
+                    console.log("simu speed = ", state.simu_info["simu_speed"]);
+                    state.simu_info["simu_time"] += state.simu_info["simu_speed"];
                 }
             }, 25);
         }
@@ -393,8 +394,14 @@ export default {
             mouse_info: {},
             keyboard_info: {},
             instancedBitMap: [],
-            simu_pause: 0.0,
-            simu_time: 0.0,
+            simu_info: {
+                simu_pause: 0.0,
+                simu_time: 0.0,
+                simu_speed: 0.0,
+            },
+            // simu_pause: 0.0,
+            // simu_time: 0.0,
+            // simu_speed: 0.0,
         }
     },
     getters: {}

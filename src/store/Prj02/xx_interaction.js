@@ -183,22 +183,22 @@ function downMovingCallback(state, device, gui) {
 
 function pauseBrowseAnimation(state, device)
 {
-    state.simu_pause = !state.simu_pause;
+    state.simu_info["simu_pause"] = !state.simu_info["simu_pause"];
     
     device.queue.writeBuffer(
         state.UBOs["compute"],
         0,
         new Float32Array([
-            1.0,
+            state.simu_info["simu_speed"],
             0.0,
             0.0,
-            0.0,// padding
+            0.0, // padding
             Math.random() * 100,
             Math.random() * 100, // seed.xy
             1 + Math.random(),
             1 + Math.random(), // seed.zw
             state.particle_info["lifetime"],
-            state.simu_pause, // pause = false
+            state.simu_info["simu_pause"], // pause = false
             0.0, // paddings 
             0.0
         ])

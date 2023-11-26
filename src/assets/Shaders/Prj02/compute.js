@@ -57,7 +57,7 @@ fn simulate(@builtin(global_invocation_id) global_invocation_id : vec3<u32>) {
   let cur_z = particle.position.z;
   var radius = sqrt(cur_x*cur_x+cur_z*cur_z);
 
-  particle.lifetime += 0.01;
+  particle.lifetime += sim_params.simu_speed;
   particle.position.z = radius * sin(particle.lifetime);
   particle.position.x = radius * cos(particle.lifetime);
 
