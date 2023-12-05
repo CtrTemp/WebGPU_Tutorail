@@ -1,4 +1,12 @@
+
+import { gen_sphere_instance } from "./gen_curve_line";
+
 function manage_VBO(state, payload) {
+
+    const flow_info = gen_sphere_instance(50, 1000, state);
+    payload.flow_info = flow_info;
+
+
     const device = payload.device;
 
     // 全局粒子總數
@@ -9,7 +17,9 @@ function manage_VBO(state, payload) {
         4 * 4 + // color
         1 * 4 + // life time
         1 * 4 + // idx for instanced texture
-        2 * 4 + // padding
+        2 * 4 + // uv offset
+        2 * 4 + // uv scale
+        2 * 4 + // quad scale
         0;
 
 
@@ -46,6 +56,12 @@ function manage_VBO(state, payload) {
         -1.0, +1.0, 0.0, 1.0,
         +1.0, -1.0, 1.0, 0.0,
         +1.0, +1.0, 1.0, 1.0
+        // -1.0, 0.0, 0.0, 0.0,
+        // +1.0, 0.0, 1.0, 0.0,
+        // -1.0, +1.0, 0.0, 1.0,
+        // -1.0, +1.0, 0.0, 1.0,
+        // +1.0, 0.0, 1.0, 0.0,
+        // +1.0, +1.0, 1.0, 1.0
     ];
     new Float32Array(quadVertexBuffer.getMappedRange()).set(vertexData);
     quadVertexBuffer.unmap();
@@ -58,7 +74,7 @@ function manage_VBO_Layout(state, payload) {
     const device = payload.device;
 
     const particles_VBO_Layout = {
-        arrayStride: 12 * 4, // 这里是否要补全 padding 呢？？？
+        arrayStride: state.particle_info["particleInstanceByteSize"], // 这里是否要补全 padding 呢？？？
         stepMode: "instance", // 这个设置的含义是什么
         attributes: [
             {
@@ -84,6 +100,24 @@ function manage_VBO_Layout(state, payload) {
                 shaderLocation: 3,
                 offset: 9 * 4,
                 format: 'float32'
+            },
+            {
+                // uv offset
+                shaderLocation: 4,
+                offset: 10 * 4,
+                format: 'float32x2'
+            },
+            {
+                // uv scale
+                shaderLocation: 5,
+                offset: 12 * 4,
+                format: 'float32x2'
+            },
+            {
+                // quad scale
+                shaderLocation: 6,
+                offset: 14 * 4,
+                format: 'float32x2'
             }
         ]
     };
@@ -96,13 +130,13 @@ function manage_VBO_Layout(state, payload) {
         attributes: [
             {
                 // vertex position
-                shaderLocation: 4,
+                shaderLocation: 7,
                 offset: 0,
                 format: 'float32x2',
             },
             {
                 // vertex uv
-                shaderLocation: 5,
+                shaderLocation: 8,
                 offset: 2 * 4,
                 format: 'float32x2',
             },

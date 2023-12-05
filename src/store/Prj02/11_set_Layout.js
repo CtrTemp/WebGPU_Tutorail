@@ -33,66 +33,9 @@ function set_Layout(state, device) {
                     type: "filtering"
                 }
             },
-            // image texture
+            // big texture test Mip0
             {
                 binding: 1,
-                visibility: GPUShaderStage.FRAGMENT,
-                texture: {
-                    sampleType: 'float'
-                }
-            },
-            // instance texture
-            {
-                binding: 2,
-                visibility: GPUShaderStage.FRAGMENT,
-                texture: {
-                    sampleType: 'float'
-                }
-            },
-            {
-                binding: 3,
-                visibility: GPUShaderStage.FRAGMENT,
-                texture: {
-                    sampleType: 'float'
-                }
-            },
-            {
-                binding: 4,
-                visibility: GPUShaderStage.FRAGMENT,
-                texture: {
-                    sampleType: 'float'
-                }
-            },
-            {
-                binding: 5,
-                visibility: GPUShaderStage.FRAGMENT,
-                texture: {
-                    sampleType: 'float'
-                }
-            },
-            {
-                binding: 6,
-                visibility: GPUShaderStage.FRAGMENT,
-                texture: {
-                    sampleType: 'float'
-                }
-            },
-            {
-                binding: 7,
-                visibility: GPUShaderStage.FRAGMENT,
-                texture: {
-                    sampleType: 'float'
-                }
-            },
-            {
-                binding: 8,
-                visibility: GPUShaderStage.FRAGMENT,
-                texture: {
-                    sampleType: 'float'
-                }
-            },
-            {
-                binding: 9,
                 visibility: GPUShaderStage.FRAGMENT,
                 texture: {
                     sampleType: 'float'

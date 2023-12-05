@@ -345,8 +345,10 @@ function focusOnRandomPic(state, device, gui, flow_info) {
     /**
      *  再根据仿真时间，找到粒子的位置
      * */
+    // 这里提出一个优化，将数据包的 arr stride 大小打包成一个单独的全局变量为好
+    // 不然总是需要重复修改，每次都需要修改大量的位置，很容易忘记
     const particle_counts = flow_info["numParticles"];
-    const rand_idx = Math.floor(Math.random() * particle_counts) * 12; // 12 是数据包大小
+    const rand_idx = Math.floor(Math.random() * particle_counts) * state.particle_info["particleInstanceByteSize"] / 4;
 
     let p_x = flow_info.flow_arr[rand_idx + 0];
     let p_y = flow_info.flow_arr[rand_idx + 1];

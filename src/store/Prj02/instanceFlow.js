@@ -21,11 +21,7 @@ import {
 } from "./xx_set_camera.js"
 
 import {
-    gen_straight_line_arr,
-    gen_axis_line_arr,
-    gen_sin_func_arr,
     read_data_and_gen_line,
-    gen_plane_instance,
     gen_sphere_instance
 } from './gen_curve_line';
 import { canvasMouseInteraction, canvasKeyboardInteraction } from "./xx_interaction";
@@ -48,8 +44,6 @@ export default {
             read_files_from_dir();
             const device = context.rootState.device;
 
-            // const flow_info = gen_plane_instance(10, 10, 3.0);
-            const flow_info = gen_sphere_instance(50, 1000);
 
             // 创建 GUI
             const gui = new dat.GUI();
@@ -57,33 +51,11 @@ export default {
             const payload = {
                 canvas: canvas,
                 device: device,
-                flow_info: flow_info,
+                flow_info: undefined,
                 gui: gui
             }
 
             context.commit("init_device", payload);
-
-
-            // CPU 端读入图片，并创建bitmap
-            const response = await fetch(
-                new URL('../../assets/img/webgpu.png', import.meta.url).toString()
-                // new URL('../../assets/img/eye.jpeg', import.meta.url).toString()
-            );
-            const imageBitmap = await createImageBitmap(await response.blob());
-            let cubeTexture = device.createTexture({
-                size: [imageBitmap.width, imageBitmap.height, 1],
-                format: 'rgba8unorm', // 格式
-                usage:
-                    GPUTextureUsage.TEXTURE_BINDING |
-                    GPUTextureUsage.COPY_DST |
-                    GPUTextureUsage.RENDER_ATTACHMENT,
-            });
-            device.queue.copyExternalImageToTexture(
-                { source: imageBitmap }, // src
-                { texture: cubeTexture }, // dst
-                [imageBitmap.width, imageBitmap.height] // size
-            );
-            payload["img"] = imageBitmap;
 
             context.commit("manage_data", payload);
 
@@ -93,20 +65,6 @@ export default {
         },
 
 
-
-        // dataURL2Blob(dataUrl) {
-        //     const bsArr = dataUrl.split(',')
-        //     const pattern = /^data:(.*?)(;base64)/
-        //     const type = bsArr[0].match(pattern)[1]
-        //     const dataStr = atob(bsArr[1])
-        //     const len = dataStr.length
-        //     const uint8Array = new Uint8Array(len)
-        //     for (let i = 0; i < len; i++) {
-        //         uint8Array[i] = dataStr.charCodeAt(i)
-        //     }
-
-        //     return new Blob([uint8Array], { type })
-        // },
 
         async construct_imgBitMap(context, ret_json_pack) {
             // console.log(context)
@@ -156,6 +114,19 @@ export default {
          */
         manage_data(state, payload) {
 
+
+
+            /**
+             *  这里要修改时序！！！应先对texture进行创建
+             * 回来就修改这个√
+             * */
+
+
+            /**
+             *  Texture
+             * */
+            manage_Texture(state, payload);
+
             /**
              *  VBO
              * */
@@ -166,10 +137,6 @@ export default {
              * */
             manage_UBO(state, payload);
 
-            /**
-             *  Texture
-             * */
-            manage_Texture(state, payload);
 
             /**
              *  VBO Layout
@@ -208,8 +175,9 @@ export default {
             const device = payload.device;
 
 
+            // 初始化状态，是否直接开启浏览动画
             state.simu_info["simu_pause"] = 0.0;
-            state.simu_info["simu_speed"] = 0.001;
+            state.simu_info["simu_speed"] = 0.001; // 设置为0则不运动
 
             device.queue.writeBuffer(
                 state.UBOs["compute"],
@@ -348,14 +316,13 @@ export default {
                     pass.setBindGroup(1, state.BindGroups["sample"]);
                     pass.setVertexBuffer(0, state.VBOs["particles"]);
                     pass.setVertexBuffer(1, state.VBOs["quad"]);
-                    pass.draw(6, state.particle_info["numParticles"], 0, 0); // 四边形里面我只画一个三角形
+                    pass.draw(6, state.particle_info["numParticles"], 0, 0);
 
                     pass.end();
                 }
 
                 device.queue.submit([encoder.finish()]);
-                if (state.simu_info["simu_pause"] == 0.0) {
-                    console.log("simu speed = ", state.simu_info["simu_speed"]);
+                if (!state.simu_info["simu_pause"]) {
                     state.simu_info["simu_time"] += state.simu_info["simu_speed"];
                 }
             }, 25);
@@ -402,6 +369,12 @@ export default {
             // simu_pause: 0.0,
             // simu_time: 0.0,
             // simu_speed: 0.0,
+            atlas_info: {
+                size: [],
+                uv_offset: [],  // 用于记录instance对应图片纹理在大纹理中的uv偏移
+                uv_size: [],    // 用于记录instance对应图片纹理在大纹理中的uv归一化宽高尺寸
+                tex_aspect: [], // 用于记录instance对应图片纹理的宽高比系数
+            },
         }
     },
     getters: {}

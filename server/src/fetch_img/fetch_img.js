@@ -13,10 +13,11 @@ function read_instanced_texture() {
 
                 let url_arr = [];
 
-                for (let i = 0; i < files.length; i++) {
+                // for (let i = 0; i < files.length; i++) {
+                for (let i = 0; i < 5; i++) {
                     const path = "./src/assets/img/" + files[i];
                     const file = fs.readFileSync(path);
-                    
+
 
                     url_arr.push(file.toString("base64"));
                 }

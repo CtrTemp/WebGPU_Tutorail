@@ -8,12 +8,15 @@ const vertex_shader = /* wgsl */`
 
 
 struct VertexInput {
-  @location(0) position   : vec4<f32>, // particle position
-  @location(1) color      : vec4<f32>, // particle color
-  @location(2) lifetime   : f32, // particle life time
-  @location(3) idx        : f32, // idx for instanced texture
-  @location(4) quad_pos   : vec2<f32>, // -1..+1
-  @location(5) quad_uv    : vec2<f32>, // 0..+1
+  @location(0) position     : vec4<f32>,  // particle position
+  @location(1) color        : vec4<f32>,  // particle color
+  @location(2) lifetime     : f32,        // particle life time
+  @location(3) idx          : f32,        // idx for instanced texture
+  @location(4) uv_offset    : vec2<f32>,
+  @location(5) tex_aspect     : vec2<f32>,
+  @location(6) uv_size  : vec2<f32>,
+  @location(7) quad_pos     : vec2<f32>,  // -1..+1
+  @location(8) quad_uv      : vec2<f32>,  // 0..+1
 }
 
 struct VertexOutput {
@@ -22,11 +25,18 @@ struct VertexOutput {
   @location(1) quad_pos       : vec2<f32>, // -1..+1 不变，原样输出
   @location(2) quad_uv        : vec2<f32>, // 0..+1 不变，原样输出
   @location(3) idx            : f32,       // 不变，原样输出
+  @location(4) uv_offset      : vec2<f32>, // 不变，原样输出
+  @location(5) uv_size     : vec2<f32>, // 不变，原样输出
 }
 
 @vertex
 fn vs_main(in : VertexInput) -> VertexOutput {
-  var quad_pos = mat2x3<f32>(right, up) * in.quad_pos;
+
+  var pos_temp = in.quad_pos;
+  pos_temp.x = pos_temp.x*in.tex_aspect.x;
+  pos_temp.y = pos_temp.y*in.tex_aspect.y;
+  var quad_pos = mat2x3<f32>(right, up) * pos_temp;
+
   var position = in.position.xyz + quad_pos * 1.0; // 不改变quad大小
   // var position = in.position.xyz + quad_pos * (-in.position.z+0.5)*0.05; // 随着z值更改quad大小
   var out : VertexOutput;
@@ -35,6 +45,8 @@ fn vs_main(in : VertexInput) -> VertexOutput {
   out.quad_pos = in.quad_pos;
   out.quad_uv = vec2f(in.quad_uv.x, 1.0-in.quad_uv.y); // 上下翻转，左右不翻转
   out.idx = in.idx;
+  out.uv_offset = in.uv_offset;
+  out.uv_size = in.uv_size;
   return out;
 }
 `
@@ -49,13 +61,13 @@ const fragment_shader = /* wgsl */`
 @group(1) @binding(0) var mySampler: sampler;
 @group(1) @binding(1) var myTexture_id1: texture_2d<f32>;
 @group(1) @binding(2) var myTexture_id2: texture_2d<f32>;
-@group(1) @binding(3) var myTexture_id3: texture_2d<f32>;
-@group(1) @binding(4) var myTexture_id4: texture_2d<f32>;
-@group(1) @binding(5) var myTexture_id5: texture_2d<f32>;
-@group(1) @binding(6) var myTexture_id6: texture_2d<f32>;
-@group(1) @binding(7) var myTexture_id7: texture_2d<f32>;
-@group(1) @binding(8) var myTexture_id8: texture_2d<f32>;
-@group(1) @binding(9) var myTexture_id9: texture_2d<f32>;
+// @group(1) @binding(3) var myTexture_id3: texture_2d<f32>;
+// @group(1) @binding(4) var myTexture_id4: texture_2d<f32>;
+// @group(1) @binding(5) var myTexture_id5: texture_2d<f32>;
+// @group(1) @binding(6) var myTexture_id6: texture_2d<f32>;
+// @group(1) @binding(7) var myTexture_id7: texture_2d<f32>;
+// @group(1) @binding(8) var myTexture_id8: texture_2d<f32>;
+// @group(1) @binding(9) var myTexture_id9: texture_2d<f32>;
 
 struct FragIutput {
   @builtin(position) position : vec4<f32>,
@@ -63,6 +75,8 @@ struct FragIutput {
   @location(1) quad_pos       : vec2<f32>, // -1..+1 不变，原样输出
   @location(2) quad_uv        : vec2<f32>, // 0..+1 不变，原样输出
   @location(3) idx            : f32,       // 不变，原样输出
+  @location(4) uv_offset      : vec2<f32>,
+  @location(5) uv_size     : vec2<f32>,
 }
 
 
@@ -88,18 +102,26 @@ fn fs_main(in : FragIutput) -> @location(0) vec4<f32> {
   var color = in.color;
   var idx = in.idx;
 
-  // 这里由于控制流的问题，无法使用 if 分支语句，换用 select 解决
-  color = select(textureSample(myTexture_id9, mySampler, in.quad_uv), textureSample(myTexture_id1, mySampler, in.quad_uv), idx>1.0);
-  color = select(color, textureSample(myTexture_id2, mySampler, in.quad_uv), idx>2.0);
-  color = select(color, textureSample(myTexture_id3, mySampler, in.quad_uv), idx>3.0);
-  color = select(color, textureSample(myTexture_id4, mySampler, in.quad_uv), idx>4.0);
-  color = select(color, textureSample(myTexture_id5, mySampler, in.quad_uv), idx>5.0);
-  color = select(color, textureSample(myTexture_id6, mySampler, in.quad_uv), idx>6.0);
-  color = select(color, textureSample(myTexture_id7, mySampler, in.quad_uv), idx>7.0);
-  color = select(color, textureSample(myTexture_id8, mySampler, in.quad_uv), idx>8.0);
-  color = select(color, textureSample(myTexture_id9, mySampler, in.quad_uv), idx>9.0);
+  // // 这里由于控制流的问题，无法使用 if 分支语句，换用 select 解决
+  // color = select(textureSample(myTexture_id9, mySampler, in.quad_uv), textureSample(myTexture_id1, mySampler, in.quad_uv), idx>1.0);
+  // color = select(color, textureSample(myTexture_id2, mySampler, in.quad_uv), idx>2.0);
+  // color = select(color, textureSample(myTexture_id3, mySampler, in.quad_uv), idx>3.0);
+  // color = select(color, textureSample(myTexture_id4, mySampler, in.quad_uv), idx>4.0);
+  // color = select(color, textureSample(myTexture_id5, mySampler, in.quad_uv), idx>5.0);
+  // color = select(color, textureSample(myTexture_id6, mySampler, in.quad_uv), idx>6.0);
+  // color = select(color, textureSample(myTexture_id7, mySampler, in.quad_uv), idx>7.0);
+  // color = select(color, textureSample(myTexture_id8, mySampler, in.quad_uv), idx>8.0);
+  // color = select(color, textureSample(myTexture_id9, mySampler, in.quad_uv), idx>9.0);
+
+
+  var target_uv = vec2(in.quad_uv.x*in.uv_size.x, in.quad_uv.y*in.uv_size.y);
+  target_uv = target_uv+in.uv_offset;
+  
+  color = textureSample(myTexture_id1, mySampler, target_uv);
 
   
+  // // 解除下面这句注释，用于查看当前大纹理中所存放的所有图片
+  // color = textureSample(myTexture_id2, mySampler, in.quad_uv);
 
   return color;
   // return vec4(idx/10,idx/10,idx,1.0);

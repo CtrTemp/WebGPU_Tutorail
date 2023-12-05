@@ -1,110 +1,52 @@
 
 import { mat4, vec3, vec4 } from "wgpu-matrix"
 
-function gen_straight_line_arr(p1, p2, particle_counts) {
-
-    let dir_vec = vec3.create();
-
-    let seg_count = particle_counts - 1;
-
-    dir_vec[0] = (p2[0] - p1[0]) / seg_count;
-    dir_vec[1] = (p2[1] - p1[1]) / seg_count;
-    dir_vec[2] = (p2[2] - p1[2]) / seg_count;
-
-    let ret_arr = new Array();
 
 
-    for (let i = 0; i < particle_counts; i++) {
-        let arr_temp = [];
+// function gen_plane_instance(col, row, range) {
+//     // 先假设就是从 0.0 ~ 1.0 的 range
+//     const row_step = range / col;
+//     const col_step = range / row;
 
-        arr_temp.push(p1[0]);
-        arr_temp.push(p1[1]);
-        arr_temp.push(p1[2]);
-        arr_temp.push(0.0);
-        p1[0] += dir_vec[0];
-        p1[1] += dir_vec[1];
-        p1[2] += dir_vec[2];
-        ret_arr.push(arr_temp);
-    }
+//     let ret_arr = [];
 
+//     const default_color = [0.8, 0.6, 0.0, 1.0];
+//     for (let i = -row; i < row; i++) {
+//         for (let j = -col; j < col; j++) {
+//             let time = Math.random(); // 用于模拟随机粒子运动初始化值
+//             // time = 0.25; // 给以指定值统一大小
+//             let pos_x = (j + 0.5) * row_step;
+//             let pos_y = (i + 0.5) * col_step;
+//             let pos_z = Math.sin(2 * Math.PI * time); // rand value
+//             const pos = [pos_x, pos_y, pos_z, 1.0];
+//             const idx = Math.floor(Math.random() * 10);
+//             ret_arr = ret_arr.concat(pos);                      // position
+//             ret_arr = ret_arr.concat(default_color);            // color
+//             ret_arr = ret_arr.concat([time, idx, 0.0, 0.0]);    // liftime + idx + padding
 
-    return ret_arr;
-}
+//             // flow_info["idx"] =  // in use
+//         }
+//     }
 
+//     let flow_info = {};
 
-function gen_axis_line_arr(particle_counts) {
-    let x_axis = gen_straight_line_arr([0, 0, 0], [1.0, 0.0, 0.0], particle_counts);
-    let y_axis = gen_straight_line_arr([0, 0, 0], [0.0, 1.0, 0.0], particle_counts);
-    let z_axis = gen_straight_line_arr([0, 0, 0], [0.0, 0.0, 1.0], particle_counts);
+//     flow_info["flow_arr"] = ret_arr;
+//     flow_info["numParticles"] = ret_arr.length / 12;
+//     flow_info["lifetime"] = 10.0; // not used
 
-    let arr = x_axis.concat(y_axis).concat(z_axis);
-    let ret_arr = [];
+//     return flow_info;
+// }
 
-    // 对于一个 instance 不需要知道 uv 的概念
-    for (let i = 0; i < arr.length; i++) {
-        let color = [1.0, 0.0, 0.0, 1.0];
-        if (i >= arr.length * 2 / 3) {
-            color = [0.0, 0.0, 1.0, 1.0];
-        }
-        else if (i >= arr.length / 3) {
-            color = [0.0, 1.0, 0.0, 1.0];
-        }
-        ret_arr = ret_arr.concat(arr[i]);   // position
-        ret_arr = ret_arr.concat(color);    // color
-        ret_arr = ret_arr.concat([10.0, 0.0, 0.0, 0.0]);    // liftime padding
-    }
+/**
+ *  目前 focus 出现了问题，但具体是哪一个地方出了问题呢？？？还不明确
+ * 回来排查bug
+ * */ 
 
-    const flow_info = {};
-
-    flow_info["flow_arr"] = ret_arr;
-    flow_info["numParticles"] = ret_arr.length / 12;
-    flow_info["lifetime"] = particle_counts;
-
-    // console.log("flow_info = ", flow_info);
-
-    return flow_info;
-}
-
-
-function gen_plane_instance(col, row, range) {
-    // 先假设就是从 0.0 ~ 1.0 的 range
-    const row_step = range / col;
-    const col_step = range / row;
-
-    let ret_arr = [];
-
-    const default_color = [0.8, 0.6, 0.0, 1.0];
-    for (let i = -row; i < row; i++) {
-        for (let j = -col; j < col; j++) {
-            let time = Math.random(); // 用于模拟随机粒子运动初始化值
-            // time = 0.25; // 给以指定值统一大小
-            let pos_x = (j + 0.5) * row_step;
-            let pos_y = (i + 0.5) * col_step;
-            let pos_z = Math.sin(2 * Math.PI * time); // rand value
-            const pos = [pos_x, pos_y, pos_z, 1.0];
-            const idx = Math.floor(Math.random() * 10);
-            ret_arr = ret_arr.concat(pos);                      // position
-            ret_arr = ret_arr.concat(default_color);            // color
-            ret_arr = ret_arr.concat([time, idx, 0.0, 0.0]);    // liftime + idx + padding
-
-            // flow_info["idx"] =  // in use
-        }
-    }
-
-    let flow_info = {};
-
-    flow_info["flow_arr"] = ret_arr;
-    flow_info["numParticles"] = ret_arr.length / 12;
-    flow_info["lifetime"] = 10.0; // not used
-
-    return flow_info;
-}
-
-function gen_sphere_instance(radius, counts) {
+function gen_sphere_instance(radius, counts, state) {
 
     let ret_arr = [];
     // const default_color = [0.8, 0.6, 0.0, 1.0];
-    const default_color = [0.1, 0.8, 1.0, 1.0];
+    const default_color = [0.1, 0.8, 0.95, 1.0];
     for (let i = 0; i < counts; i++) {
         const r1 = radius;
         let pos_x = (Math.random() * 2 - 1) * r1;
@@ -118,12 +60,20 @@ function gen_sphere_instance(radius, counts) {
         if (Math.random() > 0.5) {
             time += Math.PI;
         }
-        const idx = Math.random() * 9;
+        // const idx = Math.random() * 9;
 
-        ret_arr = ret_arr.concat([pos_x, pos_y, pos_z, 0.0]);
-        ret_arr = ret_arr.concat(default_color);            // color
-        ret_arr = ret_arr.concat([time, idx, 0.0, 0.0]);    // liftime + idx + padding
+        ret_arr = ret_arr.concat([pos_x, pos_y, pos_z, 0.0]);   // pos
+        ret_arr = ret_arr.concat(default_color);                // color
+        ret_arr = ret_arr.concat([time, 1.0]);                  // liftime + idx
 
+
+        let uv_offset = state.atlas_info["uv_offset"][i % 5];
+        let tex_aspect = state.atlas_info["tex_aspect"][i % 5];
+        let uv_size = state.atlas_info["uv_size"][i % 5];
+
+        ret_arr = ret_arr.concat(uv_offset);                    // uv-offset
+        ret_arr = ret_arr.concat(tex_aspect);                     // uv-scale
+        ret_arr = ret_arr.concat(uv_size);                  // quad-scale
     }
 
 
@@ -139,29 +89,6 @@ function gen_sphere_instance(radius, counts) {
     return flow_info;
 }
 
-
-
-function gen_sin_func_arr(particle_counts) {
-    const ret_arr = [];
-    // const test_sin = Math.sin(0);
-    // console.log("test_sin = ", test_sin);
-
-    let seg_count = particle_counts - 1;
-    let step = 1 / seg_count;
-
-    for (let i = 0; i < particle_counts; i++) {
-        let arr_temp = [];
-        arr_temp.push(step * i - 0.5);
-        arr_temp.push(Math.sin(step * i * 2 * Math.PI) / 2);
-        arr_temp.push(0.0);
-
-        ret_arr.push(arr_temp);
-    }
-
-
-
-    return flow_info;
-}
 
 
 // 保证 life time 的赋值正确即可，不需要大量的插值运算
@@ -237,11 +164,7 @@ function read_data_and_gen_line(lines_data, lifetime, color, insert_unit_cnt, se
 
 
 export {
-    gen_straight_line_arr,
-    gen_axis_line_arr,
-    gen_sin_func_arr,
     read_data_and_gen_line,
-    gen_plane_instance,
     gen_sphere_instance
 };
 
