@@ -1,14 +1,11 @@
 
-
-import { mat4, vec3, vec4 } from "wgpu-matrix"
-
 // GUI
 import * as dat from "dat.gui"
 
 
-import { manage_VBO, manage_VBO_Layout } from "./01_manage_VBO"
-import { manage_UBO } from "./02_manage_UBO"
-import { manage_Texture } from "./04_manage_Texture";
+import { manage_Texture } from "./01_manage_Texture";
+import { manage_VBO, manage_VBO_Layout } from "./02_manage_VBO"
+import { manage_UBO } from "./03_manage_UBO"
 import { set_Layout } from "./11_set_Layout";
 import { set_BindGroup } from "./12_set_BindGroup";
 import { set_Pipeline } from "./13_set_Pipeline";
@@ -131,6 +128,11 @@ export default {
              *  VBO
              * */
             manage_VBO(state, payload);
+            
+            /**
+             *  VBO Layout
+             * */
+            manage_VBO_Layout(state, payload);
 
             /**
              *  UBO
@@ -138,10 +140,6 @@ export default {
             manage_UBO(state, payload);
 
 
-            /**
-             *  VBO Layout
-             * */
-            manage_VBO_Layout(state, payload);
 
         },
 
@@ -262,35 +260,35 @@ export default {
 
             setInterval(() => {
 
-                // 自适应 canvas 大小
 
-                // console.log(window.innerWidth);
+                const renderPassDescriptor = state.passDescriptors["render_particles"];
+
+                // 自适应 canvas 大小
 
                 const window_width = window.innerWidth;
                 const window_height = window.innerHeight;
-                state.canvas.width = window_width;
-                state.canvas.height = window_height;
+                // state.canvas.width = window_width;
+                // state.canvas.height = window_height;
 
 
-                const renderPassDescriptor = state.passDescriptors["render_particles"];
 
                 renderPassDescriptor.colorAttachments[0].view = state.GPU_context
                     .getCurrentTexture()
                     .createView();
 
-                // depth texture 重建
-                state.Textures["depth"].destroy();
-                state.Textures["depth"] = device.createTexture({
-                    size: [window_width, window_height],
-                    format: 'depth24plus',
-                    usage: GPUTextureUsage.RENDER_ATTACHMENT,
-                })
+                // // depth texture 重建
+                // state.Textures["depth"].destroy();
+                // state.Textures["depth"] = device.createTexture({
+                //     size: [window_width, window_height],
+                //     format: 'depth24plus',
+                //     usage: GPUTextureUsage.RENDER_ATTACHMENT,
+                // })
 
-                renderPassDescriptor.depthStencilAttachment.view = state.Textures["depth"].createView();
+                // renderPassDescriptor.depthStencilAttachment.view = state.Textures["depth"].createView();
 
 
-                // camera aspect 更新
-                state.prim_camera["aspect"] = window_width / window_height;
+                // // camera aspect 更新
+                // state.prim_camera["aspect"] = window_width / window_height;
 
                 const encoder = device.createCommandEncoder();
 

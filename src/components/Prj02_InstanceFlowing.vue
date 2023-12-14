@@ -1,6 +1,7 @@
 <template>
-    <div class="root-container">
-        <canvas class="main-canvas" width="512" height="512"></canvas>
+    <div class="root-container-main">
+        <!-- <canvas class="main-canvas" width="512" height="512"></canvas> -->
+        <canvas class="sub-canvas" width="512" height="512"></canvas>
     </div>
 </template>
   
@@ -29,7 +30,7 @@ onMounted(() => {
     // 这将初始化读入texture
     setTimeout(() => {
         ws.send(JSON.stringify(cmd_json));
-    }, 1000);
+    }, 10);
 
 
     // 时序把控正确，后面再进行绘制
@@ -37,9 +38,11 @@ onMounted(() => {
     setTimeout(() => {
 
         const canvas = document.querySelector("canvas");
+        const sub_canvas = document.querySelector(".sub-canvas")
 
-        store.dispatch("InstanceFlow/init_and_render", canvas);
-    }, 1500);
+        // store.dispatch("InstanceFlow/init_and_render", canvas);
+        store.dispatch("sub_canvas/init_and_render", sub_canvas);
+    }, 1000);
 
 
 
@@ -50,7 +53,7 @@ onMounted(() => {
 </script>
   
 <style>
-.root-container {
+.root-container-main {
     position: absolute;
     left: 0px;
     top: 0px;
@@ -58,13 +61,13 @@ onMounted(() => {
     box-sizing: border-box;
     width: 100%;
     height: 100%;
-    border: solid 10px black;
-    background-color: black;
+    border: solid 10px red;
+    background-color: #d5d5d5;
 }
 
 .main-canvas {
-    /* width: 100%; */
-    height: 100%;
+    width: 512px;
+    height: 512px;
 }
 </style>
   

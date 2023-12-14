@@ -54,6 +54,16 @@ function manage_Texture(state, payload) {
     let height_offset = 0;
     console.log("instance len = ", instance_len);
 
+    console.log("All bitMap = ", state.instancedBitMap);
+
+    /**
+     *  这里插入图片排序算法？？图片排序放在服务端是否好一些，因为作为一个大屏访问项目，
+     * 访问者不会很多，服务端计算压力会小很多。
+     * */ 
+    
+    // 根据图片高度进行排序
+    
+
     for (let i = 0; i < instance_len; i++) {
         const imageBitmap = state.instancedBitMap[i];
         const img_width = imageBitmap.width;
@@ -68,6 +78,10 @@ function manage_Texture(state, payload) {
         //         GPUTextureUsage.COPY_DST |
         //         GPUTextureUsage.RENDER_ATTACHMENT,
         // });
+
+        /**
+         *  应该在这里插入图片填充算法
+         * */ 
 
 
         device.queue.copyExternalImageToTexture(

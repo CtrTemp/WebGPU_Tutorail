@@ -1,5 +1,5 @@
-import { vertex_shader, fragment_shader } from '../../assets/Shaders/Prj02/shader';
-import { simulation_compute } from '../../assets/Shaders/Prj02/compute';
+import { vertex_shader, fragment_shader } from '../../../assets/Shaders/Prj02/shader';
+import { simulation_compute } from '../../../assets/Shaders/Prj02/compute';
 
 
 function set_Pipeline(state, device) {
