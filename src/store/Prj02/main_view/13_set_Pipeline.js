@@ -10,11 +10,11 @@ function set_Pipeline(state, device) {
 
     const particle_Render_Pipeline_Layout = device.createPipelineLayout({
         bindGroupLayouts: [
-            state.Layouts["mvp"],
-            state.Layouts["sample"]
+            state.main_canvas.Layouts["mvp"],
+            state.main_canvas.Layouts["sample"]
         ]
     });
-    state.Pipeline_Layouts["render_particles"] = particle_Render_Pipeline_Layout;
+    state.main_canvas.Pipeline_Layouts["render_particles"] = particle_Render_Pipeline_Layout;
 
 
     const render_particles_pipeline = device.createRenderPipeline({
@@ -25,8 +25,8 @@ function set_Pipeline(state, device) {
             }),
             entryPoint: "vs_main",
             buffers: [
-                state.VBO_Layouts["particles"],
-                state.VBO_Layouts["quad"]
+                state.main_canvas.VBO_Layouts["particles"],
+                state.main_canvas.VBO_Layouts["quad"]
             ]
         },
         fragment: {
@@ -36,7 +36,7 @@ function set_Pipeline(state, device) {
             entryPoint: "fs_main",
             targets: [
                 {
-                    format: state["canvasFormat"],
+                    format: state.main_canvas["canvasFormat"],
                     // // 這一步是設置 半透明度 必須的要素（取消设置，得到默认遮挡）
                     // // 如果使用半透明，则将以下 depthStencil 中 depthWriteEnabled 字段设为 false
                     // blend: {
@@ -65,7 +65,7 @@ function set_Pipeline(state, device) {
             format: 'depth24plus',
         },
     });
-    state.Pipelines["render_particles"] = render_particles_pipeline;
+    state.main_canvas.Pipelines["render_particles"] = render_particles_pipeline;
 
 
     const renderPassDescriptor = {
@@ -78,22 +78,22 @@ function set_Pipeline(state, device) {
             }
         ],
         depthStencilAttachment: {
-            view: state.Textures["depth"].createView(),
+            view: state.main_canvas.Textures["depth"].createView(),
             depthClearValue: 1.0,
             depthLoadOp: "clear",
             depthStoreOp: "store"
         }
     };
-    state.passDescriptors["render_particles"] = renderPassDescriptor;
+    state.main_canvas.passDescriptors["render_particles"] = renderPassDescriptor;
 
 
     /* ########################### Compute Pipeline ########################### */
 
 
     const particle_Compute_Pipeline_Layout = device.createPipelineLayout({
-        bindGroupLayouts: [state.Layouts["compute"]]
+        bindGroupLayouts: [state.main_canvas.Layouts["compute"]]
     });
-    state.Pipeline_Layouts["simu_particles"] = particle_Render_Pipeline_Layout;
+    state.main_canvas.Pipeline_Layouts["simu_particles"] = particle_Render_Pipeline_Layout;
 
     const computePipeline = device.createComputePipeline({
         layout: particle_Compute_Pipeline_Layout,
@@ -104,29 +104,29 @@ function set_Pipeline(state, device) {
             entryPoint: 'simulate',
         },
     });
-    state.Pipelines["simu_particles"] = computePipeline;
+    state.main_canvas.Pipelines["simu_particles"] = computePipeline;
 
     const simu_particles_BindGroup = device.createBindGroup({
-        layout: state.Layouts["compute"],
+        layout: state.main_canvas.Layouts["compute"],
         entries: [
             {
                 binding: 0,
                 resource: {
-                    buffer: state.UBOs["compute"]
+                    buffer: state.main_canvas.UBOs["compute"]
                 }
             },
             {
                 binding: 1,
                 resource: {
-                    buffer: state.VBOs["particles"],
+                    buffer: state.main_canvas.VBOs["particles"],
                     offset: 0,
-                    size: state.particle_info["numParticles"] * state.particle_info["particleInstanceByteSize"]
+                    size: state.main_canvas.particle_info["numParticles"] * state.main_canvas.particle_info["particleInstanceByteSize"]
                 }
             }
         ]
     });
 
-    state.BindGroups["compute"] = simu_particles_BindGroup;
+    state.main_canvas.BindGroups["compute"] = simu_particles_BindGroup;
 }
 
 

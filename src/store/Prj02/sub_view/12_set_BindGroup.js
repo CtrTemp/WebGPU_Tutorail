@@ -1,17 +1,17 @@
 function set_BindGroup(state, device) {
 
     const MVP_UBO_BindGroup = device.createBindGroup({
-        layout: state.Layouts["mvp"],
+        layout: state.sub_canvas.Layouts["mvp"],
         entries: [
             {
                 binding: 0,
                 resource: {
-                    buffer: state.UBOs["mvp"]
+                    buffer: state.sub_canvas.UBOs["mvp"]
                 }
             },
         ]
     });
-    state.BindGroups["mvp"] = MVP_UBO_BindGroup;
+    state.sub_canvas.BindGroups["mvp"] = MVP_UBO_BindGroup;
 
 }
 

@@ -7,21 +7,21 @@ function manage_UBO(state, payload) {
         size: MVP_Buffer_size,
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
     });
-    state.UBOs["mvp"] = MVP_UBO_Buffer;
+    state.main_canvas.UBOs["mvp"] = MVP_UBO_Buffer;
 
     const RIGHT_Buffer_size = 3 * 4;
     const RIGHT_UBO_Buffer = device.createBuffer({
         size: RIGHT_Buffer_size,
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
     });
-    state.UBOs["right"] = RIGHT_UBO_Buffer;
+    state.main_canvas.UBOs["right"] = RIGHT_UBO_Buffer;
 
     const UP_Buffer_size = 3 * 4;
     const UP_UBO_Buffer = device.createBuffer({
         size: UP_Buffer_size,
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
     });
-    state.UBOs["up"] = UP_UBO_Buffer;
+    state.main_canvas.UBOs["up"] = UP_UBO_Buffer;
 
 
     const simu_Control_UBO_BufferSize =
@@ -36,7 +36,7 @@ function manage_UBO(state, payload) {
         size: simu_Control_UBO_BufferSize,
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     });
-    state.UBOs["compute"] = simu_Control_UBO_Buffer;
+    state.main_canvas.UBOs["compute"] = simu_Control_UBO_Buffer;
 }
 
 

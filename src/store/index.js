@@ -23,10 +23,14 @@ import Flow from "./Flow/Flow.js";
 
 // Textured Instance Simulation
 import InstanceSimu from "./Prj01/instanceSimu.js";
-import InstanceFlow from "./Prj02/main_view/instanceFlow.js";
+// import InstanceFlow from "./Prj02/instanceFlow.js";
 
-// sub canvas
-import sub_canvas from "./Prj02/sub_view/sub_canvas.js";
+// // sub canvas
+// import sub_canvas from "./Prj02/sub_canvas.js";
+
+// root canvas
+
+import pic_browser from "./Prj02/pic_browser.js";
 
 const store = createStore({
   state: {
@@ -50,8 +54,9 @@ const store = createStore({
     Particles: Particles,
     Flow: Flow,
     InstanceSimu: InstanceSimu,
-    InstanceFlow: InstanceFlow,
-    sub_canvas: sub_canvas,
+    // InstanceFlow: InstanceFlow,
+    // sub_canvas: sub_canvas,
+    pic_browser: pic_browser
   }
 })
 

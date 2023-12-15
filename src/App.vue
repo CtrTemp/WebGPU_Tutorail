@@ -109,7 +109,7 @@ store.state.ws.onmessage = function (e) {
   switch (json_pack.cmd) {
     case "instanced_texture_pack":
       // console.log("haha, msg received");
-      store.dispatch("InstanceFlow/construct_imgBitMap", json_pack);
+      store.dispatch("pic_browser/construct_imgBitMap", json_pack);
       break;
 
     default:

@@ -1,48 +1,48 @@
 function set_BindGroup(state, device) {
 
     const MVP_UBO_BindGroup = device.createBindGroup({
-        layout: state.Layouts["mvp"],
+        layout: state.main_canvas.Layouts["mvp"],
         entries: [
             {
                 binding: 0,
                 resource: {
-                    buffer: state.UBOs["mvp"]
+                    buffer: state.main_canvas.UBOs["mvp"]
                 }
             },
             {
                 binding: 1,
                 resource: {
-                    buffer: state.UBOs["right"]
+                    buffer: state.main_canvas.UBOs["right"]
                 }
             },
             {
                 binding: 2,
                 resource: {
-                    buffer: state.UBOs["up"]
+                    buffer: state.main_canvas.UBOs["up"]
                 }
             },
         ]
     });
-    state.BindGroups["mvp_pack"] = MVP_UBO_BindGroup;
+    state.main_canvas.BindGroups["mvp_pack"] = MVP_UBO_BindGroup;
 
 
 
     const Sample_UBO_BindGroup = device.createBindGroup({
-        layout: state.Layouts["sample"],
+        layout: state.main_canvas.Layouts["sample"],
         entries: [
             // texture sampler
             {
                 binding: 0,
-                resource: state.additional_info["sampler"]
+                resource: state.main_canvas.additional_info["sampler"]
             },
             // big texture test Mip0
             {
                 binding: 1,
-                resource: state.Textures["instance"][0].createView()
+                resource: state.main_canvas.Textures["instance"][0].createView()
             }
         ]
     });
-    state.BindGroups["sample"] = Sample_UBO_BindGroup;
+    state.main_canvas.BindGroups["sample"] = Sample_UBO_BindGroup;
 
 }
 

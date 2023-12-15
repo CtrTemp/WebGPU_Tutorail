@@ -67,9 +67,9 @@ function gen_sphere_instance(radius, counts, state) {
         ret_arr = ret_arr.concat([time, 1.0]);                  // liftime + idx
 
 
-        let uv_offset = state.atlas_info["uv_offset"][i % 5];
-        let tex_aspect = state.atlas_info["tex_aspect"][i % 5];
-        let uv_size = state.atlas_info["uv_size"][i % 5];
+        let uv_offset = state.main_canvas.atlas_info["uv_offset"][i % 5];
+        let tex_aspect = state.main_canvas.atlas_info["tex_aspect"][i % 5];
+        let uv_size = state.main_canvas.atlas_info["uv_size"][i % 5];
 
         ret_arr = ret_arr.concat(uv_offset);                    // uv-offset
         ret_arr = ret_arr.concat(tex_aspect);                     // uv-scale

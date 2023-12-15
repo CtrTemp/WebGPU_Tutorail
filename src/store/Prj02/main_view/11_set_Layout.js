@@ -21,7 +21,7 @@ function set_Layout(state, device) {
             }
         }]
     });
-    state.Layouts["mvp"] = MVP_UBO_Layout;
+    state.main_canvas.Layouts["mvp"] = MVP_UBO_Layout;
 
     const Sample_UBO_Layout = device.createBindGroupLayout({
         entries: [
@@ -44,7 +44,7 @@ function set_Layout(state, device) {
 
         ]
     });
-    state.Layouts["sample"] = Sample_UBO_Layout;
+    state.main_canvas.Layouts["sample"] = Sample_UBO_Layout;
 
     const compute_UBO_Layout = device.createBindGroupLayout({
         entries: [
@@ -64,7 +64,7 @@ function set_Layout(state, device) {
             }
         ]
     });
-    state.Layouts["compute"] = compute_UBO_Layout;
+    state.main_canvas.Layouts["compute"] = compute_UBO_Layout;
 
 }
 

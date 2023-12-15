@@ -7,10 +7,10 @@ function set_Pipeline(state, device) {
 
     const Render_Pipeline_Layout = device.createPipelineLayout({
         bindGroupLayouts: [
-            state.Layouts["mvp"]
+            state.sub_canvas.Layouts["mvp"]
         ]
     });
-    state.Layouts["render_particles"] = Render_Pipeline_Layout;
+    state.sub_canvas.Layouts["render_particles"] = Render_Pipeline_Layout;
 
     // 创建渲染流水线
     const Render_Pipeline = device.createRenderPipeline({
@@ -20,7 +20,7 @@ function set_Pipeline(state, device) {
                 code: vertex_shader
             }),
             entryPoint: "vertexMain",   // 指定 vertex shader 入口函数
-            buffers: [state.VBO_Layouts["rect"]]
+            buffers: [state.sub_canvas.VBO_Layouts["rect"]]
         },
         fragment: {
             module: device.createShaderModule({
@@ -28,7 +28,7 @@ function set_Pipeline(state, device) {
             }),
             entryPoint: "fragmentMain", // 指定 fragment shader 入口函数
             targets: [{
-                format: state["canvasFormat"],
+                format: state.sub_canvas["canvasFormat"],
                 // 這一步是設置 半透明度 必須的要素（取消设置，得到默认遮挡）
                 // 如果使用半透明，则将以下 depthStencil 中 depthWriteEnabled 字段设为 false
                 blend: {
@@ -61,7 +61,7 @@ function set_Pipeline(state, device) {
         },
     });
 
-    state.Pipelines["rect"] = Render_Pipeline;
+    state.sub_canvas.Pipelines["rect"] = Render_Pipeline;
 }
 
 

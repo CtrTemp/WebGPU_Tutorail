@@ -1,7 +1,7 @@
 <template>
     <div class="root-container-main">
-        <!-- <canvas class="main-canvas" width="512" height="512"></canvas> -->
         <canvas class="sub-canvas" width="512" height="512"></canvas>
+        <canvas class="main-canvas" width="512" height="512"></canvas>
     </div>
 </template>
   
@@ -37,11 +37,16 @@ onMounted(() => {
 
     setTimeout(() => {
 
-        const canvas = document.querySelector("canvas");
-        const sub_canvas = document.querySelector(".sub-canvas")
+        const main_canvas = document.querySelector(".main-canvas");
+        const sub_canvas = document.querySelector(".sub-canvas");
 
-        // store.dispatch("InstanceFlow/init_and_render", canvas);
-        store.dispatch("sub_canvas/init_and_render", sub_canvas);
+        const canvas_pack = {
+            main_canvas, sub_canvas
+        };
+
+        // store.dispatch("InstanceFlow/init_and_render", main_canvas);
+        // store.dispatch("sub_canvas/init_and_render", sub_canvas);
+        store.dispatch("pic_browser/init_and_render", canvas_pack);
     }, 1000);
 
 
@@ -61,13 +66,19 @@ onMounted(() => {
     box-sizing: border-box;
     width: 100%;
     height: 100%;
-    border: solid 10px red;
+    border: solid 10px black;
     background-color: #d5d5d5;
 }
 
 .main-canvas {
-    width: 512px;
-    height: 512px;
+    width: 100%;
+    height: 100%;
+}
+
+.sub-canvas {
+    position: absolute;
+    right: 0px;
+    bottom: 0px;
 }
 </style>
   

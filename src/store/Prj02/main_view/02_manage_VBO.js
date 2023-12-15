@@ -10,9 +10,9 @@ function manage_VBO(state, payload) {
     const device = payload.device;
 
     // 全局粒子總數
-    state.particle_info["numParticles"] = payload.flow_info.numParticles;
-    state.particle_info["lifetime"] = payload.flow_info.lifetime;
-    state.particle_info["particleInstanceByteSize"] =
+    state.main_canvas.particle_info["numParticles"] = payload.flow_info.numParticles;
+    state.main_canvas.particle_info["lifetime"] = payload.flow_info.lifetime;
+    state.main_canvas.particle_info["particleInstanceByteSize"] =
         4 * 4 + // pos
         4 * 4 + // color
         1 * 4 + // life time
@@ -36,7 +36,7 @@ function manage_VBO(state, payload) {
         usage: GPUBufferUsage.VERTEX | GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
     })
     device.queue.writeBuffer(particlesBuffer, 0, writeBufferArr);
-    state.VBOs["particles"] = particlesBuffer;
+    state.main_canvas.VBOs["particles"] = particlesBuffer;
 
 
 
@@ -65,7 +65,7 @@ function manage_VBO(state, payload) {
     ];
     new Float32Array(quadVertexBuffer.getMappedRange()).set(vertexData);
     quadVertexBuffer.unmap();
-    state.VBOs["quad"] = quadVertexBuffer;
+    state.main_canvas.VBOs["quad"] = quadVertexBuffer;
 }
 
 
@@ -74,7 +74,7 @@ function manage_VBO_Layout(state, payload) {
     const device = payload.device;
 
     const particles_VBO_Layout = {
-        arrayStride: state.particle_info["particleInstanceByteSize"], // 这里是否要补全 padding 呢？？？
+        arrayStride: state.main_canvas.particle_info["particleInstanceByteSize"], // 这里是否要补全 padding 呢？？？
         stepMode: "instance", // 这个设置的含义是什么
         attributes: [
             {
@@ -121,7 +121,7 @@ function manage_VBO_Layout(state, payload) {
             }
         ]
     };
-    state.VBO_Layouts["particles"] = particles_VBO_Layout;
+    state.main_canvas.VBO_Layouts["particles"] = particles_VBO_Layout;
 
     const quad_VBO_Layout = {
         arrayStride: 4 * 4, // 这里是否要补全 padding 呢？？？
@@ -142,7 +142,7 @@ function manage_VBO_Layout(state, payload) {
             },
         ]
     };
-    state.VBO_Layouts["quad"] = quad_VBO_Layout;
+    state.main_canvas.VBO_Layouts["quad"] = quad_VBO_Layout;
 
 }
 

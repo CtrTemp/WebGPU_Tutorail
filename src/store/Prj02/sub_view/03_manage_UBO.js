@@ -6,7 +6,7 @@ function manage_UBO(state, payload) {
         size: MVP_Buffer_size,
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
     });
-    state.UBOs["mvp"] = MVP_UBO_Buffer;
+    state.sub_canvas.UBOs["mvp"] = MVP_UBO_Buffer;
 }
 
 

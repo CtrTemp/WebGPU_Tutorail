@@ -9,7 +9,7 @@ function set_Layout(state, device) {
             }
         }]
     });
-    state.Layouts["mvp"] = MVP_UBO_Layout;
+    state.sub_canvas.Layouts["mvp"] = MVP_UBO_Layout;
 }
 
 

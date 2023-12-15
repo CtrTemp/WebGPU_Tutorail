@@ -1,24 +1,29 @@
-
+import { gen_cone_vertex_from_camera } from "./gen_cone_vertex";
 
 function manage_VBO(state, payload) {
 
     const device = payload.device;
-    // CPU 端数据
-    const vertices = new Float32Array([
-        // near rect
-        0.2, 0.2, 0.0,
-        0.2, -0.2, 0.0,
-        -0.2, -0.2, 0.0,
-        -0.2, 0.2, 0.0,
+    // // CPU 端数据
+    // const vertices = new Float32Array([
+    //     // near rect
+    //     0.2, 0.2, 0.0,
+    //     0.2, -0.2, 0.0,
+    //     -0.2, -0.2, 0.0,
+    //     -0.2, 0.2, 0.0,
 
-        // far rect
-        0.8, 0.8, 2.5,
-        0.8, -0.8, 2.5,
-        -0.8, -0.8, 2.5,
-        -0.8, 0.8, 2.5,
-    ]);
+    //     // far rect
+    //     0.8, 0.8, 2.5,
+    //     0.8, -0.8, 2.5,
+    //     -0.8, -0.8, 2.5,
+    //     -0.8, 0.8, 2.5,
+    // ]);
 
-    state.vertices_arr["rect"] = vertices;
+    // console.log("camera = ", state.main_canvas.prim_camera);
+    const ret_vec = gen_cone_vertex_from_camera(state.main_canvas.prim_camera, 1.0, 25.0);
+    // console.log("ret_vec = ", ret_vec);
+    const vertices = new Float32Array(ret_vec);
+
+    state.sub_canvas.vertices_arr["rect"] = vertices;
 
 
     // 顶点缓冲区创建
@@ -28,7 +33,7 @@ function manage_VBO(state, payload) {
         usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
     });
 
-    state.VBOs["rect"] = vertexBuffer;
+    state.sub_canvas.VBOs["rect"] = vertexBuffer;
 
     device.queue.writeBuffer(vertexBuffer, /*bufferOffset=*/0, vertices);
 }
@@ -45,7 +50,7 @@ function manage_VBO_Layout(state, payload) {
             shaderLocation: 0, // 等到 vertex shader 章节进行介绍
         }],
     };
-    state.VBO_Layouts["rect"] = vertexBufferLayout;
+    state.sub_canvas.VBO_Layouts["rect"] = vertexBufferLayout;
 
 }
 
@@ -73,7 +78,7 @@ function manage_IBO(state, payload) {
         2, 5, 1,
         5, 2, 6,
     ]);
-    state.indices_arr["rect"] = default_idx_data_arr;
+    state.sub_canvas.indices_arr["rect"] = default_idx_data_arr;
     const indexCount = default_idx_data_arr.length;
     const indexBuffer = device.createBuffer({
         size: indexCount * Uint16Array.BYTES_PER_ELEMENT,
@@ -85,7 +90,7 @@ function manage_IBO(state, payload) {
         mapping.set(default_idx_data_arr, 0);
         indexBuffer.unmap();
     }
-    state.IBOs["rect"] = indexBuffer;
+    state.sub_canvas.IBOs["rect"] = indexBuffer;
 }
 
 

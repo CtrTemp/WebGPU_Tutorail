@@ -11,18 +11,18 @@ function manage_Texture(state, payload) {
     });
 
 
-    state.additional_info["sampler"] = sampler;
+    state.main_canvas.additional_info["sampler"] = sampler;
 
 
     /**
      *  depth Texture
      * */
     const depthTexture = device.createTexture({
-        size: [state.canvas.width, state.canvas.height],
+        size: [state.main_canvas.canvas.width, state.main_canvas.canvas.height],
         format: "depth24plus",
         usage: GPUTextureUsage.RENDER_ATTACHMENT
     });
-    state.Textures["depth"] = depthTexture;
+    state.main_canvas.Textures["depth"] = depthTexture;
 
 
 
@@ -31,13 +31,13 @@ function manage_Texture(state, payload) {
      * */
     // const imageBitmap = payload.img; // 默认测试用例纹理
 
-    const instance_len = state.instancedBitMap.length;
+    const instance_len = state.main_canvas.instancedBitMap.length;
 
     let offset = 0;
 
     const global_texture_size = Math.pow(2, 13);
     console.log("global_texture_size = ", global_texture_size);
-    state.atlas_info["size"].push([global_texture_size, global_texture_size]);
+    state.main_canvas.atlas_info["size"].push([global_texture_size, global_texture_size]);
     const instanceTexture = device.createTexture({
         dimension: '2d',
         size: [global_texture_size, global_texture_size, 1],
@@ -54,7 +54,7 @@ function manage_Texture(state, payload) {
     let height_offset = 0;
     console.log("instance len = ", instance_len);
 
-    console.log("All bitMap = ", state.instancedBitMap);
+    console.log("All bitMap = ", state.main_canvas.instancedBitMap);
 
     /**
      *  这里插入图片排序算法？？图片排序放在服务端是否好一些，因为作为一个大屏访问项目，
@@ -65,7 +65,7 @@ function manage_Texture(state, payload) {
     
 
     for (let i = 0; i < instance_len; i++) {
-        const imageBitmap = state.instancedBitMap[i];
+        const imageBitmap = state.main_canvas.instancedBitMap[i];
         const img_width = imageBitmap.width;
         const img_height = imageBitmap.height;
 
@@ -91,10 +91,10 @@ function manage_Texture(state, payload) {
             [img_width, img_height] // size
         );
 
-        state.Textures["instance"].push(instanceTexture);
-        state.Textures["image"] = instanceTexture;
+        state.main_canvas.Textures["instance"].push(instanceTexture);
+        state.main_canvas.Textures["image"] = instanceTexture;
 
-        state.atlas_info["uv_offset"].push([width_offset/ global_texture_size, height_offset/ global_texture_size]);
+        state.main_canvas.atlas_info["uv_offset"].push([width_offset/ global_texture_size, height_offset/ global_texture_size]);
 
         let tex_aspect = [1.0, 1.0];
         if (img_width >= img_height) {
@@ -104,8 +104,8 @@ function manage_Texture(state, payload) {
             tex_aspect[0] = img_width / img_height;
         }
 
-        state.atlas_info["tex_aspect"].push(tex_aspect);
-        state.atlas_info["uv_size"].push([img_width / global_texture_size, img_height / global_texture_size]);
+        state.main_canvas.atlas_info["tex_aspect"].push(tex_aspect);
+        state.main_canvas.atlas_info["uv_size"].push([img_width / global_texture_size, img_height / global_texture_size]);
 
 
 
