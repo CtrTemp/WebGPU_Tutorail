@@ -13,6 +13,8 @@ import { gen_cone_vertex_from_camera } from "./sub_view/gen_cone_vertex";
 import { mat4, vec3 } from "wgpu-matrix";
 
 
+import { canvasMouseInteraction } from "./sub_view/xx_interaction";
+
 
 
 
@@ -96,58 +98,25 @@ function renderLoop_sub(state, payload) {
     const gui = payload.gui;
     init_Camera(state, device, gui);
 
-    console.log("prim camera = ", state.sub_canvas.prim_camera);
+    
+    // canvas 注册鼠标交互事件
+    canvasMouseInteraction(state, device, gui);
 
-    gen_cone_vertex_from_camera(state.sub_canvas.prim_camera, 1.0, 10.0);
 
     /**
      *  Loop
-     * */ 
+     * */
     setInterval(() => {
-        
+
         const encoder = device.createCommandEncoder();
 
-        const pass = encoder.beginRenderPass({
-            colorAttachments: [{
-                view: state.sub_canvas.GPU_context.getCurrentTexture().createView(),
-                loadOp: "clear",
-                clearValue: [0.0, 0.0, 0.0, 1.0],
-                storeOp: "store",
-            }],
-            depthStencilAttachment: {
-                view: state.sub_canvas.Textures["depth"].createView(),
-    
-                depthClearValue: 1.0,
-                depthLoadOp: 'clear',
-                depthStoreOp: 'store',
-            },
-        });
-
-        const sub_camera = state.sub_canvas.prim_camera;
-        const prim_camera = state.main_canvas.prim_camera;
-
-        const view = sub_camera["view"];
-        const projection = sub_camera["projection"];
-        const viewProjectionMatrix = sub_camera["matrix"];
-
-
-        // const cone_model_matrix = mat4.identity(); // 创建一个单位矩阵
-
-        // console.log("look from = ", prim_camera);
-        // mat4.translate(cone_model_matrix, prim_camera["lookFrom"], cone_model_matrix);
-
-        // console.log(cone_model_matrix);
-
         /**
-         *  以下选择使用更新vertex buffer的方式更新梯台的绘制
-         *  注意：这可能是费时的！但鉴于要操作的数据量非常小，还是可以考虑这样去做
-         * */ 
+         *  GPU 端更新相机参数
+         * */
 
-        manage_VBO(state, payload);
-
-
-
-        // GPU 端更新相机参数
+        const view = state.sub_canvas.prim_camera["view"];
+        const projection = state.sub_canvas.prim_camera["projection"];
+        const viewProjectionMatrix = state.sub_canvas.prim_camera["matrix"];
         device.queue.writeBuffer(
             state.sub_canvas.UBOs["mvp"],
             0,
@@ -156,13 +125,124 @@ function renderLoop_sub(state, payload) {
             viewProjectionMatrix.byteLength
         );
 
-        pass.setPipeline(state.sub_canvas.Pipelines["rect"]);
-        pass.setBindGroup(0, state.sub_canvas.BindGroups["mvp"]);
-        pass.setVertexBuffer(0, state.sub_canvas.VBOs["rect"]);
-        pass.setIndexBuffer(state.sub_canvas.IBOs["rect"], 'uint16');
-        pass.drawIndexed(state.sub_canvas.indices_arr["rect"].length); // rect
 
-        pass.end();
+        /**
+         *  以下选择使用更新vertex buffer的方式更新梯台的绘制
+         *  注意：这可能是费时的！但鉴于要操作的数据量非常小，还是可以考虑这样去做
+         * */
+        /**
+         *  根据相机参数更新当前相机可视区域
+         * */
+        manage_VBO(state, payload);
+
+
+
+        device.queue.writeBuffer(
+            state.main_canvas.UBOs["compute"],
+            0,
+            new Float32Array([
+                state.main_canvas.simu_info["simu_speed"],
+                0.0,
+                0.0,
+                0.0,// padding
+                Math.random() * 100,
+                Math.random() * 100, // seed.xy
+                1 + Math.random(),
+                1 + Math.random(), // seed.zw
+                state.main_canvas.particle_info["lifetime"],
+                state.main_canvas.simu_info["simu_pause"], // pause = false
+                0.0, // paddings 
+                0.0
+            ])
+        );
+
+
+
+        
+        const view_ = state.sub_canvas.prim_camera["view"];
+        const projection_ = state.sub_canvas.prim_camera["projection"];
+        const viewProjectionMatrix_ = state.sub_canvas.prim_camera["matrix"];
+        // GPU 端更新相机参数
+        device.queue.writeBuffer(
+            state.sub_canvas.UBOs["mvp"],
+            0,
+            viewProjectionMatrix_.buffer,
+            viewProjectionMatrix_.byteOffset,
+            viewProjectionMatrix_.byteLength
+        );
+
+        device.queue.writeBuffer(
+            state.sub_canvas.UBOs["right"],
+            0,
+            new Float32Array([
+                view_[0], view_[4], view_[8], // right
+            ])
+        );
+        device.queue.writeBuffer(
+            state.sub_canvas.UBOs["up"],
+            0,
+            new Float32Array([
+                view_[1], view_[5], view_[9], // up
+            ])
+        );
+
+        // device.queue.writeBuffer(
+        //     state.main_canvas.UBOs["mvp"],
+        //     0,
+        //     viewProjectionMatrix.buffer,
+        //     viewProjectionMatrix.byteOffset,
+        //     viewProjectionMatrix.byteLength
+        // );
+
+        // device.queue.writeBuffer(
+        //     state.main_canvas.UBOs["right"],
+        //     0,
+        //     new Float32Array([
+        //         view[0], view[4], view[8], // right
+        //     ])
+        // );
+        // device.queue.writeBuffer(
+        //     state.main_canvas.UBOs["up"],
+        //     0,
+        //     new Float32Array([
+        //         view[1], view[5], view[9], // up
+        //     ])
+        // );
+
+
+
+        const renderInstancePassDescriptor = state.sub_canvas.passDescriptors["render_instance"];
+        renderInstancePassDescriptor.colorAttachments[0].view = state.sub_canvas.GPU_context
+            .getCurrentTexture()
+            .createView();
+        {
+            const pass = encoder.beginRenderPass(renderInstancePassDescriptor);
+
+
+            /**
+             *  Render Cone
+             * */
+            pass.setPipeline(state.sub_canvas.Pipelines["cone"]);
+            pass.setBindGroup(0, state.sub_canvas.BindGroups["mvp"]);
+            pass.setVertexBuffer(0, state.sub_canvas.VBOs["cone"]);
+            pass.setIndexBuffer(state.sub_canvas.IBOs["cone"], 'uint16');
+            pass.drawIndexed(state.sub_canvas.indices_arr["cone"].length); // cone
+
+
+
+            /**
+             *  Render Instance
+             * */
+            pass.setPipeline(state.sub_canvas.Pipelines["render_particles"]);
+            pass.setBindGroup(0, state.sub_canvas.BindGroups["mvp"]);
+            pass.setBindGroup(1, state.main_canvas.BindGroups["sample"]);
+            pass.setVertexBuffer(0, state.main_canvas.VBOs["particles"]);
+            pass.setVertexBuffer(1, state.main_canvas.VBOs["quad"]);
+            pass.draw(6, state.main_canvas.particle_info["numParticles"], 0, 0);
+
+
+            pass.end();
+        }
 
         device.queue.submit([encoder.finish()]);
     }, 25);

@@ -95,8 +95,8 @@ function init_Camera(state, device, gui) {
  *  更新相机参数
  *  根据相机的基本参数，更新相机矩阵
  * */
-function updateCamera(state, device, gui) {
-    let camera = state.main_canvas.prim_camera;
+function updateCamera(canvas_view, device, gui) {
+    let camera = canvas_view.prim_camera;
 
     camera.pos.x = camera.lookFrom.at(0);
     camera.pos.y = camera.lookFrom.at(1);
@@ -124,7 +124,7 @@ function updateCamera(state, device, gui) {
 
     // GPU 端更新相机参数
     device.queue.writeBuffer(
-        state.main_canvas.UBOs["mvp"],
+        canvas_view.UBOs["mvp"],
         0,
         viewProjectionMatrix.buffer,
         viewProjectionMatrix.byteOffset,
@@ -132,14 +132,14 @@ function updateCamera(state, device, gui) {
     );
 
     device.queue.writeBuffer(
-        state.main_canvas.UBOs["right"],
+        canvas_view.UBOs["right"],
         0,
         new Float32Array([
             view[0], view[4], view[8], // right
         ])
     );
     device.queue.writeBuffer(
-        state.main_canvas.UBOs["up"],
+        canvas_view.UBOs["up"],
         0,
         new Float32Array([
             view[1], view[5], view[9], // up
@@ -155,7 +155,7 @@ function updateCamera(state, device, gui) {
 function moveCamera(state, device) {
     let camera = state.main_canvas.prim_camera;
     camera["lookFrom"][2] = Math.sin(Date.now() / 1000) * 2 - 5;
-    updateCamera(state, device, gui);
+    updateCamera(state.main_canvas, device, gui);
 }
 
 /**
@@ -207,7 +207,7 @@ function defocusCamera(state, device, gui) {
 
         state.main_canvas.prim_camera["viewDir"] = new_view_dir;
 
-        updateCamera(state, device, gui);
+        updateCamera(state.main_canvas, device, gui);
 
         step_count++;
     }, time_stride);
@@ -295,7 +295,7 @@ function focusCamera(state, device, gui) {
 
         state.main_canvas.prim_camera["viewDir"] = new_view_dir;
 
-        updateCamera(state, device, gui);
+        updateCamera(state.main_canvas, device, gui);
 
     }, time_stride);
 
@@ -399,7 +399,7 @@ function focusOnRandomPic(state, device, gui, flow_info) {
 
         state.main_canvas.prim_camera["viewDir"] = new_view_dir;
 
-        updateCamera(state, device, gui);
+        updateCamera(state.main_canvas, device, gui);
         step_count++;
 
     }, time_stride);

@@ -171,10 +171,10 @@ function renderLoop_main(state, payload) {
     // canvas 注册键盘交互事件
     canvasKeyboardInteraction(state, device, gui, payload.flow_info);
 
-    // 初始化相机
-    setTimeout(() => {
-        defocusCamera(state, device, gui);
-    }, 200);
+    // // 初始化相机
+    // setTimeout(() => {
+    //     defocusCamera(state, device, gui);
+    // }, 200);
     // setTimeout(() => {
     //     focusOnRandomPic(state, device, gui, payload.flow_info);
     // }, 800);

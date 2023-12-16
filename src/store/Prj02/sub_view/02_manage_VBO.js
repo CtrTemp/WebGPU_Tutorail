@@ -12,10 +12,10 @@ function manage_VBO(state, payload) {
     //     -0.2, 0.2, 0.0,
 
     //     // far rect
-    //     0.8, 0.8, 2.5,
-    //     0.8, -0.8, 2.5,
-    //     -0.8, -0.8, 2.5,
-    //     -0.8, 0.8, 2.5,
+    //     8.8, 8.8, 12.5,
+    //     0.8, -8.8, 12.5,
+    //     -8.8, -8.8, 12.5,
+    //     -8.8, 8.8, 12.5,
     // ]);
 
     // console.log("camera = ", state.main_canvas.prim_camera);
@@ -23,7 +23,7 @@ function manage_VBO(state, payload) {
     // console.log("ret_vec = ", ret_vec);
     const vertices = new Float32Array(ret_vec);
 
-    state.sub_canvas.vertices_arr["rect"] = vertices;
+    state.sub_canvas.vertices_arr["cone"] = vertices;
 
 
     // 顶点缓冲区创建
@@ -33,7 +33,7 @@ function manage_VBO(state, payload) {
         usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
     });
 
-    state.sub_canvas.VBOs["rect"] = vertexBuffer;
+    state.sub_canvas.VBOs["cone"] = vertexBuffer;
 
     device.queue.writeBuffer(vertexBuffer, /*bufferOffset=*/0, vertices);
 }
@@ -50,7 +50,7 @@ function manage_VBO_Layout(state, payload) {
             shaderLocation: 0, // 等到 vertex shader 章节进行介绍
         }],
     };
-    state.sub_canvas.VBO_Layouts["rect"] = vertexBufferLayout;
+    state.sub_canvas.VBO_Layouts["cone"] = vertexBufferLayout;
 
 }
 
@@ -78,7 +78,7 @@ function manage_IBO(state, payload) {
         2, 5, 1,
         5, 2, 6,
     ]);
-    state.sub_canvas.indices_arr["rect"] = default_idx_data_arr;
+    state.sub_canvas.indices_arr["cone"] = default_idx_data_arr;
     const indexCount = default_idx_data_arr.length;
     const indexBuffer = device.createBuffer({
         size: indexCount * Uint16Array.BYTES_PER_ELEMENT,
@@ -90,7 +90,7 @@ function manage_IBO(state, payload) {
         mapping.set(default_idx_data_arr, 0);
         indexBuffer.unmap();
     }
-    state.sub_canvas.IBOs["rect"] = indexBuffer;
+    state.sub_canvas.IBOs["cone"] = indexBuffer;
 }
 
 

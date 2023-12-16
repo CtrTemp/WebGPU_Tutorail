@@ -15,7 +15,7 @@ function init_Camera(state, device, gui) {
     let projection = mat4.perspective(fov, aspect, z_near, z_far);
 
 
-    const lookFrom = vec3.fromValues(25, 25, 25);
+    const lookFrom = vec3.fromValues(45, 45, 45);
     const lookAt = vec3.fromValues(0.0, 0.0, 0.0);
     const viewDir = vec3.normalize(vec3.sub(lookAt, lookFrom));
     const up = vec3.fromValues(0, 1, 0);
@@ -65,8 +65,8 @@ function init_Camera(state, device, gui) {
     state.sub_canvas.mouse_info["lastY"] = 0;
 
     // 解算得到的相机方位角
-    camera["yaw"] = Math.PI / 2;
-    camera["pitch"] = 0.0;
+    camera["yaw"] = 3.88;
+    camera["pitch"] = -0.64;
 
     // defineReactive(state.sub_canvas.prim_camera, "yaw", Math.PI / 2);
     // defineReactive(state.sub_canvas.prim_camera, "pitch", 0.0);

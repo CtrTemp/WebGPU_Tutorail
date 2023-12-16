@@ -7,6 +7,18 @@ function set_Layout(state, device) {
             buffer: {
                 type: "uniform"
             }
+        }, {
+            binding: 1,
+            visibility: GPUShaderStage.VERTEX,
+            buffer: {
+                type: "uniform"
+            }
+        }, {
+            binding: 2,
+            visibility: GPUShaderStage.VERTEX,
+            buffer: {
+                type: "uniform"
+            }
         }]
     });
     state.sub_canvas.Layouts["mvp"] = MVP_UBO_Layout;

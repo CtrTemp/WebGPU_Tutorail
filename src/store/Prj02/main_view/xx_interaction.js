@@ -48,7 +48,7 @@ function mouseMovingCallback(state, device, event, gui) {
 
     // console.log("camera = ", state.main_canvas.prim_camera["viewDir"]);
 
-    updateCamera(state, device, gui);
+    updateCamera(state.main_canvas, device, gui);
 }
 
 /**
@@ -75,7 +75,7 @@ function mouseWheelCallback(state, device, deltaY, gui) {
         -state.main_canvas.mouse_info["wheel_speed"] * deltaY
     );
 
-    updateCamera(state, device, gui);
+    updateCamera(state.main_canvas, device, gui);
 }
 
 /**
@@ -112,79 +112,144 @@ function canvasMouseInteraction(state, device, gui) {
  *  Key Down
  * */
 function leftMovingCallback(state, device, gui) {
-    let camera = state.main_canvas.prim_camera;
-    const leftDir = vec3.normalize(vec3.cross(camera["up"], camera["viewDir"]));
 
-    camera["lookFrom"] = vec3.addScaled(
-        camera["lookFrom"],
-        leftDir,
-        state.main_canvas.keyboard_info["speed"]
-    );
+    if (state.main_canvas.keyboard_info.active == true) {
+        let camera = state.main_canvas.prim_camera;
+        const leftDir = vec3.normalize(vec3.cross(camera["up"], camera["viewDir"]));
+        camera["lookFrom"] = vec3.addScaled(
+            camera["lookFrom"],
+            leftDir,
+            state.main_canvas.keyboard_info["speed"]
+        );
+        updateCamera(state.main_canvas, device, gui);
+    }
+    else {
+        let camera = state.sub_canvas.prim_camera;
+        const leftDir = vec3.normalize(vec3.cross(camera["up"], camera["viewDir"]));
+        camera["lookFrom"] = vec3.addScaled(
+            camera["lookFrom"],
+            leftDir,
+            state.sub_canvas.keyboard_info["speed"]
+        );
+        updateCamera(state.sub_canvas, device, gui);
+    }
 
-    updateCamera(state, device, gui);
 }
 
 function rightMovingCallback(state, device, gui) {
-    let camera = state.main_canvas.prim_camera;
-    const rightDir = vec3.normalize(vec3.cross(camera["viewDir"], camera["up"]));
-
-    camera["lookFrom"] = vec3.addScaled(
-        camera["lookFrom"],
-        rightDir,
-        state.main_canvas.keyboard_info["speed"]
-    );
-
-    updateCamera(state, device, gui);
+    if (state.main_canvas.keyboard_info.active == true) {
+        let camera = state.main_canvas.prim_camera;
+        const leftDir = vec3.normalize(vec3.cross(camera["viewDir"], camera["up"]));
+        camera["lookFrom"] = vec3.addScaled(
+            camera["lookFrom"],
+            leftDir,
+            state.main_canvas.keyboard_info["speed"]
+        );
+        updateCamera(state.main_canvas, device, gui);
+    }
+    else {
+        let camera = state.sub_canvas.prim_camera;
+        const leftDir = vec3.normalize(vec3.cross(camera["viewDir"], camera["up"]));
+        camera["lookFrom"] = vec3.addScaled(
+            camera["lookFrom"],
+            leftDir,
+            state.sub_canvas.keyboard_info["speed"]
+        );
+        updateCamera(state.sub_canvas, device, gui);
+    }
 }
 
 function frontMovingCallback(state, device, gui) {
-    let camera = state.main_canvas.prim_camera;
-    camera["lookFrom"] = vec3.addScaled(
-        camera["lookFrom"],
-        camera["viewDir"],
-        state.main_canvas.keyboard_info["speed"]
-    );
+    if (state.main_canvas.keyboard_info.active == true) {
+        let camera = state.main_canvas.prim_camera;
+        camera["lookFrom"] = vec3.addScaled(
+            camera["lookFrom"],
+            camera["viewDir"],
+            state.main_canvas.keyboard_info["speed"]
+        );
+        updateCamera(state.main_canvas, device, gui);
+    }
+    else {
+        let camera = state.sub_canvas.prim_camera;
+        camera["lookFrom"] = vec3.addScaled(
+            camera["lookFrom"],
+            camera["viewDir"],
+            state.sub_canvas.keyboard_info["speed"]
+        );
+        updateCamera(state.sub_canvas, device, gui);
+    }
 
-    updateCamera(state, device, gui);
 }
 
 function backMovingCallback(state, device, gui) {
-    let camera = state.main_canvas.prim_camera;
-    camera["lookFrom"] = vec3.addScaled(
-        camera["lookFrom"],
-        camera["viewDir"],
-        -state.main_canvas.keyboard_info["speed"]
-    );
+    if (state.main_canvas.keyboard_info.active == true) {
+        let camera = state.main_canvas.prim_camera;
+        camera["lookFrom"] = vec3.addScaled(
+            camera["lookFrom"],
+            camera["viewDir"],
+            -state.main_canvas.keyboard_info["speed"]
+        );
+        updateCamera(state.main_canvas, device, gui);
+    }
+    else {
+        let camera = state.sub_canvas.prim_camera;
+        camera["lookFrom"] = vec3.addScaled(
+            camera["lookFrom"],
+            camera["viewDir"],
+            -state.sub_canvas.keyboard_info["speed"]
+        );
+        updateCamera(state.sub_canvas, device, gui);
+    }
 
-    updateCamera(state, device, gui);
 }
 
 function upMovingCallback(state, device, gui) {
-    let camera = state.main_canvas.prim_camera;
-    camera["lookFrom"] = vec3.addScaled(
-        camera["lookFrom"],
-        camera["up"],
-        state.main_canvas.keyboard_info["speed"]
-    );
+    if (state.main_canvas.keyboard_info.active == true) {
+        let camera = state.main_canvas.prim_camera;
+        camera["lookFrom"] = vec3.addScaled(
+            camera["lookFrom"],
+            camera["up"],
+            state.main_canvas.keyboard_info["speed"]
+        );
+        updateCamera(state.main_canvas, device, gui);
+    }
+    else {
+        let camera = state.sub_canvas.prim_camera;
+        camera["lookFrom"] = vec3.addScaled(
+            camera["lookFrom"],
+            camera["up"],
+            state.sub_canvas.keyboard_info["speed"]
+        );
+        updateCamera(state.sub_canvas, device, gui);
+    }
 
-    updateCamera(state, device, gui);
 }
 
 function downMovingCallback(state, device, gui) {
-    let camera = state.main_canvas.prim_camera;
-    camera["lookFrom"] = vec3.addScaled(
-        camera["lookFrom"],
-        camera["up"],
-        -state.main_canvas.keyboard_info["speed"]
-    );
+    if (state.main_canvas.keyboard_info.active == true) {
+        let camera = state.main_canvas.prim_camera;
+        camera["lookFrom"] = vec3.addScaled(
+            camera["lookFrom"],
+            camera["up"],
+            -state.main_canvas.keyboard_info["speed"]
+        );
+        updateCamera(state.main_canvas, device, gui);
+    }
+    else {
+        let camera = state.sub_canvas.prim_camera;
+        camera["lookFrom"] = vec3.addScaled(
+            camera["lookFrom"],
+            camera["up"],
+            -state.sub_canvas.keyboard_info["speed"]
+        );
+        updateCamera(state.sub_canvas, device, gui);
+    }
 
-    updateCamera(state, device, gui);
 }
 
-function pauseBrowseAnimation(state, device)
-{
+function pauseBrowseAnimation(state, device) {
     state.main_canvas.simu_info["simu_pause"] = !state.main_canvas.simu_info["simu_pause"];
-    
+
     device.queue.writeBuffer(
         state.main_canvas.UBOs["compute"],
         0,
@@ -205,12 +270,30 @@ function pauseBrowseAnimation(state, device)
     );
 }
 
+function exchangeKeyboardActive(state) {
+    if (state.main_canvas.keyboard_info.active == true) {
+        state.main_canvas.keyboard_info.active = false;
+        state.sub_canvas.keyboard_info.active = true;
+    }
+    else {
+        state.main_canvas.keyboard_info.active = true;
+        state.sub_canvas.keyboard_info.active = false;
+    }
+}
+
 /**
  *  Keyboard
  * */
 function canvasKeyboardInteraction(state, device, gui, flow_info) {
 
     let camera = state.main_canvas.prim_camera;
+
+    /**
+     *  初始化状态下，将键盘交互绑定在主视图上
+     * */
+    state.main_canvas.keyboard_info.active = true;
+    state.sub_canvas.keyboard_info.active = false;
+
 
     window.addEventListener("keydown", (event) => {
 
@@ -243,6 +326,9 @@ function canvasKeyboardInteraction(state, device, gui, flow_info) {
                 break;
             case "P".charCodeAt(0):
                 pauseBrowseAnimation(state, device)
+                break;
+            case "B".charCodeAt(0):
+                exchangeKeyboardActive(state)
                 break;
 
             default:

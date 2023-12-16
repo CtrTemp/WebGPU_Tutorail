@@ -10,9 +10,9 @@ function gen_cone_vertex_from_camera(camera, range_near, range_far) {
     const aspect = camera.aspect;
 
     const y_offset_near = range_near * Math.tan(fov / 2);
-    const x_offset_near = y_offset_near / aspect;
+    const x_offset_near = y_offset_near * aspect;
     const y_offset_far = range_far * Math.tan(fov / 2);
-    const x_offset_far = y_offset_far / aspect;
+    const x_offset_far = y_offset_far * aspect;
 
     const lookFrom = camera.lookFrom;
 
@@ -25,9 +25,9 @@ function gen_cone_vertex_from_camera(camera, range_near, range_far) {
 
     const operator = [
         [+1, +1],
-        [-1, +1],
-        [-1, -1],
         [+1, -1],
+        [-1, -1],
+        [-1, +1],
     ]
 
 
@@ -35,13 +35,14 @@ function gen_cone_vertex_from_camera(camera, range_near, range_far) {
 
     // near rect
     for (let i = 0; i < operator.length; i++) {
-        let u_temp = u;
-        let r_temp = r;
+        // 直接赋值是浅拷贝！！！要使用其API进行深拷贝
+        let u_temp = vec3.fromValues(u[0], u[1], u[2]);
+        let r_temp = vec3.fromValues(r[0], r[1], r[2]);
         if (operator[i][0] < 0) {
-            vec3.mulScalar(u_temp, -1, u_temp);
+            vec3.mulScalar(r, -1, r_temp);
         }
         if (operator[i][1] < 0) {
-            vec3.mulScalar(r_temp, -1, r_temp);
+            vec3.mulScalar(u, -1, u_temp);
         }
         ret_vec_temp.push(vec3.add(near_center, vec3.add(
             vec3.mulScalar(u_temp, y_offset_near),
@@ -51,20 +52,20 @@ function gen_cone_vertex_from_camera(camera, range_near, range_far) {
 
     // far rect
     for (let i = 0; i < operator.length; i++) {
-        let u_temp = u;
-        let r_temp = r;
+        // 直接赋值是浅拷贝！！！要使用其API进行深拷贝
+        let u_temp = vec3.fromValues(u[0], u[1], u[2]);
+        let r_temp = vec3.fromValues(r[0], r[1], r[2]);
         if (operator[i][0] < 0) {
-            vec3.mulScalar(u_temp, -1, u_temp);
+            vec3.mulScalar(r_temp, -1, r_temp);
         }
         if (operator[i][1] < 0) {
-            vec3.mulScalar(r_temp, -1, r_temp);
+            vec3.mulScalar(u_temp, -1, u_temp);
         }
         ret_vec_temp.push(vec3.add(far_center, vec3.add(
             vec3.mulScalar(u_temp, y_offset_far),
             vec3.mulScalar(r_temp, x_offset_far),
         )));
     }
-    // console.log("ret_vec temp = ", ret_vec_temp);
 
     let ret_vec = [];
 

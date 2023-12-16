@@ -9,6 +9,18 @@ function set_BindGroup(state, device) {
                     buffer: state.sub_canvas.UBOs["mvp"]
                 }
             },
+            {
+                binding: 1,
+                resource: {
+                    buffer: state.sub_canvas.UBOs["right"]
+                }
+            },
+            {
+                binding: 2,
+                resource: {
+                    buffer: state.sub_canvas.UBOs["up"]
+                }
+            },
         ]
     });
     state.sub_canvas.BindGroups["mvp"] = MVP_UBO_BindGroup;

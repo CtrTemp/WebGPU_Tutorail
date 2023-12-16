@@ -77,6 +77,8 @@ onMounted(() => {
 
 .sub-canvas {
     position: absolute;
+    /* width: 100%;
+    height: 100%; */
     right: 0px;
     bottom: 0px;
 }
