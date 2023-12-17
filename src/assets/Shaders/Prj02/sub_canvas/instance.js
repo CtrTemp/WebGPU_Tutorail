@@ -7,17 +7,20 @@ const instance_vert = /* wgsl */`
 
 
 
+
 struct VertexInput {
   @location(0) position     : vec4<f32>,  // particle position
   @location(1) color        : vec4<f32>,  // particle color
   @location(2) lifetime     : f32,        // particle life time
   @location(3) idx          : f32,        // idx for instanced texture
   @location(4) uv_offset    : vec2<f32>,
-  @location(5) tex_aspect     : vec2<f32>,
-  @location(6) uv_size  : vec2<f32>,
-  @location(7) quad_pos     : vec2<f32>,  // -1..+1
-  @location(8) quad_uv      : vec2<f32>,  // 0..+1
+  @location(5) tex_aspect   : vec2<f32>,
+  @location(6) uv_size      : vec2<f32>,
+  @location(7) miplevel     : f32,        // miplevel
+  @location(8) quad_pos     : vec2<f32>,  // -1..+1
+  @location(9) quad_uv      : vec2<f32>,  // 0..+1
 }
+
 
 struct VertexOutput {
   @builtin(position) position : vec4<f32>, // mvp 变换后的粒子空间坐标
@@ -26,7 +29,8 @@ struct VertexOutput {
   @location(2) quad_uv        : vec2<f32>, // 0..+1 不变，原样输出
   @location(3) idx            : f32,       // 不变，原样输出
   @location(4) uv_offset      : vec2<f32>, // 不变，原样输出
-  @location(5) uv_size     : vec2<f32>, // 不变，原样输出
+  @location(5) uv_size        : vec2<f32>, // 不变，原样输出
+  @location(6) miplevel       : f32,
 }
 
 @vertex
@@ -47,6 +51,7 @@ fn vs_main(in : VertexInput) -> VertexOutput {
   out.idx = in.idx;
   out.uv_offset = in.uv_offset;
   out.uv_size = in.uv_size;
+  out.miplevel = in.miplevel;
   return out;
 }
 `
@@ -75,7 +80,8 @@ struct FragIutput {
   @location(2) quad_uv        : vec2<f32>, // 0..+1 不变，原样输出
   @location(3) idx            : f32,       // 不变，原样输出
   @location(4) uv_offset      : vec2<f32>,
-  @location(5) uv_size     : vec2<f32>,
+  @location(5) uv_size        : vec2<f32>,
+  @location(6) miplevel       : f32,
 }
 
 
@@ -98,23 +104,15 @@ fn rand() -> f32 {
 
 @fragment
 fn fs_main(in : FragIutput) -> @location(0) vec4<f32> {
-  // var color = in.color;
-  // var idx = in.idx;
-  var color = vec4f(0.0, 0.5, 0.5, 1.0);
-
-
-  // var target_uv = vec2(in.quad_uv.x*in.uv_size.x, in.quad_uv.y*in.uv_size.y);
-  // target_uv = target_uv+in.uv_offset;
   
-  // color = textureSample(myTexture_id1, mySampler, target_uv);
+  var color = vec4f(1.0, 1.0, 0.5, 1.0);
+  var miplevel = in.miplevel;
 
+
+  color = select(color, vec4(0.0, 1.0, 0.0, 0.0), in.miplevel<0.0);
   
-  // // 解除下面这句注释，用于查看当前大纹理中所存放的所有图片
-  // color = textureSample(myTexture_id2, mySampler, in.quad_uv);
 
   return color;
-  // return vec4(idx/10,idx/10,idx,1.0);
-  // return textureSample(myTexture_id2, mySampler, in.quad_uv);
 }
 `
 

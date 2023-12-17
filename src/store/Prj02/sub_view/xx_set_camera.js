@@ -76,7 +76,7 @@ function init_Camera(state, device, gui) {
     // 相机移动敏感度
     state.sub_canvas.mouse_info["drag_speed"] = 0.005;
     state.sub_canvas.mouse_info["wheel_speed"] = 0.005;
-    state.sub_canvas.keyboard_info["speed"] = 0.25;
+    state.sub_canvas.keyboard_info["speed"] = 0.75;
 
     /**
      *  GUI para 

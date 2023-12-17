@@ -40,9 +40,22 @@ import { mat4, vec3, vec4 } from "wgpu-matrix"
 /**
  *  目前 focus 出现了问题，但具体是哪一个地方出了问题呢？？？还不明确
  * 回来排查bug
- * */ 
+ * */
+
+function check_in_frustum(ndc_pos) {
+    const x = ndc_pos[0];
+    const y = ndc_pos[1];
+    const z = ndc_pos[2];
+    if (x < -1 || x > 1 || y < -1 || y > 1 || z < -1 || z > 1) //
+    {
+        return false;
+    }
+    return true;
+}
 
 function gen_sphere_instance(radius, counts, state) {
+
+    console.log("matrix = ", state.main_canvas.prim_camera["matrix"]);
 
     let ret_arr = [];
     // const default_color = [0.8, 0.6, 0.0, 1.0];
@@ -72,8 +85,45 @@ function gen_sphere_instance(radius, counts, state) {
         let uv_size = state.main_canvas.atlas_info["uv_size"][i % 5];
 
         ret_arr = ret_arr.concat(uv_offset);                    // uv-offset
-        ret_arr = ret_arr.concat(tex_aspect);                     // uv-scale
-        ret_arr = ret_arr.concat(uv_size);                  // quad-scale
+        ret_arr = ret_arr.concat(tex_aspect);                   // uv-scale
+        ret_arr = ret_arr.concat(uv_size);                      // quad-scale
+
+        /**
+         *  结合相机参数，对 instace 是否在视锥内进行判断
+         * */
+        const viewProjectMatrix = state.main_canvas.prim_camera["matrix"];
+        const viewMatrix = state.main_canvas.prim_camera["view"];
+        const projectMatrix = state.main_canvas.prim_camera["projection"];
+        const pos = vec4.fromValues(pos_x, pos_y, pos_z, 1.0);
+        let projected_pos = vec4.create(0.0, 0.0, 0.0, 0.0);
+
+
+        vec4.transformMat4(pos, mat4.transpose(viewProjectMatrix), projected_pos);
+
+
+        // // console.log(projected_pos);
+        // // 到剪裁空间（为啥这个库没有矩阵乘向量的操作？！）
+        // for (let i = 0; i < 4; i++) {
+        //     for (let j = 0; j < 4; j++) {
+        //         let matrix_val = viewProjectMatrix[i * 4 + j];
+        //         let pos_val = pos[j];
+        //         projected_pos[i] += matrix_val * pos_val;
+        //     }
+        // }
+
+        // 归一化到标准向量空间 NDC
+        for (let i = 0; i < 4; i++) {
+            projected_pos[i] /= projected_pos[3];
+        }
+
+        let mip_val = -1.0;
+        if (check_in_frustum(projected_pos)) {
+            mip_val = 1.0;
+            // console.log("projected_pos = ", projected_pos);
+        }
+
+        ret_arr = ret_arr.concat(mip_val);                          // miplevel
+        ret_arr = ret_arr.concat([0, 0, 0]);                    // padding
     }
 
 

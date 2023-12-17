@@ -11,7 +11,7 @@ function init_Camera(state, device, gui) {
     const fov = (2 * Math.PI) / 4;//90°
     const aspect = state.main_canvas.canvas.width / state.main_canvas.canvas.height;
     const z_far = 1000.0;
-    const z_near = 0.5;
+    const z_near = 1.0;
     let projection = mat4.perspective(fov, aspect, z_near, z_far);
 
 
@@ -56,6 +56,7 @@ function init_Camera(state, device, gui) {
     // 相机矩阵（需要根据相机基本参数计算得到）
     camera["matrix"] = viewProjectionMatrix;
     camera["view"] = view;
+    console.log("view matrix = ", view);
     camera["projection"] = projection;
 
     // 其他附加参数
@@ -87,6 +88,12 @@ function init_Camera(state, device, gui) {
     gui.add(state.main_canvas.prim_camera.pos, "x", -range, range, 0.01);
     gui.add(state.main_canvas.prim_camera.pos, "y", -range, range, 0.01);
     gui.add(state.main_canvas.prim_camera.pos, "z", -range, range, 0.01);
+
+    const test_vec = vec4.fromValues(1, 2, 3, 4);
+    const test_mat = mat4.create(1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4);
+    const trans_vec = vec4.transformMat4(test_vec, mat4.transpose(test_mat));
+
+    console.log("trans vec = ", trans_vec);
 
 }
 

@@ -13,10 +13,11 @@ struct VertexInput {
   @location(2) lifetime     : f32,        // particle life time
   @location(3) idx          : f32,        // idx for instanced texture
   @location(4) uv_offset    : vec2<f32>,
-  @location(5) tex_aspect     : vec2<f32>,
-  @location(6) uv_size  : vec2<f32>,
-  @location(7) quad_pos     : vec2<f32>,  // -1..+1
-  @location(8) quad_uv      : vec2<f32>,  // 0..+1
+  @location(5) tex_aspect   : vec2<f32>,
+  @location(6) uv_size      : vec2<f32>,
+  @location(7) selected     : f32,        // selected in cone range
+  @location(8) quad_pos     : vec2<f32>,  // -1..+1
+  @location(9) quad_uv      : vec2<f32>,  // 0..+1
 }
 
 struct VertexOutput {

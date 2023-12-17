@@ -45,7 +45,7 @@ function init_device_main(state, { canvas, device }) {
 function manage_data_main(state, payload) {
     
     /**
-     *  初始化设置相机参数
+     *  初始化设置相机参数！应该最先被配置，因为之后的初始化VBO可能需要用到camer参数做判断
      * */
     // 注意，这里是单向控制的GUI，只能通过页面交互观察参数，还未实现通过GUI进行控制
     init_Camera(state, payload.device, payload.gui);
@@ -104,7 +104,7 @@ function renderLoop_main(state, payload) {
 
     // 初始化状态，是否直接开启浏览动画
     state.main_canvas.simu_info["simu_pause"] = 0.0;
-    state.main_canvas.simu_info["simu_speed"] = 0.001; // 设置为0则不运动
+    state.main_canvas.simu_info["simu_speed"] = 0.000; // 设置为0则不运动
 
     device.queue.writeBuffer(
         state.main_canvas.UBOs["compute"],

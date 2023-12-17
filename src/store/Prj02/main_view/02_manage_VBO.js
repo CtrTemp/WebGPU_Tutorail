@@ -3,7 +3,7 @@ import { gen_sphere_instance } from "./gen_curve_line";
 
 function manage_VBO(state, payload) {
 
-    const flow_info = gen_sphere_instance(50, 1000, state);
+    const flow_info = gen_sphere_instance(15, 1000, state);
     payload.flow_info = flow_info;
 
 
@@ -20,6 +20,8 @@ function manage_VBO(state, payload) {
         2 * 4 + // uv offset
         2 * 4 + // uv scale
         2 * 4 + // quad scale
+        1 * 4 + // miplevel
+        3 * 4 + // padding （注意，padding补全是非常有必要的！）
         0;
 
 
@@ -118,6 +120,12 @@ function manage_VBO_Layout(state, payload) {
                 shaderLocation: 6,
                 offset: 14 * 4,
                 format: 'float32x2'
+            },
+            {
+                // miplevel
+                shaderLocation: 7,
+                offset: 16 * 4,
+                format: 'float32'
             }
         ]
     };
@@ -130,13 +138,13 @@ function manage_VBO_Layout(state, payload) {
         attributes: [
             {
                 // vertex position
-                shaderLocation: 7,
+                shaderLocation: 8,
                 offset: 0,
                 format: 'float32x2',
             },
             {
                 // vertex uv
-                shaderLocation: 8,
+                shaderLocation: 9,
                 offset: 2 * 4,
                 format: 'float32x2',
             },

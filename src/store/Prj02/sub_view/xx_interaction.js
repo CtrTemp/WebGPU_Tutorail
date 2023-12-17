@@ -12,7 +12,7 @@ import {
  * */
 function mouseMovingCallback(state, device, event, gui) {
     if (!state.sub_canvas.mouse_info["dragging"]) {
-        console.log("invalid mouse moving~ ");
+        // console.log("invalid mouse moving~ ");
         return;
     }
 
@@ -46,7 +46,7 @@ function mouseMovingCallback(state, device, event, gui) {
 
     state.sub_canvas.prim_camera["viewDir"] = new_view_dir;
 
-    console.log("camera = ", state.sub_canvas.prim_camera["viewDir"]);
+    // console.log("camera = ", state.sub_canvas.prim_camera["viewDir"]);
 
     updateCamera(state, device, gui);
 }
