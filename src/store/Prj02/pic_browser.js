@@ -29,7 +29,6 @@ export default {
 
         // 整体框架，内为异步函数，用于简单操控数据异步读取，阻塞式等待。
         async init_and_render(context, canvas) {
-            console.log(context);
 
             const device = context.rootState.device;
 

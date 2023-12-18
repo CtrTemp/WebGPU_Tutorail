@@ -1,9 +1,14 @@
 
-import { gen_sphere_instance } from "./gen_curve_line";
+import { gen_sphere_instance, gen_customized_instance } from "./gen_curve_line";
 
 function manage_VBO(state, payload) {
 
     const flow_info = gen_sphere_instance(15, 1000, state);
+    // const instance_pos_arr = [
+    //     [5.0, 0.0, 0.0],
+    //     [-5.0, 1.0, 5.0],
+    // ];
+    // const flow_info = gen_customized_instance(instance_pos_arr, state);
     payload.flow_info = flow_info;
 
 
@@ -27,6 +32,7 @@ function manage_VBO(state, payload) {
 
     const particles_data = payload.flow_info.flow_arr;
     // console.log("particles data = ", particles_data);
+    state.main_canvas.vertices_arr["instance"] = particles_data;
 
     // 應該將以上轉換成 Float32Arr
     const writeBufferArr = new Float32Array(particles_data);

@@ -36,7 +36,7 @@ function manage_Texture(state, payload) {
     let offset = 0;
 
     const global_texture_size = Math.pow(2, 13);
-    console.log("global_texture_size = ", global_texture_size);
+    // console.log("global_texture_size = ", global_texture_size);
     state.main_canvas.atlas_info["size"].push([global_texture_size, global_texture_size]);
     const instanceTexture = device.createTexture({
         dimension: '2d',
@@ -52,9 +52,9 @@ function manage_Texture(state, payload) {
 
     let width_offset = 0;
     let height_offset = 0;
-    console.log("instance len = ", instance_len);
+    // console.log("instance len = ", instance_len);
 
-    console.log("All bitMap = ", state.main_canvas.instancedBitMap);
+    // console.log("All bitMap = ", state.main_canvas.instancedBitMap);
 
     /**
      *  这里插入图片排序算法？？图片排序放在服务端是否好一些，因为作为一个大屏访问项目，

@@ -1,5 +1,5 @@
-import { reactive } from "vue";
 import { mat4, vec3, vec4 } from "wgpu-matrix"
+import { updateMipLevel } from "./gen_curve_line";
 
 
 
@@ -10,13 +10,17 @@ function init_Camera(state, device, gui) {
 
     const fov = (2 * Math.PI) / 4;//90°
     const aspect = state.main_canvas.canvas.width / state.main_canvas.canvas.height;
-    const z_far = 1000.0;
-    const z_near = 1.0;
+    const z_far = 50.0;
+    const z_near = 5.0;
+    camera["z_near"] = z_near;
+    camera["z_far"] = z_far;
     let projection = mat4.perspective(fov, aspect, z_near, z_far);
+    console.log("projection matrix = ", projection);
 
 
-    const lookFrom = vec3.fromValues(0.0, 0.0, -2);
-    const viewDir = vec3.fromValues(0.0, 0.0, 1.0);
+
+    const lookFrom = vec3.fromValues(0.0, 0.0, 0.0);
+    const viewDir = vec3.fromValues(1.0, 0.0, 0.0);
     const lookAt = vec3.add(lookFrom, viewDir);
     const up = vec3.fromValues(0, 1, 0);
     let view = mat4.lookAt(lookFrom, lookAt, up);
@@ -52,11 +56,15 @@ function init_Camera(state, device, gui) {
         y: lookFrom.at(1),
         z: lookFrom.at(2),
     }
+    camera["dir"] = {
+        dir_x: viewDir.at(0),
+        dir_y: viewDir.at(1),
+        dir_z: viewDir.at(1),
+    }
 
     // 相机矩阵（需要根据相机基本参数计算得到）
     camera["matrix"] = viewProjectionMatrix;
     camera["view"] = view;
-    console.log("view matrix = ", view);
     camera["projection"] = projection;
 
     // 其他附加参数
@@ -66,7 +74,8 @@ function init_Camera(state, device, gui) {
     state.main_canvas.mouse_info["lastY"] = 0;
 
     // 解算得到的相机方位角
-    camera["yaw"] = Math.PI / 2;
+    // camera["yaw"] = Math.PI / 2;
+    camera["yaw"] = 0.0;
     camera["pitch"] = 0.0;
 
     // defineReactive(state.main_canvas.prim_camera, "yaw", Math.PI / 2);
@@ -88,12 +97,11 @@ function init_Camera(state, device, gui) {
     gui.add(state.main_canvas.prim_camera.pos, "x", -range, range, 0.01);
     gui.add(state.main_canvas.prim_camera.pos, "y", -range, range, 0.01);
     gui.add(state.main_canvas.prim_camera.pos, "z", -range, range, 0.01);
+    gui.add(state.main_canvas.prim_camera.dir, "dir_x", -1.0, 1.0, 0.01);
+    gui.add(state.main_canvas.prim_camera.dir, "dir_y", -1.0, 1.0, 0.01);
+    gui.add(state.main_canvas.prim_camera.dir, "dir_z", -1.0, 1.0, 0.01);
 
-    const test_vec = vec4.fromValues(1, 2, 3, 4);
-    const test_mat = mat4.create(1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4);
-    const trans_vec = vec4.transformMat4(test_vec, mat4.transpose(test_mat));
 
-    console.log("trans vec = ", trans_vec);
 
 }
 
@@ -102,12 +110,16 @@ function init_Camera(state, device, gui) {
  *  更新相机参数
  *  根据相机的基本参数，更新相机矩阵
  * */
-function updateCamera(canvas_view, device, gui) {
-    let camera = canvas_view.prim_camera;
+function updateMainCamera(state, device, gui) {
+    let camera = state.main_canvas.prim_camera;
 
     camera.pos.x = camera.lookFrom.at(0);
     camera.pos.y = camera.lookFrom.at(1);
     camera.pos.z = camera.lookFrom.at(2);
+    
+    camera.dir.dir_x = camera.viewDir.at(0);
+    camera.dir.dir_y = camera.viewDir.at(1);
+    camera.dir.dir_z = camera.viewDir.at(2);
 
     let projection = mat4.perspective(
         camera["fov"],
@@ -131,7 +143,7 @@ function updateCamera(canvas_view, device, gui) {
 
     // GPU 端更新相机参数
     device.queue.writeBuffer(
-        canvas_view.UBOs["mvp"],
+        state.main_canvas.UBOs["mvp"],
         0,
         viewProjectionMatrix.buffer,
         viewProjectionMatrix.byteOffset,
@@ -139,14 +151,14 @@ function updateCamera(canvas_view, device, gui) {
     );
 
     device.queue.writeBuffer(
-        canvas_view.UBOs["right"],
+        state.main_canvas.UBOs["right"],
         0,
         new Float32Array([
             view[0], view[4], view[8], // right
         ])
     );
     device.queue.writeBuffer(
-        canvas_view.UBOs["up"],
+        state.main_canvas.UBOs["up"],
         0,
         new Float32Array([
             view[1], view[5], view[9], // up
@@ -156,13 +168,21 @@ function updateCamera(canvas_view, device, gui) {
 
     // !!! 注意这里必须手动触发更新才行
     gui.updateDisplay();
+
+    console.log("updated camera = ", camera);
+
+    /**
+     *  根据新的相机视锥，更新 instance 的 miplevel
+     * */
+
+    updateMipLevel(state, device);
 }
 
 
 function moveCamera(state, device) {
     let camera = state.main_canvas.prim_camera;
     camera["lookFrom"][2] = Math.sin(Date.now() / 1000) * 2 - 5;
-    updateCamera(state.main_canvas, device, gui);
+    updateMainCamera(state.main_canvas, device, gui);
 }
 
 /**
@@ -214,7 +234,7 @@ function defocusCamera(state, device, gui) {
 
         state.main_canvas.prim_camera["viewDir"] = new_view_dir;
 
-        updateCamera(state.main_canvas, device, gui);
+        updateMainCamera(state.main_canvas, device, gui);
 
         step_count++;
     }, time_stride);
@@ -302,7 +322,7 @@ function focusCamera(state, device, gui) {
 
         state.main_canvas.prim_camera["viewDir"] = new_view_dir;
 
-        updateCamera(state.main_canvas, device, gui);
+        updateMainCamera(state.main_canvas, device, gui);
 
     }, time_stride);
 
@@ -406,7 +426,7 @@ function focusOnRandomPic(state, device, gui, flow_info) {
 
         state.main_canvas.prim_camera["viewDir"] = new_view_dir;
 
-        updateCamera(state.main_canvas, device, gui);
+        updateMainCamera(state.main_canvas, device, gui);
         step_count++;
 
     }, time_stride);
@@ -421,7 +441,7 @@ function focusOnRandomPic(state, device, gui, flow_info) {
 
 export {
     init_Camera,
-    updateCamera,
+    updateMainCamera,
     moveCamera,
     defocusCamera,
     focusCamera,

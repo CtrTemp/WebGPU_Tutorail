@@ -1,7 +1,7 @@
 
 import { mat4, vec3, vec4 } from "wgpu-matrix"
 import {
-    updateCamera,
+    updateSubCamera,
     defocusCamera,
     focusCamera,
     focusOnRandomPic,
@@ -48,7 +48,7 @@ function mouseMovingCallback(state, device, event, gui) {
 
     // console.log("camera = ", state.sub_canvas.prim_camera["viewDir"]);
 
-    updateCamera(state, device, gui);
+    updateSubCamera(state, device, gui);
 }
 
 /**
@@ -75,7 +75,7 @@ function mouseWheelCallback(state, device, deltaY, gui) {
         -state.sub_canvas.mouse_info["wheel_speed"] * deltaY
     );
 
-    updateCamera(state, device, gui);
+    updateSubCamera(state, device, gui);
 }
 
 /**

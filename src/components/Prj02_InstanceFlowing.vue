@@ -27,6 +27,14 @@ onMounted(() => {
         count: 100, // 索取图片数量 
     }
 
+
+
+    const window_width = window.innerWidth;
+    const window_height = window.innerHeight;
+    const main_canvas = document.querySelector(".main-canvas");
+    main_canvas.width = window_width;
+    main_canvas.height = window_height;
+
     // 这将初始化读入texture
     setTimeout(() => {
         ws.send(JSON.stringify(cmd_json));

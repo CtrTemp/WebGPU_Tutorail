@@ -15,7 +15,7 @@ function init_Camera(state, device, gui) {
     let projection = mat4.perspective(fov, aspect, z_near, z_far);
 
 
-    const lookFrom = vec3.fromValues(45, 45, 45);
+    const lookFrom = vec3.fromValues(-10, 35, 0);
     const lookAt = vec3.fromValues(0.0, 0.0, 0.0);
     const viewDir = vec3.normalize(vec3.sub(lookAt, lookFrom));
     const up = vec3.fromValues(0, 1, 0);
@@ -65,8 +65,8 @@ function init_Camera(state, device, gui) {
     state.sub_canvas.mouse_info["lastY"] = 0;
 
     // 解算得到的相机方位角
-    camera["yaw"] = 3.88;
-    camera["pitch"] = -0.64;
+    camera["yaw"] = 0.0;
+    camera["pitch"] = -1.0;
 
     // defineReactive(state.sub_canvas.prim_camera, "yaw", Math.PI / 2);
     // defineReactive(state.sub_canvas.prim_camera, "pitch", 0.0);
@@ -95,7 +95,7 @@ function init_Camera(state, device, gui) {
  *  更新相机参数
  *  根据相机的基本参数，更新相机矩阵
  * */
-function updateCamera(state, device, gui) {
+function updateSubCamera(state, device, gui) {
     let camera = state.sub_canvas.prim_camera;
 
     camera.pos.x = camera.lookFrom.at(0);
@@ -155,7 +155,7 @@ function updateCamera(state, device, gui) {
 function moveCamera(state, device) {
     let camera = state.sub_canvas.prim_camera;
     camera["lookFrom"][2] = Math.sin(Date.now() / 1000) * 2 - 5;
-    updateCamera(state, device, gui);
+    updateSubCamera(state, device, gui);
 }
 
 /**
@@ -207,7 +207,7 @@ function defocusCamera(state, device, gui) {
 
         state.sub_canvas.prim_camera["viewDir"] = new_view_dir;
 
-        updateCamera(state, device, gui);
+        updateSubCamera(state, device, gui);
 
         step_count++;
     }, time_stride);
@@ -295,7 +295,7 @@ function focusCamera(state, device, gui) {
 
         state.sub_canvas.prim_camera["viewDir"] = new_view_dir;
 
-        updateCamera(state, device, gui);
+        updateSubCamera(state, device, gui);
 
     }, time_stride);
 
@@ -399,7 +399,7 @@ function focusOnRandomPic(state, device, gui, flow_info) {
 
         state.sub_canvas.prim_camera["viewDir"] = new_view_dir;
 
-        updateCamera(state, device, gui);
+        updateSubCamera(state, device, gui);
         step_count++;
 
     }, time_stride);
@@ -414,7 +414,7 @@ function focusOnRandomPic(state, device, gui, flow_info) {
 
 export {
     init_Camera,
-    updateCamera,
+    updateSubCamera,
     moveCamera,
     defocusCamera,
     focusCamera,

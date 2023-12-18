@@ -19,7 +19,7 @@ function manage_VBO(state, payload) {
     // ]);
 
     // console.log("camera = ", state.main_canvas.prim_camera);
-    const ret_vec = gen_cone_vertex_from_camera(state.main_canvas.prim_camera, 1.0, 25.0);
+    const ret_vec = gen_cone_vertex_from_camera(state.main_canvas.prim_camera, 0.1, 25.0);
     // console.log("ret_vec = ", ret_vec);
     const vertices = new Float32Array(ret_vec);
 

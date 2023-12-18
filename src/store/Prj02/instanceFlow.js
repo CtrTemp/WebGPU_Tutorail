@@ -213,16 +213,16 @@ function renderLoop_main(state, payload) {
 
         const encoder = device.createCommandEncoder();
 
-        /**
-         *  Simulation Pass
-         * */
-        {
-            const pass = encoder.beginComputePass();
-            pass.setPipeline(state.main_canvas.Pipelines["simu_particles"]);
-            pass.setBindGroup(0, state.main_canvas.BindGroups["compute"]);
-            pass.dispatchWorkgroups(Math.ceil(state.main_canvas.particle_info["numParticles"] / 64));
-            pass.end();
-        }
+        // /**
+        //  *  Simulation Pass
+        //  * */
+        // {
+        //     const pass = encoder.beginComputePass();
+        //     pass.setPipeline(state.main_canvas.Pipelines["simu_particles"]);
+        //     pass.setBindGroup(0, state.main_canvas.BindGroups["compute"]);
+        //     pass.dispatchWorkgroups(Math.ceil(state.main_canvas.particle_info["numParticles"] / 64));
+        //     pass.end();
+        // }
 
 
         /**

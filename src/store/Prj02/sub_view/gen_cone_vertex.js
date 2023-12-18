@@ -9,6 +9,9 @@ function gen_cone_vertex_from_camera(camera, range_near, range_far) {
     const fov = camera.fov;
     const aspect = camera.aspect;
 
+    range_near = camera["z_near"];
+    range_far = camera["z_far"];
+
     const y_offset_near = range_near * Math.tan(fov / 2);
     const x_offset_near = y_offset_near * aspect;
     const y_offset_far = range_far * Math.tan(fov / 2);

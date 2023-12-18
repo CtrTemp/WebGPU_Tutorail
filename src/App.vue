@@ -76,7 +76,7 @@ if (!navigator.gpu) {
   throw new Error("WebGPU not supported on this browser");
 }
 else {
-  console.log("Well done~ your browser can fully support WebGPU");
+  // console.log("Well done~ your browser can fully support WebGPU");
 }
 
 // 应该是通过根节点透传的方式将 device 这类全局变量给到其他节点
