@@ -20,6 +20,14 @@ function check_in_frustum(ndc_pos) {
 function gen_sphere_instance(radius, counts, state) {
 
     let ret_arr = [];
+
+    
+    const viewProjectMatrix = state.main_canvas.prim_camera["matrix"];
+    console.log("init vp = ", viewProjectMatrix);
+    const projection = state.main_canvas.prim_camera["projection"];
+    console.log("init projection = ", projection);
+    
+
     // const default_color = [0.8, 0.6, 0.0, 1.0];
     const default_color = [0.1, 0.8, 0.95, 1.0];
     for (let i = 0; i < counts; i++) {
@@ -53,22 +61,11 @@ function gen_sphere_instance(radius, counts, state) {
         /**
          *  结合相机参数，对 instace 是否在视锥内进行判断
          * */
-        const viewProjectMatrix = state.main_canvas.prim_camera["matrix"];
-        const viewMatrix = state.main_canvas.prim_camera["view"];
-        const projectMatrix = state.main_canvas.prim_camera["projection"];
         const pos = vec4.fromValues(pos_x, pos_y, pos_z, 1.0);
         let projected_pos = vec4.create(0.0, 0.0, 0.0, 0.0);
 
-        vec4.transformMat4(pos, mat4.transpose(viewProjectMatrix), projected_pos);
+        vec4.transformMat4(pos, viewProjectMatrix, projected_pos);
 
-
-        // for (let i = 0; i < 4; i++) {
-        //     for (let j = 0; j < 4; j++) {
-        //         let matrix_val = viewProjectMatrix[i * 4 + j];
-        //         let pos_val = pos[j];
-        //         projected_pos[i] += matrix_val * pos_val;
-        //     }
-        // }
 
 
         // 归一化到标准向量空间 NDC
@@ -105,16 +102,19 @@ function updateMipLevel(state, device) {
     const arr_len = arr.length;
 
     const miplevel_offset = 16;
-
+    const viewProjectMatrix = state.main_canvas.prim_camera["matrix"];
+    console.log("update vp = ", viewProjectMatrix);
+    const projection = state.main_canvas.prim_camera["projection"];
+    console.log("update projection = ", projection);
     for (let i = 0; i < arr_len; i += arr_stride) {
         const pos_x = arr[i + 0];
         const pos_y = arr[i + 1];
         const pos_z = arr[i + 2];
-        const viewProjectMatrix = state.main_canvas.prim_camera["matrix"];
         const pos = vec4.fromValues(pos_x, pos_y, pos_z, 1.0);
         let projected_pos = vec4.create(0.0, 0.0, 0.0, 0.0);
 
-        vec4.transformMat4(pos, mat4.transpose(viewProjectMatrix), projected_pos);
+        // vec4.transformMat4(pos, mat4.transpose(viewProjectMatrix), projected_pos);
+        vec4.transformMat4(pos, viewProjectMatrix, projected_pos);
 
 
         // 归一化到标准向量空间 NDC
@@ -186,13 +186,16 @@ function gen_customized_instance(pos_arr, state) {
         const viewMatrix = state.main_canvas.prim_camera["view"];
         const projectMatrix = state.main_canvas.prim_camera["projection"];
         const pos = vec4.fromValues(pos_x, pos_y, pos_z, 1.0);
+        let view_mul_pos = vec4.create(0.0, 0.0, 0.0, 0.0);
+        let prj_view_mul_pos = vec4.create(0.0, 0.0, 0.0, 0.0);
         let projected_pos = vec4.create(0.0, 0.0, 0.0, 0.0);
 
 
-        vec4.transformMat4(pos, mat4.transpose(viewProjectMatrix), projected_pos);
+        // vec4.transformMat4(pos, mat4.transpose(viewProjectMatrix), projected_pos);
+        vec4.transformMat4(pos, viewProjectMatrix, projected_pos);
 
-        const computed_vp = mat4.multiply(projectMatrix, viewMatrix);
-        console.log("computed_vp = ", computed_vp);
+        // const computed_vp = mat4.multiply(projectMatrix, viewMatrix);
+        // console.log("computed_vp = ", computed_vp);
 
 
         // // console.log(projected_pos);
@@ -205,7 +208,28 @@ function gen_customized_instance(pos_arr, state) {
         //     }
         // }
 
-        console.log("pos = ", pos);
+        // /**
+        //  *  与 view 矩阵相乘
+        //  * */ 
+        // for (let i = 0; i < 4; i++) {
+        //     for (let j = 0; j < 4; j++) {
+        //         let matrix_val = viewMatrix[i * 4 + j];
+        //         let pos_val = pos[j];
+        //         view_mul_pos[i] += matrix_val * pos_val;
+        //     }
+        // }
+        // /**
+        //  *  与 projection 矩阵相乘
+        //  * */ 
+        // for (let i = 0; i < 4; i++) {
+        //     for (let j = 0; j < 4; j++) {
+        //         let matrix_val = projectMatrix[i * 4 + j];
+        //         let pos_val = view_mul_pos[j];
+        //         prj_view_mul_pos[i] += matrix_val * pos_val;
+        //     }
+        // }
+
+        // // console.log("pos = ", pos);
         console.log("projected_pos = ", projected_pos);
 
         // 归一化到标准向量空间 NDC
@@ -214,15 +238,15 @@ function gen_customized_instance(pos_arr, state) {
         }
 
         
-        // console.log("pos = ", pos);
+        console.log("pos = ", pos);
 
         let mip_val = -1.0;
-        if (check_in_frustum(projected_pos)) {
+        if (check_in_frustum(prj_view_mul_pos)) {
             mip_val = 1.0;
-            // console.log("projected_pos = ", projected_pos);
+            console.log("projected_pos = ", projected_pos);
         }
 
-        ret_arr = ret_arr.concat(1.0);                          // miplevel
+        ret_arr = ret_arr.concat(mip_val);                          // miplevel
         ret_arr = ret_arr.concat([0, 0, 0]);                    // padding
     }
 

@@ -50,7 +50,15 @@ function mouseMovingCallback(state, device, event, gui) {
 
     state.main_canvas.prim_camera["viewDir"] = new_view_dir;
 
-    // console.log("camera = ", state.main_canvas.prim_camera["viewDir"]);
+
+    /**
+     *  这里应该进一步更新up方向才对！
+     * */
+    // 首先得到 right 方向
+    const new_right_dir = vec3.normalize(vec3.cross(new_view_dir, vec3.fromValues(0.0, 1.0, 0.0)));
+    const new_up_dir = vec3.normalize(vec3.cross(new_right_dir, new_view_dir));
+
+    state.main_canvas.prim_camera["up"] = new_up_dir;
 
     updateMainCamera(state, device, gui);
 }

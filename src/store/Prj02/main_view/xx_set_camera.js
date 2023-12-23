@@ -3,18 +3,60 @@ import { updateMipLevel } from "./gen_curve_line";
 
 
 
+function gen_perspective_project_matrix(fov, aspect, z_near, z_far) {
+    const n = z_near;
+    const f = z_far;
+    const t = Math.tan(fov / 2) * z_near;
+    console.log("t = ", t);
+    const b = -t;
+    const r = t * aspect;
+    const l = -r;
+    console.log("r = ", r);
+
+
+    // // 右手系，z轴投影范围为 -1~1
+    // const perspective_matrix = mat4.create(
+    //     2 * n / (r - l), 0, -(r + l) / (r - l), 0,
+    //     0, 2 * n / (t - b), -(t + b) / (t - b), 0,
+    //     0, 0, (n + f) / (n - f), 2 * n * f / (n - f),
+    //     0, 0, -1, 0
+    // );
+
+    // 右手系，z轴投影范围为 0~1 （WebGPU默认的是这种做法）
+    const perspective_matrix = mat4.create(
+        2 * n / (r - l), 0, -(r + l) / (r - l), 0,
+        0, 2 * n / (t - b), -(t + b) / (t - b), 0,
+        0, 0, f / (n - f),  n * f / (n - f),
+        0, 0, -1, 0
+    );
+
+    console.log("own generated project matrix = ", perspective_matrix);
+
+    return perspective_matrix;
+}
+
+/**
+ *  2023/12/20
+ *  发现一个比较重要的bug？！你的相机up方向没有更新？！
+ * */
+
+
 function init_Camera(state, device, gui) {
 
     let camera = state.main_canvas.prim_camera;
 
 
-    const fov = (2 * Math.PI) / 4;//90°
+    const fov = Math.PI / 2;//90°
     const aspect = state.main_canvas.canvas.width / state.main_canvas.canvas.height;
+    // const aspect = 1920 / 1080;
     const z_far = 50.0;
-    const z_near = 5.0;
+    const z_near = 1.0;
     camera["z_near"] = z_near;
     camera["z_far"] = z_far;
     let projection = mat4.perspective(fov, aspect, z_near, z_far);
+
+    // let projection = gen_perspective_project_matrix(fov, aspect, z_near, z_far);
+
     console.log("projection matrix = ", projection);
 
 
@@ -22,9 +64,24 @@ function init_Camera(state, device, gui) {
     const lookFrom = vec3.fromValues(0.0, 0.0, 0.0);
     const viewDir = vec3.fromValues(1.0, 0.0, 0.0);
     const lookAt = vec3.add(lookFrom, viewDir);
-    const up = vec3.fromValues(0, 1, 0);
+    const up = vec3.fromValues(0.0, 1.0, 0.0);
     let view = mat4.lookAt(lookFrom, lookAt, up);
+    console.log("view matrix = ", view);
 
+
+    /**
+     *  以下已经验证：矩阵的存储是列优先存储，向量同样是默认列向量！
+     * */
+    // const transMat = mat4.translate(mat4.identity(), vec3.fromValues(-1, -2, -3));
+    // console.log("transMat = ", transMat);
+    // const scaleMat = mat4.scale(mat4.identity(), vec3.fromValues(1, 2, 3));
+    // console.log("scaleMat = ", scaleMat);
+    // const transScale = mat4.multiply(scaleMat, transMat);
+
+    // console.log("trans scale mat = ", transScale);
+    // const test_pos = vec4.fromValues(1.5, 2.5, 3.5, 1);
+    // const haha = vec4.transformMat4(test_pos, transScale);
+    // console.log("haha = ", haha);
 
     /**
      *  注意变换顺序不能更改，依次为：缩放-旋转-平移
@@ -38,7 +95,15 @@ function init_Camera(state, device, gui) {
     // mat4.rotateY();
     // mat4.rotateZ();
 
+    /**
+     *  列优先存储应该怎么算？！
+     * */
+    // const viewProjectionMatrix = mat4.multiply(projection, view);
     const viewProjectionMatrix = mat4.multiply(projection, view);
+    console.log("vp mat = ", viewProjectionMatrix);
+    const pos = vec4.fromValues(5, 0, 0, 1);
+    const prjed_pos = vec4.transformMat4(pos, viewProjectionMatrix);
+    console.log("prjed_pos = ", prjed_pos);
 
 
     // 相机基本参数
@@ -116,10 +181,15 @@ function updateMainCamera(state, device, gui) {
     camera.pos.x = camera.lookFrom.at(0);
     camera.pos.y = camera.lookFrom.at(1);
     camera.pos.z = camera.lookFrom.at(2);
-    
+
     camera.dir.dir_x = camera.viewDir.at(0);
     camera.dir.dir_y = camera.viewDir.at(1);
     camera.dir.dir_z = camera.viewDir.at(2);
+
+    console.log("new fov = ", camera["fov"]);
+    console.log("new aspect = ", camera["aspect"]);
+    console.log("new z_near = ", camera["z_near"]);
+    console.log("new z_far = ", camera["z_far"]);
 
     let projection = mat4.perspective(
         camera["fov"],
@@ -132,6 +202,8 @@ function updateMainCamera(state, device, gui) {
         vec3.add(camera["lookFrom"], camera["viewDir"]),
         camera["up"]
     );
+    console.log("new projection = ", projection);
+
 
     const viewProjectionMatrix = mat4.multiply(projection, view);
 
@@ -168,8 +240,6 @@ function updateMainCamera(state, device, gui) {
 
     // !!! 注意这里必须手动触发更新才行
     gui.updateDisplay();
-
-    console.log("updated camera = ", camera);
 
     /**
      *  根据新的相机视锥，更新 instance 的 miplevel

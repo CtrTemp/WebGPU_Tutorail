@@ -3,10 +3,10 @@ import { gen_sphere_instance, gen_customized_instance } from "./gen_curve_line";
 
 function manage_VBO(state, payload) {
 
-    const flow_info = gen_sphere_instance(15, 1000, state);
+    const flow_info = gen_sphere_instance(25, 100, state);
     // const instance_pos_arr = [
-    //     [5.0, 0.0, 0.0],
-    //     [-5.0, 1.0, 5.0],
+    //     [25, 0.0, 0.0],
+    //     // [-5.0, 1.0, 5.0],
     // ];
     // const flow_info = gen_customized_instance(instance_pos_arr, state);
     payload.flow_info = flow_info;
