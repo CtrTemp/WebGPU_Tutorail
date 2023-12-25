@@ -103,34 +103,40 @@ fn rand() -> f32 {
 
 @fragment
 fn fs_main(in : FragIutput) -> @location(0) vec4<f32> {
+  
+  var mip0_color = vec4f(0.06, 0.56, 0.18, 1.0);
+  var mip1_color = vec4f(0.29, 0.64, 0.21, 1.0);
+  var mip2_color = vec4f(0.67, 0.78, 0.19, 1.0);
+  var mip3_color = vec4f(0.91, 0.88, 0.21, 1.0);
+  var mip4_color = vec4f(0.93, 0.75, 0.09, 1.0);
+  var mip5_color = vec4f(0.86, 0.45, 0.11, 1.0);
+  var mip6_color = vec4f(0.82, 0.30, 0.10, 1.0);
+  var mip7_color = vec4f(0.80, 0.15, 0.17, 1.0);
+
   var color = in.color;
   var idx = in.idx;
 
-  // // 这里由于控制流的问题，无法使用 if 分支语句，换用 select 解决
-  // color = select(textureSample(myTexture_id9, mySampler, in.quad_uv), textureSample(myTexture_id1, mySampler, in.quad_uv), idx>1.0);
-  // color = select(color, textureSample(myTexture_id2, mySampler, in.quad_uv), idx>2.0);
-  // color = select(color, textureSample(myTexture_id3, mySampler, in.quad_uv), idx>3.0);
-  // color = select(color, textureSample(myTexture_id4, mySampler, in.quad_uv), idx>4.0);
-  // color = select(color, textureSample(myTexture_id5, mySampler, in.quad_uv), idx>5.0);
-  // color = select(color, textureSample(myTexture_id6, mySampler, in.quad_uv), idx>6.0);
-  // color = select(color, textureSample(myTexture_id7, mySampler, in.quad_uv), idx>7.0);
-  // color = select(color, textureSample(myTexture_id8, mySampler, in.quad_uv), idx>8.0);
-  // color = select(color, textureSample(myTexture_id9, mySampler, in.quad_uv), idx>9.0);
+  color = select(vec4(0.0, 1.0, 0.0, 0.0), mip0_color, in.miplevel>0.0);
+  color = select(color, mip1_color, in.miplevel>1.0);
+  color = select(color, mip2_color, in.miplevel>2.0);
+  color = select(color, mip3_color, in.miplevel>3.0);
+  color = select(color, mip4_color, in.miplevel>4.0);
+  color = select(color, mip5_color, in.miplevel>5.0);
+  color = select(color, mip6_color, in.miplevel>6.0);
+  color = select(color, mip7_color, in.miplevel>7.0);
 
 
   var target_uv = vec2(in.quad_uv.x*in.uv_size.x, in.quad_uv.y*in.uv_size.y);
   target_uv = target_uv+in.uv_offset;
   
   // color = textureSample(myTexture_id1, mySampler, target_uv);
-  color = select(color, vec4(0.0, 1.0, 0.0, 1.0), in.miplevel<0.0);
+  // color = select(color, vec4(0.0, 1.0, 0.0, 1.0), in.miplevel<0.0);
 
   
   // // 解除下面这句注释，用于查看当前大纹理中所存放的所有图片
   // color = textureSample(myTexture_id2, mySampler, in.quad_uv);
 
   return color;
-  // return vec4(idx/10,idx/10,idx,1.0);
-  // return textureSample(myTexture_id2, mySampler, in.quad_uv);
 }
 `
 

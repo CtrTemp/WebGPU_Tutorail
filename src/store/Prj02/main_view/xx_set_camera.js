@@ -49,7 +49,7 @@ function init_Camera(state, device, gui) {
     const fov = Math.PI / 2;//90°
     const aspect = state.main_canvas.canvas.width / state.main_canvas.canvas.height;
     // const aspect = 1920 / 1080;
-    const z_far = 50.0;
+    const z_far = 1000.0;
     const z_near = 1.0;
     camera["z_near"] = z_near;
     camera["z_far"] = z_far;
@@ -186,10 +186,6 @@ function updateMainCamera(state, device, gui) {
     camera.dir.dir_y = camera.viewDir.at(1);
     camera.dir.dir_z = camera.viewDir.at(2);
 
-    console.log("new fov = ", camera["fov"]);
-    console.log("new aspect = ", camera["aspect"]);
-    console.log("new z_near = ", camera["z_near"]);
-    console.log("new z_far = ", camera["z_far"]);
 
     let projection = mat4.perspective(
         camera["fov"],
@@ -202,7 +198,6 @@ function updateMainCamera(state, device, gui) {
         vec3.add(camera["lookFrom"], camera["viewDir"]),
         camera["up"]
     );
-    console.log("new projection = ", projection);
 
 
     const viewProjectionMatrix = mat4.multiply(projection, view);
@@ -304,7 +299,7 @@ function defocusCamera(state, device, gui) {
 
         state.main_canvas.prim_camera["viewDir"] = new_view_dir;
 
-        updateMainCamera(state.main_canvas, device, gui);
+        updateMainCamera(state, device, gui);
 
         step_count++;
     }, time_stride);
@@ -496,7 +491,7 @@ function focusOnRandomPic(state, device, gui, flow_info) {
 
         state.main_canvas.prim_camera["viewDir"] = new_view_dir;
 
-        updateMainCamera(state.main_canvas, device, gui);
+        updateMainCamera(state, device, gui);
         step_count++;
 
     }, time_stride);

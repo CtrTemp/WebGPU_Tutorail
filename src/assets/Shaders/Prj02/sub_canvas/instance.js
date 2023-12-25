@@ -104,12 +104,25 @@ fn rand() -> f32 {
 
 @fragment
 fn fs_main(in : FragIutput) -> @location(0) vec4<f32> {
-  
-  var color = vec4f(1.0, 1.0, 0.5, 1.0);
+  var mip0_color = vec4f(0.06, 0.56, 0.18, 1.0);
+  var mip1_color = vec4f(0.29, 0.64, 0.21, 1.0);
+  var mip2_color = vec4f(0.67, 0.78, 0.19, 1.0);
+  var mip3_color = vec4f(0.91, 0.88, 0.21, 1.0);
+  var mip4_color = vec4f(0.93, 0.75, 0.09, 1.0);
+  var mip5_color = vec4f(0.86, 0.45, 0.11, 1.0);
+  var mip6_color = vec4f(0.82, 0.30, 0.10, 1.0);
+  var mip7_color = vec4f(0.80, 0.15, 0.17, 1.0);
   var miplevel = in.miplevel;
 
+  var color = select(vec4(0.0, 1.0, 0.0, 0.0), mip0_color, in.miplevel>0.0);
 
-  color = select(color, vec4(0.0, 1.0, 0.0, 0.0), in.miplevel<0.0);
+  color = select(color, mip1_color, in.miplevel>1.0);
+  color = select(color, mip2_color, in.miplevel>2.0);
+  color = select(color, mip3_color, in.miplevel>3.0);
+  color = select(color, mip4_color, in.miplevel>4.0);
+  color = select(color, mip5_color, in.miplevel>5.0);
+  color = select(color, mip6_color, in.miplevel>6.0);
+  color = select(color, mip7_color, in.miplevel>7.0);
   
 
   return color;

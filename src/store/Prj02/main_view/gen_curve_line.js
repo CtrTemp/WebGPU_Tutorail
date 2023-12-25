@@ -17,16 +17,151 @@ function check_in_frustum(ndc_pos) {
     return true;
 }
 
+/**
+ *  应该先加入是否在视锥内的判断
+ * */
+function compute_miplevel(pos, viewMatrix, unitDistance) {
+    const v_pos = vec4.transformMat4(pos, viewMatrix);
+    for (let i = 0; i < 4; i++) { // 归一化
+        v_pos[i] /= v_pos[3];
+    }
+    const check_z = v_pos[2];
+    const mip_val = Math.sqrt(-check_z / unitDistance);
+    // console.log("check_z = ", -check_z, ", ", Math.floor(mip_val));
+    // console.log(mip_val);
+
+    return Math.floor(mip_val);
+}
+
+
+function gen_sphere_instance_pos(radius, counts, state) {
+
+    let ret_arr = [];
+
+    const zNear = state.main_canvas.prim_camera["z_near"];
+    const viewMatrix = state.main_canvas.prim_camera["view"];
+    const viewProjectMatrix = state.main_canvas.prim_camera["matrix"];
+
+
+    const default_color = [0.1, 0.8, 0.95, 1.0];
+    for (let i = 0; i < counts; i++) {
+        const r1 = radius;
+        let pos_x = (Math.random() * 2 - 1) * r1;
+        const r2 = Math.sqrt(radius * radius - pos_x * pos_x);
+        let pos_y = (Math.random() * 2 - 1) * r2;
+        const r3 = Math.sqrt(radius * radius - pos_x * pos_x - pos_y * pos_y);
+        let pos_z = (Math.random() * 2 - 1) * r3;
+        let time = Math.asin(pos_z / Math.sqrt(pos_x * pos_x + pos_z * pos_z)); // rotating
+        // 这里是均衡 arcsin 只能取值 [-PI/2, PI/2] 的问题
+        if (Math.random() > 0.5) {
+            time += Math.PI;
+        }
+
+        ret_arr = ret_arr.concat([pos_x, pos_y, pos_z, 0.0]);   // pos
+        ret_arr = ret_arr.concat(default_color);                // color
+        ret_arr = ret_arr.concat([time, 1.0]);                  // liftime + idx
+
+
+        // let uv_offset = state.main_canvas.atlas_info["uv_offset"][i % 5];
+        // let tex_aspect = state.main_canvas.atlas_info["tex_aspect"][i % 5];
+        // let uv_size = state.main_canvas.atlas_info["uv_size"][i % 5];
+
+        // ret_arr = ret_arr.concat(uv_offset);                    // uv-offset
+        // ret_arr = ret_arr.concat(tex_aspect);                   // uv-scale
+        // ret_arr = ret_arr.concat(uv_size);                      // quad-scale
+
+
+        ret_arr = ret_arr.concat([0, 0]);                       // uv-offset padding
+        ret_arr = ret_arr.concat([0, 0]);                       // uv-scale padding
+        ret_arr = ret_arr.concat([0, 0]);                       // quad-scale padding
+
+
+
+        /**
+         *  结合相机参数，对 instace 是否在视锥内进行判断
+         * */
+        const pos = vec4.fromValues(pos_x, pos_y, pos_z, 1.0);
+        let projected_pos = vec4.create(0.0, 0.0, 0.0, 0.0);
+
+        vec4.transformMat4(pos, viewProjectMatrix, projected_pos);
+
+
+
+        // 归一化到标准向量空间 NDC
+        for (let i = 0; i < 4; i++) {
+            projected_pos[i] /= projected_pos[3];
+        }
+
+        /**
+         *  这里就要进行修改了，计算 MipLevel
+         * */
+
+
+        let mip_val = -1.0;
+        if (check_in_frustum(projected_pos)) {
+            // mip_val = 1.0;
+            mip_val = compute_miplevel(pos, viewMatrix, zNear);
+        }
+
+        ret_arr = ret_arr.concat(mip_val);                          // miplevel
+        ret_arr = ret_arr.concat([0, 0, 0]);                    // padding
+    }
+
+
+    let flow_info = {};
+
+    flow_info["flow_arr"] = ret_arr;
+    flow_info["numParticles"] = counts;
+    flow_info["lifetime"] = 10.0; // not used
+
+    return flow_info;
+}
+
+
+
+function gen_sphere_instance_atlas_info(state, flow_arr) {
+
+    const counts = state.main_canvas.particle_info["numParticles"];
+
+    const info_pack_stride = state.main_canvas.particle_info["particleInstanceByteSize"] / 4;
+    const atlas_stride = 4 + 4 + 1 + 1;
+
+
+    for (let i = 0; i < counts; i++) {
+
+        const idx = i * info_pack_stride + atlas_stride;
+
+        let uv_offset = state.main_canvas.atlas_info["uv_offset"][i % 5];
+        let tex_aspect = state.main_canvas.atlas_info["tex_aspect"][i % 5];
+        let uv_size = state.main_canvas.atlas_info["uv_size"][i % 5];
+
+
+        flow_arr[idx+0] = uv_offset[0];      // uv-offset-u
+        flow_arr[idx+1] = uv_offset[1];      // uv-offset-v
+        flow_arr[idx+2] = tex_aspect[0];     // uv-scale-u
+        flow_arr[idx+3] = tex_aspect[1];     // uv-scale-v
+        flow_arr[idx+4] = uv_size[0];        // quad-scale-u
+        flow_arr[idx+5] = uv_size[1];        // quad-scale-v
+    }
+
+    // return flow_info;
+}
+
+
+
+
+
 function gen_sphere_instance(radius, counts, state) {
 
     let ret_arr = [];
 
-    
+    const zNear = state.main_canvas.prim_camera["z_near"];
+    const viewMatrix = state.main_canvas.prim_camera["view"];
     const viewProjectMatrix = state.main_canvas.prim_camera["matrix"];
     console.log("init vp = ", viewProjectMatrix);
     const projection = state.main_canvas.prim_camera["projection"];
     console.log("init projection = ", projection);
-    
+
 
     // const default_color = [0.8, 0.6, 0.0, 1.0];
     const default_color = [0.1, 0.8, 0.95, 1.0];
@@ -73,9 +208,15 @@ function gen_sphere_instance(radius, counts, state) {
             projected_pos[i] /= projected_pos[3];
         }
 
+        /**
+         *  这里就要进行修改了，计算 MipLevel
+         * */
+
+
         let mip_val = -1.0;
         if (check_in_frustum(projected_pos)) {
-            mip_val = 1.0;
+            // mip_val = 1.0;
+            mip_val = compute_miplevel(pos, viewMatrix, zNear);
         }
 
         ret_arr = ret_arr.concat(mip_val);                          // miplevel
@@ -103,9 +244,11 @@ function updateMipLevel(state, device) {
 
     const miplevel_offset = 16;
     const viewProjectMatrix = state.main_canvas.prim_camera["matrix"];
-    console.log("update vp = ", viewProjectMatrix);
-    const projection = state.main_canvas.prim_camera["projection"];
-    console.log("update projection = ", projection);
+
+
+    const zNear = state.main_canvas.prim_camera["z_near"];
+    const viewMatrix = state.main_canvas.prim_camera["view"];
+
     for (let i = 0; i < arr_len; i += arr_stride) {
         const pos_x = arr[i + 0];
         const pos_y = arr[i + 1];
@@ -123,7 +266,8 @@ function updateMipLevel(state, device) {
         }
         let mip_val = -1.0;
         if (check_in_frustum(projected_pos)) {
-            mip_val = 1.0;
+            // mip_val = 1.0;
+            mip_val = compute_miplevel(pos, viewMatrix, zNear);
         }
         arr[i + miplevel_offset] = mip_val;
 
@@ -237,7 +381,7 @@ function gen_customized_instance(pos_arr, state) {
             projected_pos[i] /= projected_pos[3];
         }
 
-        
+
         console.log("pos = ", pos);
 
         let mip_val = -1.0;
@@ -342,6 +486,8 @@ export {
     read_data_and_gen_line,
     gen_sphere_instance,
     gen_customized_instance,
-    updateMipLevel
+    updateMipLevel,
+    gen_sphere_instance_pos,
+    gen_sphere_instance_atlas_info,
 };
 

@@ -1,7 +1,7 @@
 const vertex_shader = /* wgsl */`
 
 struct VertexInput{
-    @location(0) position :vec3<f32>
+    @location(0) position :vec3<f32>,
 }
 
 struct VertexOutput{
@@ -30,7 +30,12 @@ struct FragIutput {
 
 @fragment
 fn fragmentMain(in : FragIutput) -> @location(0) vec4f {
-    return vec4f(1.0, 0, 0, 0.25);
+
+    var color = vec4(1.0, 0.0, 0.0, 1.0);
+    
+    // color = select(color, vec4(0.0, 1.0, 0.0, 1.0), in.miplevel<0.0);
+
+    return vec4f(1.0, 1.0, 1.0, 0.15);
 }
 `
 export { vertex_shader, fragment_shader }

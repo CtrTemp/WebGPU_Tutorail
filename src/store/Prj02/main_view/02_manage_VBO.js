@@ -1,9 +1,111 @@
 
-import { gen_sphere_instance, gen_customized_instance } from "./gen_curve_line";
+import {
+    gen_sphere_instance,
+    gen_customized_instance,
+    gen_sphere_instance_pos,
+    gen_sphere_instance_atlas_info
+} from "./gen_curve_line";
+
+
+/**
+ *  对 VBO 的填充应该分两步来解决：
+ *  第一步：在配置texture之前，首先根据投影信息，确定图片的位置坐标。这一步不进行GPUbuffer的填充
+ *  第二步：在配置texture之后，根据texture信息以及MipLevel等信息，将图片实例在大纹理中的uv_offset
+ * 等信息进行填充。这一步要进行GPUbuffer的填充。
+ * */
+
+
+function manage_VBO_stage1(state, payload) {
+
+    const flow_info = gen_sphere_instance_pos(50, 100, state);
+
+    payload.flow_info = flow_info;
+
+
+    const device = payload.device;
+
+    // 全局粒子總數
+    state.main_canvas.particle_info["numParticles"] = payload.flow_info.numParticles;
+    state.main_canvas.particle_info["lifetime"] = payload.flow_info.lifetime;
+    state.main_canvas.particle_info["particleInstanceByteSize"] =
+        4 * 4 + // pos
+        4 * 4 + // color
+        1 * 4 + // life time
+        1 * 4 + // idx for instanced texture
+        2 * 4 + // uv offset
+        2 * 4 + // uv scale
+        2 * 4 + // quad scale
+        1 * 4 + // miplevel
+        3 * 4 + // padding （注意，padding补全是非常有必要的！）
+        0;
+
+
+    const particles_data = payload.flow_info.flow_arr;
+
+    // 这里还不能写GPU buffetr
+    state.main_canvas.vertices_arr["instance"] = particles_data;
+
+
+
+    const quadVertexBuffer = device.createBuffer({
+        size: 6 * 4 * 4, // 6x vec4<f32>
+        usage: GPUBufferUsage.VERTEX,
+        mappedAtCreation: true,
+    });
+    // prettier-ignore
+    // 不知道为啥 UV 是上下颠倒的，需要翻转 Y 轴坐标
+    // 这一步我们可以在此解决也可以放在GPU端让shader来解决
+    const vertexData = [
+        // X    Y    U   V 
+        -1.0, -1.0, 0.0, 0.0,
+        +1.0, -1.0, 1.0, 0.0,
+        -1.0, +1.0, 0.0, 1.0,
+        -1.0, +1.0, 0.0, 1.0,
+        +1.0, -1.0, 1.0, 0.0,
+        +1.0, +1.0, 1.0, 1.0
+        // -1.0, 0.0, 0.0, 0.0,
+        // +1.0, 0.0, 1.0, 0.0,
+        // -1.0, +1.0, 0.0, 1.0,
+        // -1.0, +1.0, 0.0, 1.0,
+        // +1.0, 0.0, 1.0, 0.0,
+        // +1.0, +1.0, 1.0, 1.0
+    ];
+    new Float32Array(quadVertexBuffer.getMappedRange()).set(vertexData);
+    quadVertexBuffer.unmap();
+    state.main_canvas.VBOs["quad"] = quadVertexBuffer;
+}
+
+function manage_VBO_stage2(state, payload) {
+    let flow_arr = state.main_canvas.vertices_arr["instance"];
+    gen_sphere_instance_atlas_info(state, flow_arr);
+
+    /**
+     *  这里应该加入打印验证
+     * */
+
+    // console.log("updated flow data = ");
+
+    /**
+     *  GPU VBO 填充
+     * */
+    
+    const device = payload.device;
+    const writeBufferArr = new Float32Array(flow_arr);
+
+    const particlesBuffer = device.createBuffer({
+        size: writeBufferArr.byteLength,
+        // 這裡的 STORAGE 的用途是什麼
+        usage: GPUBufferUsage.VERTEX | GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
+    })
+    device.queue.writeBuffer(particlesBuffer, 0, writeBufferArr);
+    state.main_canvas.VBOs["particles"] = particlesBuffer;
+
+
+}
 
 function manage_VBO(state, payload) {
 
-    const flow_info = gen_sphere_instance(25, 100, state);
+    const flow_info = gen_sphere_instance(50, 100, state);
     // const instance_pos_arr = [
     //     [25, 0.0, 0.0],
     //     // [-5.0, 1.0, 5.0],
@@ -162,5 +264,8 @@ function manage_VBO_Layout(state, payload) {
 
 
 export {
-    manage_VBO, manage_VBO_Layout
+    manage_VBO,
+    manage_VBO_stage1,
+    manage_VBO_stage2,
+    manage_VBO_Layout,
 }

@@ -27,18 +27,28 @@ onMounted(() => {
         count: 100, // 索取图片数量 
     }
 
+    // 这将初始化读入texture
+    setTimeout(() => {
+        ws.send(JSON.stringify(cmd_json));
+    }, 10);
 
+    /**
+     *  进行修改，获取不同 MipLevel 的图像进行填充
+     * */ 
 
+    const mip_cmd_json = {
+        cmd: "fetch_mip_texture",
+        level:{
+            mip0:""
+        }
+    }
+
+    
     const window_width = window.innerWidth;
     const window_height = window.innerHeight;
     const main_canvas = document.querySelector(".main-canvas");
     main_canvas.width = window_width;
     main_canvas.height = window_height;
-
-    // 这将初始化读入texture
-    setTimeout(() => {
-        ws.send(JSON.stringify(cmd_json));
-    }, 10);
 
 
     // 时序把控正确，后面再进行绘制

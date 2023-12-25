@@ -3,7 +3,12 @@
 import * as dat from "dat.gui"
 
 import { manage_Texture } from "./main_view/01_manage_Texture";
-import { manage_VBO, manage_VBO_Layout } from "./main_view/02_manage_VBO"
+import {
+    manage_VBO,
+    manage_VBO_stage1,
+    manage_VBO_stage2,
+    manage_VBO_Layout
+} from "./main_view/02_manage_VBO"
 import { manage_UBO } from "./main_view/03_manage_UBO"
 import { set_Layout } from "./main_view/11_set_Layout";
 import { set_BindGroup } from "./main_view/12_set_BindGroup";
@@ -34,7 +39,7 @@ function init_device_main(state, { canvas, device }) {
         device: device,
         format: state.main_canvas.canvasFormat,
     });
-    
+
 }
 
 
@@ -43,7 +48,7 @@ function init_device_main(state, { canvas, device }) {
  * 并借助API将CPU读入的数据导入device 
  */
 function manage_data_main(state, payload) {
-    
+
     /**
      *  初始化设置相机参数！应该最先被配置，因为之后的初始化VBO可能需要用到camer参数做判断
      * */
@@ -51,15 +56,20 @@ function manage_data_main(state, payload) {
     init_Camera(state, payload.device, payload.gui);
 
 
+    manage_VBO_stage1(state, payload);
+
     /**
      *  Texture
      * */
     manage_Texture(state, payload);
 
-    /**
-     *  VBO
-     * */
-    manage_VBO(state, payload);
+    // /**
+    //  *  VBO
+    //  * */
+    // manage_VBO(state, payload);
+
+    
+    manage_VBO_stage2(state, payload);
 
     /**
      *  VBO Layout
@@ -248,6 +258,6 @@ function renderLoop_main(state, payload) {
 }
 
 
-export{
+export {
     init_device_main, manage_data_main, manage_pipeline_main, renderLoop_main
 }
