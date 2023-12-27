@@ -1,4 +1,4 @@
-function set_BindGroup(state, device) {
+function set_BindGroup_sub(state, device) {
 
     const MVP_UBO_BindGroup = device.createBindGroup({
         layout: state.sub_canvas.Layouts["mvp"],
@@ -30,4 +30,4 @@ function set_BindGroup(state, device) {
 
 
 
-export { set_BindGroup }
+export { set_BindGroup_sub }

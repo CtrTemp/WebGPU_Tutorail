@@ -1,5 +1,4 @@
-function manage_Texture(state, payload) {
-    const device = payload.device;
+function manage_Texture_sub(state, device) {
     /**
      *  如果我们使能深度测试，需要一个确定的遮挡关系，就必须要创建一张深度图纹理
      * */
@@ -15,4 +14,4 @@ function manage_Texture(state, payload) {
 
 
 
-export { manage_Texture }
+export { manage_Texture_sub }

@@ -9,7 +9,7 @@
 
 import { useStore } from 'vuex';
 import { onMounted } from 'vue';
-import { inject } from 'vue';
+import { inject, watch } from 'vue';
 
 import { mat4, vec3, vec4 } from "wgpu-matrix"
 
@@ -32,44 +32,132 @@ onMounted(() => {
         ws.send(JSON.stringify(cmd_json));
     }, 10);
 
-    /**
-     *  进行修改，获取不同 MipLevel 的图像进行填充
-     * */ 
 
-    const mip_cmd_json = {
-        cmd: "fetch_mip_texture",
-        level:{
-            mip0:""
-        }
-    }
 
-    
     const window_width = window.innerWidth;
     const window_height = window.innerHeight;
+
+
     const main_canvas = document.querySelector(".main-canvas");
+    const sub_canvas = document.querySelector(".sub-canvas");
+
     main_canvas.width = window_width;
     main_canvas.height = window_height;
 
+    store.state.pic_browser.main_canvas.canvas = main_canvas;
+    store.state.pic_browser.sub_canvas.canvas = sub_canvas;
 
-    // 时序把控正确，后面再进行绘制
+    const device = store.state.device;
 
-    setTimeout(() => {
+    store.commit("pic_browser/init_device", {
+        canvas: { main_canvas, sub_canvas },
+        device
+    });
 
-        const main_canvas = document.querySelector(".main-canvas");
-        const sub_canvas = document.querySelector(".sub-canvas");
 
-        const canvas_pack = {
-            main_canvas, sub_canvas
-        };
+    // // 时序把控正确，后面再进行绘制
 
-        // store.dispatch("InstanceFlow/init_and_render", main_canvas);
-        // store.dispatch("sub_canvas/init_and_render", sub_canvas);
-        store.dispatch("pic_browser/init_and_render", canvas_pack);
-    }, 1000);
+    // setTimeout(() => {
+
+
+    //     const canvas_pack = {
+    //         main_canvas, sub_canvas
+    //     };
+
+    //     // store.dispatch("InstanceFlow/init_and_render", main_canvas);
+    //     // store.dispatch("sub_canvas/init_and_render", sub_canvas);
+    //     store.dispatch("pic_browser/init_and_render", canvas_pack);
+    // }, 1000);
+
+
+    /**
+     *  重写时序逻辑
+     * */
+
+
 
 
 
 })
+
+// 需要用一个返回该属性的 getter 函数来完成监听： 
+
+
+/**
+ *  Device Ready
+ * */
+watch(() => {
+    return store.state.pic_browser.main_canvas.fence["DEVICE_READY"];
+}, (flag) => {
+    if (flag == true) {
+        // console.log("device ready!!!");
+        const device = store.state.device;
+        store.commit("pic_browser/main_canvas_VBO_stage1", device);
+    }
+}, { deep: true });
+
+
+
+/**
+ *  BitMap Ready
+ * */
+watch(() => {
+    return store.state.pic_browser.main_canvas.fence["BITMAP_READY"];
+}, (flag) => {
+    if (flag == true) {
+        // console.log("bitmap ready!!!");
+        const device = store.state.device;
+        store.commit("pic_browser/main_canvas_VBO_stage2", device);
+    }
+}, { deep: true });
+
+
+
+/**
+ *  VBO Ready
+ * */
+watch(() => {
+    return store.state.pic_browser.main_canvas.fence["VBO_READY"];
+}, (flag) => {
+    if (flag == true) {
+        // console.log("VBO ready!!!");
+        const device = store.state.device;
+        store.commit("pic_browser/main_canvas_manage_rest_of_all", device);
+    }
+}, { deep: true });
+
+
+/**
+ *  main canvas RENDER Ready
+ * */
+watch(() => {
+    return store.state.pic_browser.main_canvas.fence["RENDER_READY_MAIN"];
+}, (flag) => {
+    if (flag == true) {
+        // console.log("RENDER MAIN ready!!!");
+        const device = store.state.device;
+        store.commit("pic_browser/main_canvas_renderLoop", device);
+        /**
+         *  同样提交对辅助视图的全体配置
+         * */
+        store.commit("pic_browser/sub_canvas_management", device);
+    }
+}, { deep: true });
+
+
+
+/**
+ *  sub canvas RENDER Ready
+ * */
+ watch(() => {
+    return store.state.pic_browser.main_canvas.fence["RENDER_READY_SUB"];
+}, (flag) => {
+    if (flag == true) {
+        // console.log("RENDER SUB ready!!!");
+        const device = store.state.device;
+        store.commit("pic_browser/sub_canvas_renderLoop", device);
+    }
+}, { deep: true });
 
 
 

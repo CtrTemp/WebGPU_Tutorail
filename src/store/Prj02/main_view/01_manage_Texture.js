@@ -1,5 +1,4 @@
-function manage_Texture(state, payload) {
-    const device = payload.device;
+function manage_Texture(state, device) {
 
     /**
      *  Sampler
@@ -107,11 +106,58 @@ function manage_Texture(state, payload) {
         state.main_canvas.atlas_info["tex_aspect"].push(tex_aspect);
         state.main_canvas.atlas_info["uv_size"].push([img_width / global_texture_size, img_height / global_texture_size]);
 
-
-
         offset += img_width * img_height;
         width_offset += img_width;
         height_offset += img_height;
+    }
+}
+
+
+
+function manage_Mip_Texture(state, payload) {
+    const device = payload.device;    
+    /**
+     *  Sampler
+     * */
+    // Create a sampler with linear filtering for smooth interpolation.
+    const sampler = device.createSampler({
+        magFilter: 'linear',
+        minFilter: 'linear',
+    });
+
+
+    state.main_canvas.additional_info["sampler"] = sampler;
+
+
+    /**
+     *  depth Texture
+     * */
+    const depthTexture = device.createTexture({
+        size: [state.main_canvas.canvas.width, state.main_canvas.canvas.height],
+        format: "depth24plus",
+        usage: GPUTextureUsage.RENDER_ATTACHMENT
+    });
+    state.main_canvas.Textures["depth"] = depthTexture;
+
+
+
+    /**
+     *  Instance Texture
+     * */
+    // const imageBitmap = payload.img; // 默认测试用例纹理
+
+    
+    const global_texture_size = Math.pow(2, 13);
+    // console.log("global_texture_size = ", global_texture_size);
+    state.main_canvas.atlas_info["size"].push([global_texture_size, global_texture_size]);
+
+    const mipBitMap = state.main_canvas["mipBitMap"];
+
+    console.log("mipBitMap = ", mipBitMap);
+
+    for(let i=0; i<mipBitMap.length; i++)
+    {
+        console.log("i = ", i);
     }
 
 
@@ -119,6 +165,4 @@ function manage_Texture(state, payload) {
 }
 
 
-
-
-export { manage_Texture }
+export { manage_Texture, manage_Mip_Texture }

@@ -93,10 +93,11 @@ function mouseWheelCallback(state, device, deltaY, gui) {
 /**
  *  Mouse
  * */
-function canvasMouseInteraction(state, device, gui) {
+function canvasMouseInteraction(state, device) {
 
     let canvas = state.main_canvas.canvas;
-    let camera = state.main_canvas.prim_camera;
+    // let camera = state.main_canvas.prim_camera;
+    const gui = state.GUI["prim"];
 
     canvas.addEventListener("mousemove", (event) => {
         // 这里的一个优点在于可以直接获取鼠标的移动距离信息
@@ -123,7 +124,9 @@ function canvasMouseInteraction(state, device, gui) {
 /**
  *  Key Down
  * */
-function leftMovingCallback(state, device, gui) {
+function leftMovingCallback(state, device) {
+    
+    const gui = state.GUI["prim"];
 
     if (state.main_canvas.keyboard_info.active == true) {
         let camera = state.main_canvas.prim_camera;
@@ -296,7 +299,7 @@ function exchangeKeyboardActive(state) {
 /**
  *  Keyboard
  * */
-function canvasKeyboardInteraction(state, device, gui, flow_info) {
+function canvasKeyboardInteraction(state, device, gui) {
 
     let camera = state.main_canvas.prim_camera;
 
@@ -332,10 +335,10 @@ function canvasKeyboardInteraction(state, device, gui, flow_info) {
             case "K".charCodeAt(0):
                 defocusCamera(state, device, gui);
                 break;
-            case "F".charCodeAt(0):
-                // focusCamera(state, device, gui);
-                focusOnRandomPic(state, device, gui, flow_info);
-                break;
+            // case "F".charCodeAt(0):
+            //     // focusCamera(state, device, gui);
+            //     focusOnRandomPic(state, device, gui, flow_info);
+            //     break;
             case "P".charCodeAt(0):
                 pauseBrowseAnimation(state, device)
                 break;

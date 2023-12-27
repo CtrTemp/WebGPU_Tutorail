@@ -1,5 +1,4 @@
-function manage_UBO(state, payload) {
-    const device = payload.device;
+function manage_UBO_sub(state, device) {
 
     const MVP_Buffer_size = 4 * 4 * 4;
     const MVP_UBO_Buffer = device.createBuffer({
@@ -26,4 +25,4 @@ function manage_UBO(state, payload) {
 
 
 
-export { manage_UBO }
+export { manage_UBO_sub }

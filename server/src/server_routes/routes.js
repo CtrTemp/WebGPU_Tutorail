@@ -2,7 +2,8 @@
 // fetch image 
 
 const {
-    read_instanced_texture
+    read_instanced_texture,
+    read_mip_instance
 } = require("../fetch_img/fetch_img")
 
 
@@ -16,7 +17,10 @@ const service_distribution = function (socket, json_pack) {
                 // read_instanced_texture();
                 resolve(read_instanced_texture());
                 break;
-
+            case "fetch_mip_instance":
+                // read_mip_instance(json_pack);
+                resolve(read_mip_instance(json_pack));
+                break;
             default:
                 console.log("Missing: CMD out of range");
         }

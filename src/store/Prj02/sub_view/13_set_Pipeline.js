@@ -2,7 +2,7 @@
 import { vertex_shader, fragment_shader } from '../../../assets/Shaders/Prj02/sub_canvas/shader.js'
 import { instance_vert, instance_frag } from '../../../assets/Shaders/Prj02/sub_canvas/instance.js'
 
-function set_Pipeline(state, device) {
+function set_Pipeline_sub(state, device) {
 
     /* ########################### Render Cone Pipeline ########################### */
 
@@ -159,4 +159,4 @@ function set_Pipeline(state, device) {
 
 
 
-export { set_Pipeline }
+export { set_Pipeline_sub }

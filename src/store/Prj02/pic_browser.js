@@ -1,23 +1,57 @@
 
-// GUI
-import * as dat from "dat.gui"
+
+/**
+ *  Main-View Related
+ * */
+import { init_device_main } from "./main_view/00_init_device";
+import { init_Camera } from "./main_view/xx_set_camera.js"
+import { manage_Texture, manage_Mip_Texture } from "./main_view/01_manage_Texture";
+import {
+    manage_VBO,
+    manage_VBO_stage1,
+    manage_VBO_stage2,
+    manage_VBO_Layout
+} from "./main_view/02_manage_VBO"
+import { manage_UBO } from "./main_view/03_manage_UBO"
+import { set_Layout } from "./main_view/11_set_Layout";
+import { set_BindGroup } from "./main_view/12_set_BindGroup";
+import { set_Pipeline } from "./main_view/13_set_Pipeline";
+
+import {
+    canvasMouseInteraction,
+    canvasKeyboardInteraction
+} from "./main_view/xx_interaction";
+
+import {
+    renderLoop_main
+} from "./renderLoop_main_view";
+
+/**
+ *  Sub-View Related
+ * */
+import { init_device_sub } from "./sub_view/00_init_device";
+import { manage_Texture_sub } from "./sub_view/01_manage_Texture";
+import {
+    manage_VBO_sub,
+    manage_VBO_Layout_sub,
+    manage_IBO_sub
+} from "./sub_view/02_manage_VBO"
+import { manage_UBO_sub } from "./sub_view/03_manage_UBO"
+import { set_Layout_sub } from "./sub_view/11_set_Layout";
+import { set_BindGroup_sub } from "./sub_view/12_set_BindGroup";
+import { set_Pipeline_sub } from "./sub_view/13_set_Pipeline";
+import {
+    init_Camera_sub,
+} from "./sub_view/xx_set_camera.js"
 
 
 import {
-    init_device_main,
-    manage_data_main,
-    manage_pipeline_main,
-    renderLoop_main
-} from "./instanceFlow";
+    renderLoop_sub
+} from "./renderLoop_sub_view";
+
 
 import { read_files_from_dir, dataURL2Blob } from "./main_view/util";
 
-import {
-    init_device_sub,
-    manage_data_sub,
-    manage_pipeline_sub,
-    renderLoop_sub
-} from "./sub_canvas";
 
 
 export default {
@@ -26,30 +60,6 @@ export default {
      *  本工程使用Vue框架，借助WebGPU重构工程，实现前向渲染管线 
      */
     actions: {
-
-        // 整体框架，内为异步函数，用于简单操控数据异步读取，阻塞式等待。
-        async init_and_render(context, canvas) {
-
-            const device = context.rootState.device;
-
-            // 创建 GUI
-            const gui = new dat.GUI();
-
-            const payload = {
-                canvas: canvas,
-                device: device,
-                flow_info: undefined,
-                gui: gui
-            }
-
-            context.commit("init_device", payload);
-
-            context.commit("manage_data", payload);
-
-            context.commit("manage_pipeline", device);
-
-            context.commit("renderLoop", payload);
-        },
 
         async construct_imgBitMap(context, ret_json_pack) {
             // console.log("json pack received = ", ret_json_pack);
@@ -69,8 +79,39 @@ export default {
                 context.state.main_canvas.instancedBitMap.push(img_bitMap);
             }
 
+            context.state.main_canvas.fence["BITMAP_READY"] = true;
             // console.log("bitmaps = ", context.state.main_canvas.instancedBitMap);
-        }
+        },
+
+        async construct_mip_imgBitMap(context, ret_json_pack) {
+            console.log("json pack received = ", ret_json_pack);
+
+            const bitMapArr = ret_json_pack["mipBitMaps"];
+
+            // 开始创建 img bit map
+            for (let i = 0; i < bitMapArr.length; i++) {
+
+                let current_level_mapArr = [];
+
+                for (let j = 0; j < bitMapArr[i].length; j++) {
+
+                    let file = bitMapArr[i][j];
+                    let url = "data:image/png;base64," + file;
+
+                    const blob = dataURL2Blob(url);
+
+                    const img_bitMap = await createImageBitmap(blob);
+
+                    current_level_mapArr.push(img_bitMap);
+
+                }
+                context.state.main_canvas.mipBitMap.push(current_level_mapArr);
+            }
+
+            console.log("bitmaps = ", context.state.main_canvas.mipBitMap);
+            context.state.main_canvas.fence["BITMAP_READY"] = true;
+        },
+
     },
     mutations: {
 
@@ -80,6 +121,7 @@ export default {
         init_device(state, { canvas, device }) {
             init_device_main(state, { canvas: canvas.main_canvas, device });
             init_device_sub(state, { canvas: canvas.sub_canvas, device });
+            state.main_canvas.fence["DEVICE_READY"] = true;
         },
 
 
@@ -87,29 +129,130 @@ export default {
          *  Stage02：内存、数据相关的初始化。主要是纹理、顶点数据引入；device上开辟对应buffer
          * 并借助API将CPU读入的数据导入device 
          */
-        manage_data(state, payload) {
-            manage_data_main(state, payload);
-            manage_data_sub(state, payload);
+
+        main_canvas_VBO_stage1(state, device) {
+            // console.log("MANAGE_VBO_STAGE_01");
+            init_Camera(state, device);
+            manage_VBO_stage1(state, device);
         },
+
+
+        main_canvas_VBO_stage2(state, device) {
+            // console.log("MANAGE_VBO_STAGE_02");
+
+            manage_Texture(state, device);
+            manage_VBO_stage2(state, device);
+
+            state.main_canvas.fence["VBO_READY"] = true;
+        },
+
+        // main_canvas_UBOs_Layouts_Pipelines_and_Interaction(state, device) {
+        main_canvas_manage_rest_of_all(state, device) {
+            // console.log("UBOs_LAYOUTs_PIPELINEs_STAGE");
+            /**
+             *  VBO Layout
+             * */
+            manage_VBO_Layout(state);
+            /**
+             *  UBO
+             * */
+            manage_UBO(state, device);
+            /**
+             *  UBO Layout
+             * */
+            set_Layout(state, device);
+            /**
+             *  BindGroups
+             * */
+            set_BindGroup(state, device);
+
+            /**
+             *  Pipelines
+             * */
+            set_Pipeline(state, device);
+
+            /**
+             *  Interactions
+             * */
+            // Keyboard
+            canvasKeyboardInteraction(state, device);
+            // Mouse
+            canvasMouseInteraction(state, device);
+
+            state.main_canvas.fence["RENDER_READY_MAIN"] = true;
+        },
+
+        main_canvas_renderLoop(state, device) {
+            renderLoop_main(state, device);
+        },
+
 
         /**
-         *  Stage03：对渲染的 pipeline 进行定制，一般来说，在渲染过程中不再会对管线进行更改
+         *  sub canvas 相关渲染配置
+         *  由于 sub canvas 辅助视图中的所有需要延迟加载的资源都在主视图中加载完毕
+         * 故，当主视图渲染flag被置位后，即可提交 sub canvas 的所有配置并渲染
          * */
-        manage_pipeline(state, device) {
-            manage_pipeline_main(state, device);
-            manage_pipeline_sub(state, device);
+
+        sub_canvas_management(state, device) {
+
+            /**
+             *  Sub Camera
+             * */
+            init_Camera_sub(state, device);
+
+            /**
+             *  Depth Texture
+             * */
+            manage_Texture_sub(state, device);
+            /**
+             *  VBO
+             * */
+            manage_VBO_sub(state, device);
+
+            /**
+             *  VBO Layout
+             * */
+            manage_VBO_Layout_sub(state);
+
+            /**
+             *  IBO
+             * */
+            manage_IBO_sub(state, device);
+
+            /**
+             *  UBO
+             * */
+            manage_UBO_sub(state, device);
+
+            /**
+             *  UBO Layout
+             * */
+            set_Layout_sub(state, device);
+
+            /**
+             *  BindGroups
+             * */
+            set_BindGroup_sub(state, device);
+
+            /**
+             *  Pipelines
+             * */
+            set_Pipeline_sub(state, device);
+
+            state.main_canvas.fence["RENDER_READY_SUB"] = true;
         },
 
-        /**  
-         *  Stage04：启动渲染循环
-         * */
-        renderLoop(state, payload) {
-            renderLoop_main(state, payload);
-            renderLoop_sub(state, payload);
-        }
+
+
+        sub_canvas_renderLoop(state, device) {
+            renderLoop_sub(state, device);
+        },
+
+
     },
     state() {
         return {
+            GUI: {},
             main_canvas: {
 
                 // 我們假定目前只有一個 canvas
@@ -143,6 +286,7 @@ export default {
                 mouse_info: {},
                 keyboard_info: {},
                 instancedBitMap: [],
+                mipBitMap: [],
                 simu_info: {
                     simu_pause: 0.0,
                     simu_time: 0.0,
@@ -156,6 +300,16 @@ export default {
                     uv_offset: [],  // 用于记录instance对应图片纹理在大纹理中的uv偏移
                     uv_size: [],    // 用于记录instance对应图片纹理在大纹理中的uv归一化宽高尺寸
                     tex_aspect: [], // 用于记录instance对应图片纹理的宽高比系数
+                },
+                mip_info: {
+                    arr: []          // 用于记录当前视场中图片的MipLevel信息
+                },
+                fence: {     // 程序时序控制器，设置一些flag，并通过监控它们来获取正确的程序执行
+                    DEVICE_READY: { val: false },
+                    BITMAP_READY: { val: false },
+                    VBO_READY: { val: false },
+                    RENDER_READY_MAIN: { val: false },
+                    RENDER_READY_SUB: { val: false },
                 },
             },
             sub_canvas: {

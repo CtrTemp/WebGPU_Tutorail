@@ -37,6 +37,8 @@ function compute_miplevel(pos, viewMatrix, unitDistance) {
 function gen_sphere_instance_pos(radius, counts, state) {
 
     let ret_arr = [];
+    let mip_descriptor = new Array(13).fill(0);
+
 
     const zNear = state.main_canvas.prim_camera["z_near"];
     const viewMatrix = state.main_canvas.prim_camera["view"];
@@ -101,18 +103,21 @@ function gen_sphere_instance_pos(radius, counts, state) {
         if (check_in_frustum(projected_pos)) {
             // mip_val = 1.0;
             mip_val = compute_miplevel(pos, viewMatrix, zNear);
+            mip_descriptor[mip_val]++;
         }
 
         ret_arr = ret_arr.concat(mip_val);                          // miplevel
         ret_arr = ret_arr.concat([0, 0, 0]);                    // padding
     }
 
+    console.log("mip_descriptor = ", mip_descriptor);
 
     let flow_info = {};
 
     flow_info["flow_arr"] = ret_arr;
     flow_info["numParticles"] = counts;
     flow_info["lifetime"] = 10.0; // not used
+    flow_info["mip_info"] = mip_descriptor;
 
     return flow_info;
 }
@@ -125,7 +130,6 @@ function gen_sphere_instance_atlas_info(state, flow_arr) {
 
     const info_pack_stride = state.main_canvas.particle_info["particleInstanceByteSize"] / 4;
     const atlas_stride = 4 + 4 + 1 + 1;
-
 
     for (let i = 0; i < counts; i++) {
 

@@ -1,8 +1,7 @@
 import { gen_cone_vertex_from_camera } from "./gen_cone_vertex";
 
-function manage_VBO(state, payload) {
+function manage_VBO_sub(state, device) {
 
-    const device = payload.device;
     // // CPU 端数据
     // const vertices = new Float32Array([
     //     // near rect
@@ -40,7 +39,7 @@ function manage_VBO(state, payload) {
 
 
 
-function manage_VBO_Layout(state, payload) {
+function manage_VBO_Layout_sub(state) {
 
     const vertexBufferLayout = {
         arrayStride: 12, // 一个float类型是4个字节，这表示每一个单一数据寻址需要跨越的字节段（一个二维坐标是两个float组成）
@@ -54,8 +53,7 @@ function manage_VBO_Layout(state, payload) {
 
 }
 
-function manage_IBO(state, payload) {
-    const device = payload.device;
+function manage_IBO_sub(state, device) {
 
     const default_idx_data_arr = new Int16Array([
         // // near rect
@@ -95,5 +93,7 @@ function manage_IBO(state, payload) {
 
 
 export {
-    manage_VBO, manage_VBO_Layout, manage_IBO
+    manage_VBO_sub,
+    manage_VBO_Layout_sub,
+    manage_IBO_sub
 }

@@ -15,18 +15,15 @@ import {
  * */
 
 
-function manage_VBO_stage1(state, payload) {
+function manage_VBO_stage1(state, device) {
 
     const flow_info = gen_sphere_instance_pos(50, 100, state);
 
-    payload.flow_info = flow_info;
-
-
-    const device = payload.device;
-
     // 全局粒子總數
-    state.main_canvas.particle_info["numParticles"] = payload.flow_info.numParticles;
-    state.main_canvas.particle_info["lifetime"] = payload.flow_info.lifetime;
+    state.main_canvas.particle_info["numParticles"] = flow_info.numParticles;
+    state.main_canvas.particle_info["lifetime"] = flow_info.lifetime;
+    state.main_canvas.mip_info["arr"] = flow_info.mip_info;
+
     state.main_canvas.particle_info["particleInstanceByteSize"] =
         4 * 4 + // pos
         4 * 4 + // color
@@ -40,7 +37,7 @@ function manage_VBO_stage1(state, payload) {
         0;
 
 
-    const particles_data = payload.flow_info.flow_arr;
+    const particles_data = flow_info.flow_arr;
 
     // 这里还不能写GPU buffetr
     state.main_canvas.vertices_arr["instance"] = particles_data;
@@ -75,7 +72,7 @@ function manage_VBO_stage1(state, payload) {
     state.main_canvas.VBOs["quad"] = quadVertexBuffer;
 }
 
-function manage_VBO_stage2(state, payload) {
+function manage_VBO_stage2(state, device) {
     let flow_arr = state.main_canvas.vertices_arr["instance"];
     gen_sphere_instance_atlas_info(state, flow_arr);
 
@@ -89,7 +86,6 @@ function manage_VBO_stage2(state, payload) {
      *  GPU VBO 填充
      * */
     
-    const device = payload.device;
     const writeBufferArr = new Float32Array(flow_arr);
 
     const particlesBuffer = device.createBuffer({
@@ -180,8 +176,7 @@ function manage_VBO(state, payload) {
 
 
 
-function manage_VBO_Layout(state, payload) {
-    const device = payload.device;
+function manage_VBO_Layout(state) {
 
     const particles_VBO_Layout = {
         arrayStride: state.main_canvas.particle_info["particleInstanceByteSize"], // 这里是否要补全 padding 呢？？？

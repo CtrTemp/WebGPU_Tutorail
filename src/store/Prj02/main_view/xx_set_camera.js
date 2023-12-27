@@ -2,6 +2,10 @@ import { mat4, vec3, vec4 } from "wgpu-matrix"
 import { updateMipLevel } from "./gen_curve_line";
 
 
+// GUI
+import * as dat from "dat.gui"
+
+
 
 function gen_perspective_project_matrix(fov, aspect, z_near, z_far) {
     const n = z_near;
@@ -26,7 +30,7 @@ function gen_perspective_project_matrix(fov, aspect, z_near, z_far) {
     const perspective_matrix = mat4.create(
         2 * n / (r - l), 0, -(r + l) / (r - l), 0,
         0, 2 * n / (t - b), -(t + b) / (t - b), 0,
-        0, 0, f / (n - f),  n * f / (n - f),
+        0, 0, f / (n - f), n * f / (n - f),
         0, 0, -1, 0
     );
 
@@ -41,7 +45,12 @@ function gen_perspective_project_matrix(fov, aspect, z_near, z_far) {
  * */
 
 
-function init_Camera(state, device, gui) {
+function init_Camera(state) {
+
+
+    // 创建 GUI
+    const gui = new dat.GUI();
+    state.GUI["prim"] = gui;
 
     let camera = state.main_canvas.prim_camera;
 
@@ -55,10 +64,6 @@ function init_Camera(state, device, gui) {
     camera["z_far"] = z_far;
     let projection = mat4.perspective(fov, aspect, z_near, z_far);
 
-    // let projection = gen_perspective_project_matrix(fov, aspect, z_near, z_far);
-
-    console.log("projection matrix = ", projection);
-
 
 
     const lookFrom = vec3.fromValues(0.0, 0.0, 0.0);
@@ -66,45 +71,8 @@ function init_Camera(state, device, gui) {
     const lookAt = vec3.add(lookFrom, viewDir);
     const up = vec3.fromValues(0.0, 1.0, 0.0);
     let view = mat4.lookAt(lookFrom, lookAt, up);
-    console.log("view matrix = ", view);
 
-
-    /**
-     *  以下已经验证：矩阵的存储是列优先存储，向量同样是默认列向量！
-     * */
-    // const transMat = mat4.translate(mat4.identity(), vec3.fromValues(-1, -2, -3));
-    // console.log("transMat = ", transMat);
-    // const scaleMat = mat4.scale(mat4.identity(), vec3.fromValues(1, 2, 3));
-    // console.log("scaleMat = ", scaleMat);
-    // const transScale = mat4.multiply(scaleMat, transMat);
-
-    // console.log("trans scale mat = ", transScale);
-    // const test_pos = vec4.fromValues(1.5, 2.5, 3.5, 1);
-    // const haha = vec4.transformMat4(test_pos, transScale);
-    // console.log("haha = ", haha);
-
-    /**
-     *  注意变换顺序不能更改，依次为：缩放-旋转-平移
-     *  （前两者由于是线性变换所以可以更改顺序？）
-     *  另外，在相机实例中，不应该出现对于model的变换，view+project属于相机
-     * model属于空间中物体
-     * */
-    // const model = mat4.identity();
-
-    // mat4.rotateX(model,);
-    // mat4.rotateY();
-    // mat4.rotateZ();
-
-    /**
-     *  列优先存储应该怎么算？！
-     * */
-    // const viewProjectionMatrix = mat4.multiply(projection, view);
     const viewProjectionMatrix = mat4.multiply(projection, view);
-    console.log("vp mat = ", viewProjectionMatrix);
-    const pos = vec4.fromValues(5, 0, 0, 1);
-    const prjed_pos = vec4.transformMat4(pos, viewProjectionMatrix);
-    console.log("prjed_pos = ", prjed_pos);
-
 
     // 相机基本参数
     camera["fov"] = fov;            // 视场角
@@ -165,8 +133,6 @@ function init_Camera(state, device, gui) {
     gui.add(state.main_canvas.prim_camera.dir, "dir_x", -1.0, 1.0, 0.01);
     gui.add(state.main_canvas.prim_camera.dir, "dir_y", -1.0, 1.0, 0.01);
     gui.add(state.main_canvas.prim_camera.dir, "dir_z", -1.0, 1.0, 0.01);
-
-
 
 }
 

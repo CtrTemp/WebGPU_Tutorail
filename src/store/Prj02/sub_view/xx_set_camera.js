@@ -1,9 +1,16 @@
-import { reactive } from "vue";
+
+// GUI
+import * as dat from "dat.gui"
+
 import { mat4, vec3, vec4 } from "wgpu-matrix"
 
 
 
-function init_Camera(state, device, gui) {
+function init_Camera_sub(state) {
+
+    // 创建 GUI
+    const gui = new dat.GUI();
+    state.GUI["sub"] = gui;
 
     let camera = state.sub_canvas.prim_camera;
 
@@ -413,7 +420,7 @@ function focusOnRandomPic(state, device, gui, flow_info) {
 
 
 export {
-    init_Camera,
+    init_Camera_sub,
     updateSubCamera,
     moveCamera,
     defocusCamera,

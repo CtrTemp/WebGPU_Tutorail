@@ -112,6 +112,10 @@ store.state.ws.onmessage = function (e) {
       store.dispatch("pic_browser/construct_imgBitMap", json_pack);
       break;
 
+    case "mip_texture_pack":
+      store.dispatch("pic_browser/construct_mip_imgBitMap", json_pack);
+      break;
+
     default:
       console.log("server source message header invalid");
   }

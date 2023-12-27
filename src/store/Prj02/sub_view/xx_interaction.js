@@ -81,10 +81,12 @@ function mouseWheelCallback(state, device, deltaY, gui) {
 /**
  *  Mouse
  * */
-function canvasMouseInteraction(state, device, gui) {
+function canvasMouseInteraction(state, device) {
 
     let canvas = state.sub_canvas.canvas;
     let camera = state.sub_canvas.prim_camera;
+
+    const gui = state.GUI["sub"];
 
     canvas.addEventListener("mousemove", (event) => {
         // 这里的一个优点在于可以直接获取鼠标的移动距离信息
