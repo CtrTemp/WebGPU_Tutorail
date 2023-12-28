@@ -45,9 +45,12 @@ function renderLoop_main(state, device) {
     // }, 800);
 
 
-    setInterval(() => {
+    let timerID = setInterval(() => {
 
-
+        if(state.fence["RENDER_READY"] == false)
+        {
+            clearInterval(timerID);
+        }
 
 
         const renderPassDescriptor = state.main_canvas.passDescriptors["render_particles"];

@@ -79,12 +79,17 @@ export default {
                 context.state.main_canvas.instancedBitMap.push(img_bitMap);
             }
 
-            context.state.main_canvas.fence["BITMAP_READY"] = true;
+            context.state.fence["BITMAP_READY"] = true;
             // console.log("bitmaps = ", context.state.main_canvas.instancedBitMap);
         },
 
         async construct_mip_imgBitMap(context, ret_json_pack) {
             console.log("json pack received = ", ret_json_pack);
+
+            let flag = false;
+            if (context.state.main_canvas.mipBitMap.length == 13) {
+                flag = true;
+            }
 
             const bitMapArr = ret_json_pack["mipBitMaps"];
 
@@ -105,11 +110,16 @@ export default {
                     current_level_mapArr.push(img_bitMap);
 
                 }
-                context.state.main_canvas.mipBitMap.push(current_level_mapArr);
+                if (flag) {
+                    context.state.main_canvas.mipBitMap[i] = current_level_mapArr;
+                }
+                else {
+                    context.state.main_canvas.mipBitMap.push(current_level_mapArr);
+                }
             }
 
-            console.log("bitmaps = ", context.state.main_canvas.mipBitMap);
-            context.state.main_canvas.fence["BITMAP_READY"] = true;
+            // console.log("bitmaps = ", context.state.main_canvas.mipBitMap);
+            context.state.fence["BITMAP_READY"] = true;
         },
 
     },
@@ -121,7 +131,7 @@ export default {
         init_device(state, { canvas, device }) {
             init_device_main(state, { canvas: canvas.main_canvas, device });
             init_device_sub(state, { canvas: canvas.sub_canvas, device });
-            state.main_canvas.fence["DEVICE_READY"] = true;
+            state.fence["DEVICE_READY"] = true;
         },
 
 
@@ -134,16 +144,20 @@ export default {
             // console.log("MANAGE_VBO_STAGE_01");
             init_Camera(state, device);
             manage_VBO_stage1(state, device);
+            state.fence["VBO_STAGE1_READY"] = true;
         },
 
 
         main_canvas_VBO_stage2(state, device) {
             // console.log("MANAGE_VBO_STAGE_02");
 
-            manage_Texture(state, device);
+            // manage_Texture(state, device);
+            manage_Mip_Texture(state, device);
+
             manage_VBO_stage2(state, device);
 
-            state.main_canvas.fence["VBO_READY"] = true;
+            state.fence["VBO_STAGE2_READY"] = true;
+            console.log("VBO_STAGE2_READY");
         },
 
         // main_canvas_UBOs_Layouts_Pipelines_and_Interaction(state, device) {
@@ -179,7 +193,7 @@ export default {
             // Mouse
             canvasMouseInteraction(state, device);
 
-            state.main_canvas.fence["RENDER_READY_MAIN"] = true;
+            state.fence["RENDER_READY"] = true;
         },
 
         main_canvas_renderLoop(state, device) {
@@ -239,7 +253,7 @@ export default {
              * */
             set_Pipeline_sub(state, device);
 
-            state.main_canvas.fence["RENDER_READY_SUB"] = true;
+            state.fence["RENDER_READY_SUB"] = true;
         },
 
 
@@ -252,7 +266,19 @@ export default {
     },
     state() {
         return {
+            ws: undefined,
             GUI: {},
+            /**
+             *  全局时序控制器，设置一些flag，并通过监控它们来获取正确的程序执行
+             * */
+            fence: {
+                DEVICE_READY: { val: false },
+                BITMAP_READY: { val: false },
+                // VBO_READY: { val: false },
+                VBO_STAGE1_READY: { val: false },
+                VBO_STAGE2_READY: { val: false },
+                RENDER_READY: { val: false },
+            },
             main_canvas: {
 
                 // 我們假定目前只有一個 canvas
@@ -265,7 +291,8 @@ export default {
                 Pipeline_Layouts: {},
                 // 各类纹理
                 Textures: {
-                    instance: []
+                    instance: [],
+                    mip_instance: [],
                 },
                 // VBO、UBO這些都可能有多個，所以同樣使用對象來定義
                 VBOs: {},
@@ -300,16 +327,11 @@ export default {
                     uv_offset: [],  // 用于记录instance对应图片纹理在大纹理中的uv偏移
                     uv_size: [],    // 用于记录instance对应图片纹理在大纹理中的uv归一化宽高尺寸
                     tex_aspect: [], // 用于记录instance对应图片纹理的宽高比系数
+
                 },
+                mip_atlas_info: [],
                 mip_info: {
                     arr: []          // 用于记录当前视场中图片的MipLevel信息
-                },
-                fence: {     // 程序时序控制器，设置一些flag，并通过监控它们来获取正确的程序执行
-                    DEVICE_READY: { val: false },
-                    BITMAP_READY: { val: false },
-                    VBO_READY: { val: false },
-                    RENDER_READY_MAIN: { val: false },
-                    RENDER_READY_SUB: { val: false },
                 },
             },
             sub_canvas: {

@@ -66,7 +66,7 @@ function init_Camera(state) {
 
 
 
-    const lookFrom = vec3.fromValues(0.0, 0.0, 0.0);
+    const lookFrom = vec3.fromValues(-50.0, 0.0, 0.0);
     const viewDir = vec3.fromValues(1.0, 0.0, 0.0);
     const lookAt = vec3.add(lookFrom, viewDir);
     const up = vec3.fromValues(0.0, 1.0, 0.0);
@@ -141,8 +141,9 @@ function init_Camera(state) {
  *  更新相机参数
  *  根据相机的基本参数，更新相机矩阵
  * */
-function updateMainCamera(state, device, gui) {
+function updateMainCamera(state, device) {
     let camera = state.main_canvas.prim_camera;
+    let gui = state.GUI["prim"];
 
     camera.pos.x = camera.lookFrom.at(0);
     camera.pos.y = camera.lookFrom.at(1);
@@ -202,11 +203,37 @@ function updateMainCamera(state, device, gui) {
     // !!! 注意这里必须手动触发更新才行
     gui.updateDisplay();
 
-    /**
-     *  根据新的相机视锥，更新 instance 的 miplevel
-     * */
+    // /**
+    //  *  根据新的相机视锥，更新 instance 的 miplevel
+    //  * */
 
-    updateMipLevel(state, device);
+    // updateMipLevel(state, device);
+
+
+    
+    // /**
+    //  *  复位相关标志位，等待向后端申请数据，停止渲染
+    //  * */ 
+    // state.fence["RENDER_READY"] = false;
+    // state.fence["BITMAP_READY"] = false;
+    // // state.fence["VBO_READY"] = false;
+    // state.fence["VBO_STAGE1_READY"] = false;
+    // state.fence["VBO_STAGE2_READY"] = false;
+
+
+    // /**
+    //  *  通过向后端提交数据申请，触发 BITMAP_READY 置位，从而引发后续一系列的标志位置位
+    //  * */
+
+    // const mip_info = state.main_canvas.mip_info;
+    // const cmd_json = {
+    //     cmd: "fetch_mip_instance",
+    //     mip_info: mip_info, // mip info 描述信息
+    // };
+    // // console.log("new mip descriptor = ", mip_info);
+
+    // state.ws.send(JSON.stringify(cmd_json));
+
 }
 
 

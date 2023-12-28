@@ -62,15 +62,19 @@ const fragment_shader = /* wgsl */`
 
 
 @group(1) @binding(0) var mySampler: sampler;
-@group(1) @binding(1) var myTexture_id1: texture_2d<f32>;
-@group(1) @binding(2) var myTexture_id2: texture_2d<f32>;
-// @group(1) @binding(3) var myTexture_id3: texture_2d<f32>;
-// @group(1) @binding(4) var myTexture_id4: texture_2d<f32>;
-// @group(1) @binding(5) var myTexture_id5: texture_2d<f32>;
-// @group(1) @binding(6) var myTexture_id6: texture_2d<f32>;
-// @group(1) @binding(7) var myTexture_id7: texture_2d<f32>;
-// @group(1) @binding(8) var myTexture_id8: texture_2d<f32>;
-// @group(1) @binding(9) var myTexture_id9: texture_2d<f32>;
+@group(1) @binding(1) var myTexture_mip0: texture_2d<f32>;
+@group(1) @binding(2) var myTexture_mip1: texture_2d<f32>;
+@group(1) @binding(3) var myTexture_mip2: texture_2d<f32>;
+@group(1) @binding(4) var myTexture_mip3: texture_2d<f32>;
+@group(1) @binding(5) var myTexture_mip4: texture_2d<f32>;
+@group(1) @binding(6) var myTexture_mip5: texture_2d<f32>;
+@group(1) @binding(7) var myTexture_mip6: texture_2d<f32>;
+@group(1) @binding(8) var myTexture_mip7: texture_2d<f32>;
+@group(1) @binding(9) var myTexture_mip8: texture_2d<f32>;
+@group(1) @binding(10) var myTexture_mip9: texture_2d<f32>;
+@group(1) @binding(11) var myTexture_mip10: texture_2d<f32>;
+@group(1) @binding(12) var myTexture_mip11: texture_2d<f32>;
+@group(1) @binding(13) var myTexture_mip12: texture_2d<f32>;
 
 struct FragIutput {
   @builtin(position) position : vec4<f32>,
@@ -104,37 +108,67 @@ fn rand() -> f32 {
 @fragment
 fn fs_main(in : FragIutput) -> @location(0) vec4<f32> {
   
-  var mip0_color = vec4f(0.06, 0.56, 0.18, 1.0);
-  var mip1_color = vec4f(0.29, 0.64, 0.21, 1.0);
-  var mip2_color = vec4f(0.67, 0.78, 0.19, 1.0);
-  var mip3_color = vec4f(0.91, 0.88, 0.21, 1.0);
-  var mip4_color = vec4f(0.93, 0.75, 0.09, 1.0);
-  var mip5_color = vec4f(0.86, 0.45, 0.11, 1.0);
-  var mip6_color = vec4f(0.82, 0.30, 0.10, 1.0);
-  var mip7_color = vec4f(0.80, 0.15, 0.17, 1.0);
+  // var mip0_color = vec4f(0.06, 0.56, 0.18, 1.0);
+  // var mip1_color = vec4f(0.29, 0.64, 0.21, 1.0);
+  // var mip2_color = vec4f(0.67, 0.78, 0.19, 1.0);
+  // var mip3_color = vec4f(0.91, 0.88, 0.21, 1.0);
+  // var mip4_color = vec4f(0.93, 0.75, 0.09, 1.0);
+  // var mip5_color = vec4f(0.86, 0.45, 0.11, 1.0);
+  // var mip6_color = vec4f(0.82, 0.30, 0.10, 1.0);
+  // var mip7_color = vec4f(0.80, 0.15, 0.17, 1.0);
 
-  var color = in.color;
-  var idx = in.idx;
+  // var color = in.color;
+  // var idx = in.idx;
 
-  color = select(vec4(0.0, 1.0, 0.0, 0.0), mip0_color, in.miplevel>0.0);
-  color = select(color, mip1_color, in.miplevel>1.0);
-  color = select(color, mip2_color, in.miplevel>2.0);
-  color = select(color, mip3_color, in.miplevel>3.0);
-  color = select(color, mip4_color, in.miplevel>4.0);
-  color = select(color, mip5_color, in.miplevel>5.0);
-  color = select(color, mip6_color, in.miplevel>6.0);
-  color = select(color, mip7_color, in.miplevel>7.0);
+  // color = select(vec4(0.0, 1.0, 0.0, 0.0), mip0_color, in.miplevel>0.0);
+  // color = select(color, mip1_color, in.miplevel>1.0);
+  // color = select(color, mip2_color, in.miplevel>2.0);
+  // color = select(color, mip3_color, in.miplevel>3.0);
+  // color = select(color, mip4_color, in.miplevel>4.0);
+  // color = select(color, mip5_color, in.miplevel>5.0);
+  // color = select(color, mip6_color, in.miplevel>6.0);
+  // color = select(color, mip7_color, in.miplevel>7.0);
 
 
   var target_uv = vec2(in.quad_uv.x*in.uv_size.x, in.quad_uv.y*in.uv_size.y);
   target_uv = target_uv+in.uv_offset;
+
+  var void_color = vec4(0.0, 0.0, 0.0, 0.0);
+  var mip0_color = textureSample(myTexture_mip0, mySampler, target_uv);
+  var mip1_color = textureSample(myTexture_mip1, mySampler, target_uv);
+  var mip2_color = textureSample(myTexture_mip2, mySampler, target_uv);
+  var mip3_color = textureSample(myTexture_mip3, mySampler, target_uv);
+  var mip4_color = textureSample(myTexture_mip4, mySampler, target_uv);
+  var mip5_color = textureSample(myTexture_mip5, mySampler, target_uv);
+  var mip6_color = textureSample(myTexture_mip6, mySampler, target_uv);
+  var mip7_color = textureSample(myTexture_mip7, mySampler, target_uv);
+  var mip8_color = textureSample(myTexture_mip8, mySampler, target_uv);
+  var mip9_color = textureSample(myTexture_mip9, mySampler, target_uv);
+  var mip10_color = textureSample(myTexture_mip10, mySampler, target_uv);
+  var mip11_color = textureSample(myTexture_mip11, mySampler, target_uv);
+  var mip12_color = textureSample(myTexture_mip12, mySampler, target_uv);
+  
+  var color = select(void_color, mip0_color, in.miplevel>=0.0);
+  color = select(color, mip1_color, in.miplevel>=1.0);
+  color = select(color, mip2_color, in.miplevel>=2.0);
+  color = select(color, mip3_color, in.miplevel>=3.0);
+  color = select(color, mip4_color, in.miplevel>=4.0);
+  color = select(color, mip5_color, in.miplevel>=5.0);
+  color = select(color, mip6_color, in.miplevel>=6.0);
+  color = select(color, mip7_color, in.miplevel>=7.0);
+  color = select(color, mip8_color, in.miplevel>=8.0);
+  color = select(color, mip9_color, in.miplevel>=9.0);
+  color = select(color, mip10_color, in.miplevel>=10.0);
+  color = select(color, mip11_color, in.miplevel>=11.0);
+  color = select(color, mip12_color, in.miplevel>=12.0);
+  
   
   // color = textureSample(myTexture_id1, mySampler, target_uv);
   // color = select(color, vec4(0.0, 1.0, 0.0, 1.0), in.miplevel<0.0);
 
   
   // // 解除下面这句注释，用于查看当前大纹理中所存放的所有图片
-  // color = textureSample(myTexture_id2, mySampler, in.quad_uv);
+  // color = textureSample(myTexture_mip7, mySampler, in.quad_uv);
 
   return color;
 }

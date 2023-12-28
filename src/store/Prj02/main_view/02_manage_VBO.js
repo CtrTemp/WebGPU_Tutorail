@@ -17,7 +17,7 @@ import {
 
 function manage_VBO_stage1(state, device) {
 
-    const flow_info = gen_sphere_instance_pos(50, 100, state);
+    const flow_info = gen_sphere_instance_pos(50, 500, state);
 
     // 全局粒子總數
     state.main_canvas.particle_info["numParticles"] = flow_info.numParticles;

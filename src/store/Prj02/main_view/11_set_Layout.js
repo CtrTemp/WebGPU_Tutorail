@@ -33,14 +33,110 @@ function set_Layout(state, device) {
                     type: "filtering"
                 }
             },
-            // big texture test Mip0
+            // big texture Mip0
             {
                 binding: 1,
                 visibility: GPUShaderStage.FRAGMENT,
                 texture: {
                     sampleType: 'float'
                 }
-            }
+            },
+            // big texture Mip1
+            {
+                binding: 2,
+                visibility: GPUShaderStage.FRAGMENT,
+                texture: {
+                    sampleType: 'float'
+                }
+            },
+            // big texture Mip2
+            {
+                binding: 3,
+                visibility: GPUShaderStage.FRAGMENT,
+                texture: {
+                    sampleType: 'float'
+                }
+            },
+            // big texture Mip3
+            {
+                binding: 4,
+                visibility: GPUShaderStage.FRAGMENT,
+                texture: {
+                    sampleType: 'float'
+                }
+            },
+            // big texture Mip4
+            {
+                binding: 5,
+                visibility: GPUShaderStage.FRAGMENT,
+                texture: {
+                    sampleType: 'float'
+                }
+            },
+            // big texture Mip5
+            {
+                binding: 6,
+                visibility: GPUShaderStage.FRAGMENT,
+                texture: {
+                    sampleType: 'float'
+                }
+            },
+            // big texture Mip6
+            {
+                binding: 7,
+                visibility: GPUShaderStage.FRAGMENT,
+                texture: {
+                    sampleType: 'float'
+                }
+            },
+            // big texture Mip7
+            {
+                binding: 8,
+                visibility: GPUShaderStage.FRAGMENT,
+                texture: {
+                    sampleType: 'float'
+                }
+            },
+            // big texture Mip8
+            {
+                binding: 9,
+                visibility: GPUShaderStage.FRAGMENT,
+                texture: {
+                    sampleType: 'float'
+                }
+            },
+            // big texture Mip9
+            {
+                binding: 10,
+                visibility: GPUShaderStage.FRAGMENT,
+                texture: {
+                    sampleType: 'float'
+                }
+            },
+            // big texture Mip10
+            {
+                binding: 11,
+                visibility: GPUShaderStage.FRAGMENT,
+                texture: {
+                    sampleType: 'float'
+                }
+            },
+            // big texture Mip11
+            {
+                binding: 12,
+                visibility: GPUShaderStage.FRAGMENT,
+                texture: {
+                    sampleType: 'float'
+                }
+            },
+            // big texture Mip12
+            {
+                binding: 13,
+                visibility: GPUShaderStage.FRAGMENT,
+                texture: {
+                    sampleType: 'float'
+                }
+            },
 
         ]
     });

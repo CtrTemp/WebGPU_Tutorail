@@ -22,7 +22,7 @@ function init_Camera_sub(state) {
     let projection = mat4.perspective(fov, aspect, z_near, z_far);
 
 
-    const lookFrom = vec3.fromValues(-10, 35, 0);
+    const lookFrom = vec3.fromValues(-26, 60, 0);
     const lookAt = vec3.fromValues(0.0, 0.0, 0.0);
     const viewDir = vec3.normalize(vec3.sub(lookAt, lookFrom));
     const up = vec3.fromValues(0, 1, 0);
@@ -73,7 +73,7 @@ function init_Camera_sub(state) {
 
     // 解算得到的相机方位角
     camera["yaw"] = 0.0;
-    camera["pitch"] = -1.0;
+    camera["pitch"] = -0.7;
 
     // defineReactive(state.sub_canvas.prim_camera, "yaw", Math.PI / 2);
     // defineReactive(state.sub_canvas.prim_camera, "pitch", 0.0);
@@ -102,8 +102,9 @@ function init_Camera_sub(state) {
  *  更新相机参数
  *  根据相机的基本参数，更新相机矩阵
  * */
-function updateSubCamera(state, device, gui) {
+function updateSubCamera(state, device) {
     let camera = state.sub_canvas.prim_camera;
+    let gui = state.GUI["sub"];
 
     camera.pos.x = camera.lookFrom.at(0);
     camera.pos.y = camera.lookFrom.at(1);

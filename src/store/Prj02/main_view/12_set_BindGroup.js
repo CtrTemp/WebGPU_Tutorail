@@ -35,11 +35,71 @@ function set_BindGroup(state, device) {
                 binding: 0,
                 resource: state.main_canvas.additional_info["sampler"]
             },
-            // big texture test Mip0
+            // big texture Mip0
             {
                 binding: 1,
-                resource: state.main_canvas.Textures["instance"][0].createView()
-            }
+                resource: state.main_canvas.Textures["mip_instance"][0].createView()
+            },
+            // big texture Mip1
+            {
+                binding: 2,
+                resource: state.main_canvas.Textures["mip_instance"][1].createView()
+            },
+            // big texture Mip2
+            {
+                binding: 3,
+                resource: state.main_canvas.Textures["mip_instance"][2].createView()
+            },
+            // big texture Mip3
+            {
+                binding: 4,
+                resource: state.main_canvas.Textures["mip_instance"][3].createView()
+            },
+            // big texture Mip4
+            {
+                binding: 5,
+                resource: state.main_canvas.Textures["mip_instance"][4].createView()
+            },
+            // big texture Mip5
+            {
+                binding: 6,
+                resource: state.main_canvas.Textures["mip_instance"][5].createView()
+            },
+            // big texture Mip6
+            {
+                binding: 7,
+                resource: state.main_canvas.Textures["mip_instance"][6].createView()
+            },
+            // big texture Mip7
+            {
+                binding: 8,
+                resource: state.main_canvas.Textures["mip_instance"][7].createView()
+            },
+            // big texture Mip8
+            {
+                binding: 9,
+                resource: state.main_canvas.Textures["mip_instance"][8].createView()
+            },
+            // big texture Mip9
+            {
+                binding: 10,
+                resource: state.main_canvas.Textures["mip_instance"][9].createView()
+            },
+            // big texture Mip10
+            {
+                binding: 11,
+                resource: state.main_canvas.Textures["mip_instance"][10].createView()
+            },
+            // big texture Mip11
+            {
+                binding: 12,
+                resource: state.main_canvas.Textures["mip_instance"][11].createView()
+            },
+            // big texture Mip12
+            {
+                binding: 13,
+                resource: state.main_canvas.Textures["mip_instance"][12].createView()
+            },
         ]
     });
     state.main_canvas.BindGroups["sample"] = Sample_UBO_BindGroup;
