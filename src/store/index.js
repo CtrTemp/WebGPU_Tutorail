@@ -32,6 +32,8 @@ import InstanceSimu from "./Prj01/instanceSimu.js";
 
 import pic_browser from "./Prj02/pic_browser.js";
 
+import map_gpu_buffer from "./Test01/map_gpu_buffer.js"
+
 const store = createStore({
   state: {
     ws: new WebSocket(`ws://${window.location.hostname}:3008`),
@@ -46,6 +48,7 @@ const store = createStore({
   },
   actions: {},
   modules: {
+    Test01: map_gpu_buffer,
     Tuto05: basicTestModel,
     Tuto08: rotatingCubes,
     Tuto15: deferredShadingModel,
