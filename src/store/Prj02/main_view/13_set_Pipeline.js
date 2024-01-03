@@ -11,7 +11,8 @@ function set_Pipeline(state, device) {
     const particle_Render_Pipeline_Layout = device.createPipelineLayout({
         bindGroupLayouts: [
             state.main_canvas.Layouts["mvp"],
-            state.main_canvas.Layouts["sample"]
+            state.main_canvas.Layouts["sample"],
+            state.main_canvas.Layouts["mip_vertex"]
         ]
     });
     state.main_canvas.Pipeline_Layouts["render_particles"] = particle_Render_Pipeline_Layout;

@@ -6,6 +6,7 @@ const instance_vert = /* wgsl */`
 @binding(2) @group(0) var<uniform> up     : vec3<f32>;
 
 
+@binding(0) @group(2) var<storage> mip    : array<f32>; // 只读
 
 
 struct VertexInput {
@@ -16,9 +17,9 @@ struct VertexInput {
   @location(4) uv_offset    : vec2<f32>,
   @location(5) tex_aspect   : vec2<f32>,
   @location(6) uv_size      : vec2<f32>,
-  @location(7) miplevel     : f32,        // miplevel
-  @location(8) quad_pos     : vec2<f32>,  // -1..+1
-  @location(9) quad_uv      : vec2<f32>,  // 0..+1
+  // @location(7) miplevel     : f32,        // miplevel
+  @location(7) quad_pos     : vec2<f32>,  // -1..+1
+  @location(8) quad_uv      : vec2<f32>,  // 0..+1
 }
 
 
@@ -34,7 +35,9 @@ struct VertexOutput {
 }
 
 @vertex
-fn vs_main(in : VertexInput) -> VertexOutput {
+fn vs_main(
+  @builtin(instance_index) instance_index : u32, 
+  in : VertexInput) -> VertexOutput {
 
   // var pos_temp = in.quad_pos;
   // pos_temp.x = pos_temp.x*in.tex_aspect.x;
@@ -51,7 +54,8 @@ fn vs_main(in : VertexInput) -> VertexOutput {
   out.idx = in.idx;
   out.uv_offset = in.uv_offset;
   out.uv_size = in.uv_size;
-  out.miplevel = in.miplevel;
+  // out.miplevel = in.miplevel;b
+  out.miplevel = mip[instance_index];  // 通过内置变量来得到miplevel的索引
   return out;
 }
 `

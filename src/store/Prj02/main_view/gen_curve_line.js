@@ -37,6 +37,7 @@ function compute_miplevel(pos, viewMatrix, unitDistance) {
 function gen_sphere_instance_pos(radius, counts, state) {
 
     let ret_arr = [];
+    let mip_arr = [];
     let mip_descriptor = new Array(13).fill(0);
 
 
@@ -105,9 +106,10 @@ function gen_sphere_instance_pos(radius, counts, state) {
             mip_val = compute_miplevel(pos, viewMatrix, zNear);
             mip_descriptor[mip_val]++;
         }
+        mip_arr.push(mip_val);
 
-        ret_arr = ret_arr.concat(mip_val);                          // miplevel
-        ret_arr = ret_arr.concat([0, 0, 0]);                    // padding
+        // ret_arr = ret_arr.concat(mip_val);                      // miplevel
+        // ret_arr = ret_arr.concat([0, 0, 0]);                    // padding
     }
 
     console.log("mip_descriptor = ", mip_descriptor);
@@ -118,19 +120,22 @@ function gen_sphere_instance_pos(radius, counts, state) {
     flow_info["numParticles"] = counts;
     flow_info["lifetime"] = 10.0; // not used
     flow_info["mip_info"] = mip_descriptor;
+    flow_info["mip_arr"] = mip_arr;
 
     return flow_info;
 }
 
 
 
-function gen_sphere_instance_atlas_info(state, flow_arr) {
+function gen_sphere_instance_atlas_info(state, instance_arr, mip_arr) {
+
+    // console.log("instance_arr = ", instance_arr);
+    // console.log("mip_arr = ", mip_arr);
 
     const counts = state.main_canvas.particle_info["numParticles"];
 
     const info_pack_stride = state.main_canvas.particle_info["particleInstanceByteSize"] / 4;
     const atlas_stride = 4 + 4 + 1 + 1;
-    const mip_stride = 4 + 4 + 1 + 1 + 2 + 2 + 2;
 
     // 深拷贝，用于计数
     let mip_counter = JSON.parse(JSON.stringify(state.main_canvas.mip_info["arr"]));
@@ -139,7 +144,7 @@ function gen_sphere_instance_atlas_info(state, flow_arr) {
     for (let i = 0; i < counts; i++) {
 
         const idx = i * info_pack_stride + atlas_stride;
-        const mip_level = flow_arr[i * info_pack_stride + mip_stride];
+        const mip_level = mip_arr[i];
         if (mip_level < 0) {
             continue;
         }
@@ -158,15 +163,15 @@ function gen_sphere_instance_atlas_info(state, flow_arr) {
         // console.log(uv_size);
 
 
-        flow_arr[idx + 0] = uv_offset[0];      // uv-offset-u
-        flow_arr[idx + 1] = uv_offset[1];      // uv-offset-v
-        flow_arr[idx + 2] = tex_aspect[0];     // uv-scale-u
-        flow_arr[idx + 3] = tex_aspect[1];     // uv-scale-v
-        flow_arr[idx + 4] = uv_size[0];        // quad-scale-u
-        flow_arr[idx + 5] = uv_size[1];        // quad-scale-v
+        instance_arr[idx + 0] = uv_offset[0];      // uv-offset-u
+        instance_arr[idx + 1] = uv_offset[1];      // uv-offset-v
+        instance_arr[idx + 2] = tex_aspect[0];     // uv-scale-u
+        instance_arr[idx + 3] = tex_aspect[1];     // uv-scale-v
+        instance_arr[idx + 4] = uv_size[0];        // quad-scale-u
+        instance_arr[idx + 5] = uv_size[1];        // quad-scale-v
+    
     }
 
-    // return flow_info;
 }
 
 

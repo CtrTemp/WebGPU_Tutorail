@@ -1,5 +1,8 @@
 function set_Layout(state, device) {
 
+    /**
+     *  MVP matrix UBO
+     * */ 
     const MVP_UBO_Layout = device.createBindGroupLayout({
         entries: [{
             binding: 0,
@@ -23,6 +26,37 @@ function set_Layout(state, device) {
     });
     state.main_canvas.Layouts["mvp"] = MVP_UBO_Layout;
 
+
+    /**
+     *  Mip Info SBO
+     * */ 
+    // read-only-storage for vertex shader stage
+    const MIP_SBO_Layout_Vertex = device.createBindGroupLayout({
+        entries: [{
+            binding: 0,
+            visibility: GPUShaderStage.VERTEX,
+            buffer: {
+                type: "read-only-storage"
+            }
+        }]
+    });
+    state.main_canvas.Layouts["mip_vertex"] = MIP_SBO_Layout_Vertex;
+    // read-write-storage for compute shader stage
+    const MIP_SBO_Layout_Compute = device.createBindGroupLayout({
+        entries: [{
+            binding: 0,
+            visibility: GPUShaderStage.COMPUTE,
+            buffer: {
+                type: "storage"
+            }
+        }]
+    });
+    state.main_canvas.Layouts["mip_compute"] = MIP_SBO_Layout_Compute;
+
+
+    /**
+     *  Sampler and Texture
+     * */ 
     const Sample_UBO_Layout = device.createBindGroupLayout({
         entries: [
             // sampler

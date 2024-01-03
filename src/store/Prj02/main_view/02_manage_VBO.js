@@ -17,7 +17,7 @@ import {
 
 function manage_VBO_stage1(state, device) {
 
-    const flow_info = gen_sphere_instance_pos(50, 500, state);
+    const flow_info = gen_sphere_instance_pos(50, 100, state);
 
     // 全局粒子總數
     state.main_canvas.particle_info["numParticles"] = flow_info.numParticles;
@@ -32,8 +32,8 @@ function manage_VBO_stage1(state, device) {
         2 * 4 + // uv offset
         2 * 4 + // uv scale
         2 * 4 + // quad scale
-        1 * 4 + // miplevel
-        3 * 4 + // padding （注意，padding补全是非常有必要的！）
+        // 1 * 4 + // miplevel
+        // 3 * 4 + // padding （注意，padding补全是非常有必要的！）
         0;
 
 
@@ -41,6 +41,7 @@ function manage_VBO_stage1(state, device) {
 
     // 这里还不能写GPU buffetr
     state.main_canvas.vertices_arr["instance"] = particles_data;
+    state.main_canvas.storage_arr["mip"] = flow_info["mip_arr"];
 
 
 
@@ -73,8 +74,9 @@ function manage_VBO_stage1(state, device) {
 }
 
 function manage_VBO_stage2(state, device) {
-    let flow_arr = state.main_canvas.vertices_arr["instance"];
-    gen_sphere_instance_atlas_info(state, flow_arr);
+    let instance_arr = state.main_canvas.vertices_arr["instance"];
+    let mip_arr = state.main_canvas.storage_arr["mip"];
+    gen_sphere_instance_atlas_info(state, instance_arr, mip_arr);
 
     /**
      *  这里应该加入打印验证
@@ -86,7 +88,7 @@ function manage_VBO_stage2(state, device) {
      *  GPU VBO 填充
      * */
     
-    const writeBufferArr = new Float32Array(flow_arr);
+    const writeBufferArr = new Float32Array(instance_arr);
 
     const particlesBuffer = device.createBuffer({
         size: writeBufferArr.byteLength,
@@ -224,12 +226,12 @@ function manage_VBO_Layout(state) {
                 offset: 14 * 4,
                 format: 'float32x2'
             },
-            {
-                // miplevel
-                shaderLocation: 7,
-                offset: 16 * 4,
-                format: 'float32'
-            }
+            // {
+            //     // miplevel
+            //     shaderLocation: 7,
+            //     offset: 16 * 4,
+            //     format: 'float32'
+            // }
         ]
     };
     state.main_canvas.VBO_Layouts["particles"] = particles_VBO_Layout;
@@ -241,13 +243,13 @@ function manage_VBO_Layout(state) {
         attributes: [
             {
                 // vertex position
-                shaderLocation: 8,
+                shaderLocation: 7,
                 offset: 0,
                 format: 'float32x2',
             },
             {
                 // vertex uv
-                shaderLocation: 9,
+                shaderLocation: 8,
                 offset: 2 * 4,
                 format: 'float32x2',
             },

@@ -13,6 +13,7 @@ import {
     manage_VBO_Layout
 } from "./main_view/02_manage_VBO"
 import { manage_UBO } from "./main_view/03_manage_UBO"
+import { manage_SBO } from "./main_view/04_manage_SBO";
 import { set_Layout } from "./main_view/11_set_Layout";
 import { set_BindGroup } from "./main_view/12_set_BindGroup";
 import { set_Pipeline } from "./main_view/13_set_Pipeline";
@@ -171,6 +172,12 @@ export default {
              *  UBO
              * */
             manage_UBO(state, device);
+
+            /**
+             *  SBO
+             * */
+            manage_SBO(state, device);
+
             /**
              *  UBO Layout
              * */
@@ -302,6 +309,7 @@ export default {
                 Layouts: {},
                 BindGroups: {},
                 SBOs: {}, // Storage Buffer Object
+                storage_arr: {}, // storage data in CPU for SBOs
                 vertices_arr: {},
                 indices_arr: {},  // 暂时不需要
                 passDescriptors: {},

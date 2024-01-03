@@ -104,6 +104,7 @@ function renderLoop_main(state, device) {
             pass.setPipeline(state.main_canvas.Pipelines["render_particles"]);
             pass.setBindGroup(0, state.main_canvas.BindGroups["mvp_pack"]);
             pass.setBindGroup(1, state.main_canvas.BindGroups["sample"]);
+            pass.setBindGroup(2, state.main_canvas.BindGroups["mip_vertex"]);
             pass.setVertexBuffer(0, state.main_canvas.VBOs["particles"]);
             pass.setVertexBuffer(1, state.main_canvas.VBOs["quad"]);
             pass.draw(6, state.main_canvas.particle_info["numParticles"], 0, 0);

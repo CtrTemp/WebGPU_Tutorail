@@ -6,6 +6,8 @@ const vertex_shader = /* wgsl */`
 @binding(2) @group(0) var<uniform> up     : vec3<f32>;
 
 
+@binding(0) @group(2) var<storage> mip    : array<f32>; // 只读
+
 
 struct VertexInput {
   @location(0) position     : vec4<f32>,  // particle position
@@ -15,9 +17,9 @@ struct VertexInput {
   @location(4) uv_offset    : vec2<f32>,
   @location(5) tex_aspect   : vec2<f32>,
   @location(6) uv_size      : vec2<f32>,
-  @location(7) miplevel     : f32,        // miplevel
-  @location(8) quad_pos     : vec2<f32>,  // -1..+1
-  @location(9) quad_uv      : vec2<f32>,  // 0..+1
+  // @location(7) miplevel     : f32,        // miplevel
+  @location(7) quad_pos     : vec2<f32>,  // -1..+1
+  @location(8) quad_uv      : vec2<f32>,  // 0..+1
 }
 
 struct VertexOutput {
@@ -32,7 +34,10 @@ struct VertexOutput {
 }
 
 @vertex
-fn vs_main(in : VertexInput) -> VertexOutput {
+fn vs_main(
+  @builtin(instance_index) instance_index : u32, 
+  in : VertexInput
+  ) -> VertexOutput {
 
   var pos_temp = in.quad_pos;
   pos_temp.x = pos_temp.x*in.tex_aspect.x;
@@ -49,7 +54,8 @@ fn vs_main(in : VertexInput) -> VertexOutput {
   out.idx = in.idx;
   out.uv_offset = in.uv_offset;
   out.uv_size = in.uv_size;
-  out.miplevel = in.miplevel;
+  // out.miplevel = in.miplevel;
+  out.miplevel = mip[instance_index];  // 通过内置变量来得到miplevel的索引
   return out;
 }
 `
@@ -83,25 +89,25 @@ struct FragIutput {
   @location(2) quad_uv        : vec2<f32>, // 0..+1 不变，原样输出
   @location(3) idx            : f32,       // 不变，原样输出
   @location(4) uv_offset      : vec2<f32>,
-  @location(5) uv_size     : vec2<f32>,
+  @location(5) uv_size        : vec2<f32>,
   @location(6) miplevel       : f32,
 }
 
 
 
-var<private> rand_seed : vec2<f32>;
+// var<private> rand_seed : vec2<f32>;
 
-fn init_rand(invocation_id : u32, seed : vec4<f32>) {
-  rand_seed = seed.xz;
-  rand_seed = fract(rand_seed * cos(35.456+f32(invocation_id) * seed.yw));
-  rand_seed = fract(rand_seed * cos(41.235+f32(invocation_id) * seed.xw));
-}
+// fn init_rand(invocation_id : u32, seed : vec4<f32>) {
+//   rand_seed = seed.xz;
+//   rand_seed = fract(rand_seed * cos(35.456+f32(invocation_id) * seed.yw));
+//   rand_seed = fract(rand_seed * cos(41.235+f32(invocation_id) * seed.xw));
+// }
 
-fn rand() -> f32 {
-  rand_seed.x = fract(cos(dot(rand_seed, vec2<f32>(23.14077926, 232.61690225))) * 136.8168);
-  rand_seed.y = fract(cos(dot(rand_seed, vec2<f32>(54.47856553, 345.84153136))) * 534.7645);
-  return rand_seed.y;
-}
+// fn rand() -> f32 {
+//   rand_seed.x = fract(cos(dot(rand_seed, vec2<f32>(23.14077926, 232.61690225))) * 136.8168);
+//   rand_seed.y = fract(cos(dot(rand_seed, vec2<f32>(54.47856553, 345.84153136))) * 534.7645);
+//   return rand_seed.y;
+// }
 
 
 
@@ -170,6 +176,7 @@ fn fs_main(in : FragIutput) -> @location(0) vec4<f32> {
   // // 解除下面这句注释，用于查看当前大纹理中所存放的所有图片
   // color = textureSample(myTexture_mip7, mySampler, in.quad_uv);
 
+  // return vec4(in.miplevel);
   return color;
 }
 `

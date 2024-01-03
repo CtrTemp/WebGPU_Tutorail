@@ -1,5 +1,8 @@
 function set_BindGroup(state, device) {
 
+    /**
+     *  MVP Matrix UBO
+     * */ 
     const MVP_UBO_BindGroup = device.createBindGroup({
         layout: state.main_canvas.Layouts["mvp"],
         entries: [
@@ -26,7 +29,42 @@ function set_BindGroup(state, device) {
     state.main_canvas.BindGroups["mvp_pack"] = MVP_UBO_BindGroup;
 
 
+    /**
+     *  Mip Storage Buffer
+     * */ 
+    // vertex stage
+    const MIP_SBO_BindGroup_Vertex = device.createBindGroup({
+        layout: state.main_canvas.Layouts["mip_vertex"],
+        entries: [
+            {
+                binding: 0,
+                resource: {
+                    buffer: state.main_canvas.SBOs["mip"]
+                }
+            }
+        ]
+    });
+    state.main_canvas.BindGroups["mip_vertex"] = MIP_SBO_BindGroup_Vertex;
 
+    
+    // compute stage
+    const MIP_SBO_BindGroup_Compute = device.createBindGroup({
+        layout: state.main_canvas.Layouts["mip_compute"],
+        entries: [
+            {
+                binding: 0,
+                resource: {
+                    buffer: state.main_canvas.SBOs["mip"]
+                }
+            }
+        ]
+    });
+    state.main_canvas.BindGroups["mip_compute"] = MIP_SBO_BindGroup_Compute;
+
+
+    /**
+     *  Sampler and Texture
+     * */ 
     const Sample_UBO_BindGroup = device.createBindGroup({
         layout: state.main_canvas.Layouts["sample"],
         entries: [
