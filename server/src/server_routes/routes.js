@@ -13,6 +13,13 @@ const service_distribution = function (socket, json_pack) {
 
     let ret_promise = new Promise((resolve, reject) => {
         switch (json_pack.cmd) {
+            case "void":
+                const test_void_ret_info = {
+                    cmd: "void_ret_pack",
+                    pack: []
+                };
+                resolve(test_void_ret_info);
+                break;
             case "fetch_instanced_texture":
                 // read_instanced_texture();
                 resolve(read_instanced_texture());

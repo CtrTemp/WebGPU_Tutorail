@@ -1,5 +1,9 @@
-function manage_UBO(state, device) {
 
+function UBO_creation(state, device) {
+
+    /**
+     *  MVP-Matrix
+     * */
     const MVP_Buffer_size = 4 * 4 * 4;
     const MVP_UBO_Buffer = device.createBuffer({
         size: MVP_Buffer_size,
@@ -7,6 +11,29 @@ function manage_UBO(state, device) {
     });
     state.main_canvas.UBOs["mvp"] = MVP_UBO_Buffer;
 
+    /**
+     *  View-Matrix
+     * */
+    const View_Buffer_size = 4 * 4 * 4;
+    const View_UBO_Buffer = device.createBuffer({
+        size: View_Buffer_size,
+        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+    });
+    state.main_canvas.UBOs["view"] = View_UBO_Buffer;
+
+    /**
+     *  Projection-Matrix
+     * */
+    const Projection_Buffer_size = 4 * 4 * 4;
+    const Projection_UBO_Buffer = device.createBuffer({
+        size: Projection_Buffer_size,
+        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+    });
+    state.main_canvas.UBOs["projection"] = Projection_UBO_Buffer;
+
+    /**
+     *  right side vec
+     * */
     const RIGHT_Buffer_size = 3 * 4;
     const RIGHT_UBO_Buffer = device.createBuffer({
         size: RIGHT_Buffer_size,
@@ -14,6 +41,9 @@ function manage_UBO(state, device) {
     });
     state.main_canvas.UBOs["right"] = RIGHT_UBO_Buffer;
 
+    /**
+     *  up side vec
+     * */
     const UP_Buffer_size = 3 * 4;
     const UP_UBO_Buffer = device.createBuffer({
         size: UP_Buffer_size,
@@ -37,7 +67,65 @@ function manage_UBO(state, device) {
     state.main_canvas.UBOs["compute"] = simu_Control_UBO_Buffer;
 }
 
+function fill_MVP_UBO(state, device) {
+    
+    /**
+     *  View Matrix
+     * */ 
+    const viewMatrix = state.main_canvas.prim_camera["view"];
+    device.queue.writeBuffer(
+        state.main_canvas.UBOs["view"],
+        0,
+        viewMatrix.buffer,
+        viewMatrix.byteOffset,
+        viewMatrix.byteLength
+    );
+
+    
+    /**
+     *  Projection Matrix
+     * */ 
+    const projectionMatrix = state.main_canvas.prim_camera["projection"];
+    device.queue.writeBuffer(
+        state.main_canvas.UBOs["projection"],
+        0,
+        projectionMatrix.buffer,
+        projectionMatrix.byteOffset,
+        projectionMatrix.byteLength
+    );
+
+    
+    /**
+     *  View-Projection Matrix
+     * */ 
+    const viewProjectionMatrix = state.main_canvas.prim_camera["matrix"];
+    device.queue.writeBuffer(
+        state.main_canvas.UBOs["mvp"],
+        0,
+        viewProjectionMatrix.buffer,
+        viewProjectionMatrix.byteOffset,
+        viewProjectionMatrix.byteLength
+    );
+
+    /**
+     *  Right Up Vector
+     * */ 
+    device.queue.writeBuffer(
+        state.main_canvas.UBOs["right"],
+        0,
+        new Float32Array([
+            viewMatrix[0], viewMatrix[4], viewMatrix[8], // right
+        ])
+    );
+    device.queue.writeBuffer(
+        state.main_canvas.UBOs["up"],
+        0,
+        new Float32Array([
+            viewMatrix[1], viewMatrix[5], viewMatrix[9], // up
+        ])
+    );
+
+}
 
 
-
-export { manage_UBO }
+export { UBO_creation, fill_MVP_UBO }

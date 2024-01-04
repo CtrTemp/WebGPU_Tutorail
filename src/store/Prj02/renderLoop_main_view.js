@@ -45,10 +45,81 @@ function renderLoop_main(state, device) {
     // }, 800);
 
 
+
+
+
+
+
+
+    /**
+     *  测试，一次性执行：调用 compute shader 计算MipLevel
+     * */
+    {
+        /**
+         *  填充 UBO 矩阵
+         * */
+
+        const viewMatrix = state.main_canvas.prim_camera["view"];
+        device.queue.writeBuffer(
+            state.main_canvas.UBOs["view"],
+            0,
+            viewMatrix.buffer,
+            viewMatrix.byteOffset,
+            viewMatrix.byteLength
+        );
+
+        const projectionMatrix = state.main_canvas.prim_camera["projection"];
+        device.queue.writeBuffer(
+            state.main_canvas.UBOs["projection"],
+            0,
+            projectionMatrix.buffer,
+            projectionMatrix.byteOffset,
+            projectionMatrix.byteLength
+        );
+
+
+        /**
+         *  Encode Pass 填充
+         * */
+        const encoder = device.createCommandEncoder();
+        const pass = encoder.beginComputePass();
+        pass.setPipeline(state.main_canvas.Pipelines["update_miplevel"]);
+        pass.setBindGroup(0, state.main_canvas.BindGroups["mip_instance_arr"]); // group0
+        pass.setBindGroup(1, state.main_canvas.BindGroups["view_projection"]);  // group1
+        pass.dispatchWorkgroups(Math.ceil(state.main_canvas.particle_info["numParticles"] / 64));
+        pass.end();
+
+        /**
+         *  队列提交
+         * */
+
+        device.queue.submit([encoder.finish()]);
+
+        // 查看返回结果
+
+        const readBack_encoder = device.createCommandEncoder();
+        readBack_encoder.copyBufferToBuffer(
+            state.main_canvas.SBOs["mip"],
+            0,
+            state.main_canvas.SBOs["mip_read_back"],
+            0,
+            state.main_canvas.particle_info["numParticles"] * 4,
+        );
+        
+        device.queue.submit([readBack_encoder.finish()]);
+
+        setTimeout(async () => {
+            await state.main_canvas.SBOs["mip_read_back"].mapAsync(GPUMapMode.READ);
+            const arrBuffer = new Float32Array(state.main_canvas.SBOs["mip_read_back"].getMappedRange());
+            console.log("hello~ readBuffer = ", arrBuffer);
+        }, 1000);
+
+    }
+
+
     let timerID = setInterval(() => {
 
-        if(state.fence["RENDER_READY"] == false)
-        {
+        if (state.fence["RENDER_READY"] == false) {
             clearInterval(timerID);
         }
 

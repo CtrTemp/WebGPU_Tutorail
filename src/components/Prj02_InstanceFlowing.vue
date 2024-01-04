@@ -43,7 +43,7 @@ onMounted(() => {
 
     /**
      *  将 rootState 中的 ws 接口赋值给本地的 ws
-     * */ 
+     * */
 
     store.state.pic_browser.ws = ws;
 
@@ -55,19 +55,19 @@ onMounted(() => {
         canvas: { main_canvas, sub_canvas },
         device
     });
+    /**
+     *  camera initialization
+     * */
+    store.commit("pic_browser/init_camera", device);
 
-    // /**
-    //  *  fetch instanced texture
-    //  * */ 
-    // const cmd_json = {
-    //     cmd: "fetch_instanced_texture",
-    //     count: 100, // 索取图片数量 
-    // }
-
-    // setTimeout(() => {
-    //     store.state.pic_browser.ws.send(JSON.stringify(cmd_json));
-    // }, 10);
-
+    /**
+     *  fetch data set description info once
+     * */
+    const temp_json_cmd = {
+        cmd: "void",
+        pack: []
+    }
+    ws.send(JSON.stringify(temp_json_cmd));
 
 })
 
@@ -82,7 +82,23 @@ watch(() => {
 }, (flag) => {
     if (flag == true) {
         console.log("device ready!!!");
-        store.commit("pic_browser/main_canvas_VBO_stage1", device);
+        // store.commit("pic_browser/main_canvas_initialize_stage1", device);
+        // store.commit("pic_browser/main_canvas_initialize_stage1", device);
+    }
+}, { deep: true });
+
+
+
+/**
+ *  Dataset Info Ready
+ * */
+watch(() => {
+    return store.state.pic_browser.fence["DATASET_INFO_READY"];
+}, (flag) => {
+    if (flag == true) {
+        store.commit("pic_browser/main_canvas_initialize_stage2", device);
+        store.commit("pic_browser/main_canvas_initialize_stage3", device);
+        store.commit("pic_browser/main_canvas_initialize_stage4", device);
     }
 }, { deep: true });
 
@@ -129,7 +145,7 @@ watch(() => {
 /**
  *  VBO stage2 Ready
  * */
- watch(() => {
+watch(() => {
     return store.state.pic_browser.fence["VBO_STAGE2_READY"];
 }, (flag) => {
     if (flag == true) {

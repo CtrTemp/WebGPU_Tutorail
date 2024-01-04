@@ -1,4 +1,4 @@
-function set_Layout(state, device) {
+function Layout_creation(state, device) {
 
     /**
      *  MVP matrix UBO
@@ -196,9 +196,52 @@ function set_Layout(state, device) {
     });
     state.main_canvas.Layouts["compute"] = compute_UBO_Layout;
 
+
+    /**
+     *  View and Projection Matrix UBO for update MipLevel compute shader
+     * */ 
+    
+    const VP_UBO_Layout = device.createBindGroupLayout({
+        entries: [{
+            binding: 0,
+            visibility: GPUShaderStage.COMPUTE,
+            buffer: {
+                type: "uniform"
+            }
+        }, {
+            binding: 1,
+            visibility: GPUShaderStage.COMPUTE,
+            buffer: {
+                type: "uniform"
+            }
+        }]
+    });
+    state.main_canvas.Layouts["view_projection"] = VP_UBO_Layout;
+
+
+    /**
+     *  View and Projection Matrix UBO for update MipLevel compute shader
+     * */ 
+    const mipArr_instanceArr_UBO_Layout = device.createBindGroupLayout({
+        entries: [{
+            binding: 0,
+            visibility: GPUShaderStage.COMPUTE,
+            buffer: {
+                type: "storage"
+            }
+        }, {
+            binding: 1,
+            visibility: GPUShaderStage.COMPUTE,
+            buffer: {
+                type: "storage"
+            }
+        }]
+    });
+    state.main_canvas.Layouts["mip_instance_arr"] = mipArr_instanceArr_UBO_Layout;
+
 }
 
 
 
 
-export { set_Layout }
+export { Layout_creation }

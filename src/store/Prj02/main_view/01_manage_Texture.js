@@ -1,3 +1,61 @@
+
+
+function mipTexture_creation(state, device)
+{
+    /**
+     *  Sampler
+     * */
+    // Create a sampler with linear filtering for smooth interpolation.
+    const sampler = device.createSampler({
+        magFilter: 'linear',
+        minFilter: 'linear',
+    });
+
+
+    state.main_canvas.additional_info["sampler"] = sampler;
+
+
+    /**
+     *  depth Texture
+     * */
+    const depthTexture = device.createTexture({
+        size: [state.main_canvas.canvas.width, state.main_canvas.canvas.height],
+        format: "depth24plus",
+        usage: GPUTextureUsage.RENDER_ATTACHMENT
+    });
+    state.main_canvas.Textures["depth"] = depthTexture;
+
+
+
+    /**
+     *  Instance Texture (big texture) creation
+     * */
+
+    const global_texture_size = Math.pow(2, 13);    // 大纹理尺寸为 8192*8192
+    state.main_canvas.atlas_info["size"] = [global_texture_size, global_texture_size];
+
+    /**
+     *  遍历每一个 MipLevel
+     * */
+    const mip_range = state.main_canvas.mip_info["total_length"];
+    for (let i = 0; i < mip_range; i++) {
+        // 为每一个MipLevel创建一张大纹理
+        const global_texture_size = Math.pow(2, 13);  // 8192 * 8192
+        state.main_canvas.atlas_info["size"].push([global_texture_size, global_texture_size]);
+        const instanceTexture = device.createTexture({
+            dimension: '2d',
+            size: [global_texture_size, global_texture_size, 1],
+            format: 'rgba8unorm',
+            usage:
+                GPUTextureUsage.TEXTURE_BINDING |
+                GPUTextureUsage.COPY_DST |
+                GPUTextureUsage.RENDER_ATTACHMENT,
+        });
+
+        state.main_canvas.Textures["mip_instance"].push(instanceTexture);
+    }
+}
+
 function manage_Texture(state, device) {
 
     /**
@@ -232,4 +290,4 @@ function manage_Mip_Texture(state, device) {
 }
 
 
-export { manage_Texture, manage_Mip_Texture }
+export { mipTexture_creation, manage_Texture, manage_Mip_Texture }

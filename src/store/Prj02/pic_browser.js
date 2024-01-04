@@ -5,18 +5,28 @@
  * */
 import { init_device_main } from "./main_view/00_init_device";
 import { init_Camera } from "./main_view/xx_set_camera.js"
-import { manage_Texture, manage_Mip_Texture } from "./main_view/01_manage_Texture";
+import { parse_dataset_info } from "./main_view/parse_dataset_info";
+import {
+    mipTexture_creation,
+    manage_Texture,
+    manage_Mip_Texture
+} from "./main_view/01_manage_Texture";
 import {
     manage_VBO,
-    manage_VBO_stage1,
+    VBO_creation,
     manage_VBO_stage2,
     manage_VBO_Layout
 } from "./main_view/02_manage_VBO"
-import { manage_UBO } from "./main_view/03_manage_UBO"
-import { manage_SBO } from "./main_view/04_manage_SBO";
-import { set_Layout } from "./main_view/11_set_Layout";
-import { set_BindGroup } from "./main_view/12_set_BindGroup";
-import { set_Pipeline } from "./main_view/13_set_Pipeline";
+import { UBO_creation, fill_MVP_UBO } from "./main_view/03_manage_UBO"
+import { SBO_creation } from "./main_view/04_manage_SBO";
+import { Layout_creation } from "./main_view/11_set_Layout";
+import { BindGroup_creation } from "./main_view/12_set_BindGroup";
+import { Pipeline_creation } from "./main_view/13_set_Pipeline";
+
+import {
+    compute_miplevel_pass,
+    read_back_miplevel_pass,
+} from "./main_view/21_GPU_Pass";
 
 import {
     canvasMouseInteraction,
@@ -127,38 +137,108 @@ export default {
     mutations: {
 
         /**
-         *   Stage01：device 相关初始化，选中设备，为device、canvas相关的上下文全局变量赋值
-         */
+         *   Pre01：device 相关初始化，选中设备，为device、canvas相关的上下文全局变量赋值
+         * */
         init_device(state, { canvas, device }) {
             init_device_main(state, { canvas: canvas.main_canvas, device });
             init_device_sub(state, { canvas: canvas.sub_canvas, device });
             state.fence["DEVICE_READY"] = true;
         },
 
-
         /**
-         *  Stage02：内存、数据相关的初始化。主要是纹理、顶点数据引入；device上开辟对应buffer
-         * 并借助API将CPU读入的数据导入device 
-         */
-
-        main_canvas_VBO_stage1(state, device) {
-            // console.log("MANAGE_VBO_STAGE_01");
+         *  Pre02：camera 相关初始化
+         * */
+        init_camera(state, device) {
             init_Camera(state, device);
-            manage_VBO_stage1(state, device);
-            state.fence["VBO_STAGE1_READY"] = true;
         },
 
 
-        main_canvas_VBO_stage2(state, device) {
-            // console.log("MANAGE_VBO_STAGE_02");
+        /**
+         *  Stage01 向后台申请数据库（图片集）信息，接受到后台信息后，填充一些必要的全局变量
+         * */
+        main_canvas_initialize_stage1(state, ret_json_pack) {
+            parse_dataset_info(state, ret_json_pack);
+            state.fence["DATASET_INFO_READY"] = true;
+            console.log("DATASET_INFO_READY");
+        },
 
-            // manage_Texture(state, device);
-            manage_Mip_Texture(state, device);
+        /**
+         *  Stage02：Device端的缓冲区开辟，仅创建/开辟内存，不进行填充 
+         * */
+        main_canvas_initialize_stage2(state, device) {
+            /**
+             *  Create Texture
+             * */
+            mipTexture_creation(state, device);
 
-            manage_VBO_stage2(state, device);
+            /**
+             *  Create VBO
+             * */
+            VBO_creation(state, device);
 
-            state.fence["VBO_STAGE2_READY"] = true;
-            console.log("VBO_STAGE2_READY");
+            /**
+             *  Manage VBO Layout
+             * */
+            manage_VBO_Layout(state);
+
+            /**
+             *  Create UBO
+             * */
+            UBO_creation(state, device);
+
+            /**
+             *  Create SBO
+             * */
+            SBO_creation(state, device);
+
+            // state.fence["VBO_STAGE1_READY"] = true;
+            console.log("Buffer/Texture creation on Device Done~");
+        },
+
+        /**
+         *  Stage03：Device端的布局、绑定组、管线创建
+         * */
+        main_canvas_initialize_stage3(state, device) {
+
+            /**
+             *  Create Layout
+             * */
+            Layout_creation(state, device);
+
+            /**
+             *  Create BindGroup
+             * */
+            BindGroup_creation(state, device);
+
+            /**
+             *  Create Pipeline
+             * */
+            Pipeline_creation(state, device);
+
+
+            console.log("Layout/BindGroup/Pipeline creation Done~");
+        },
+
+
+        /**
+         *  Stage04：GPU计算MipLevel
+         * */
+        main_canvas_initialize_stage4(state, device) {
+            /**
+             *  Fill MVP Related UBOs
+             * */
+            fill_MVP_UBO(state, device);
+
+            // 以下读取计算返回结果错误，明天来了讨论进行修改（2024/01/04） 
+            /**
+             *  Compute MipLevel on GPU
+             * */
+            compute_miplevel_pass(state, device);
+
+            /**
+             *  Read Back MipLevel info from GPU
+             * */ 
+            read_back_miplevel_pass(state, device);
         },
 
         // main_canvas_UBOs_Layouts_Pipelines_and_Interaction(state, device) {
@@ -279,6 +359,7 @@ export default {
              *  全局时序控制器，设置一些flag，并通过监控它们来获取正确的程序执行
              * */
             fence: {
+                DATASET_INFO_READY: { val: false },
                 DEVICE_READY: { val: false },
                 BITMAP_READY: { val: false },
                 // VBO_READY: { val: false },
@@ -315,7 +396,7 @@ export default {
                 passDescriptors: {},
                 simulationParams: {}, // 仿真运行参数
 
-                particle_info: {},
+                instance_info: {}, // 描述instance数量等数据集信息，后端读取文件获得
                 additional_info: {},
                 prim_camera: {},
                 mouse_info: {},
@@ -331,7 +412,7 @@ export default {
                 // simu_time: 0.0,
                 // simu_speed: 0.0,
                 atlas_info: {
-                    size: [],
+                    size: [],       // 用于记录大纹理的长宽尺寸
                     uv_offset: [],  // 用于记录instance对应图片纹理在大纹理中的uv偏移
                     uv_size: [],    // 用于记录instance对应图片纹理在大纹理中的uv归一化宽高尺寸
                     tex_aspect: [], // 用于记录instance对应图片纹理的宽高比系数
@@ -339,7 +420,8 @@ export default {
                 },
                 mip_atlas_info: [],
                 mip_info: {
-                    arr: []          // 用于记录当前视场中图片的MipLevel信息
+                    total_length: 0,// 用于记录miplevel的最大深度（也就是应该创建多少个大纹理）
+                    arr: []         // 用于记录当前视场中图片的MipLevel信息
                 },
             },
             sub_canvas: {

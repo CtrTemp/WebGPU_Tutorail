@@ -1,8 +1,8 @@
-function set_BindGroup(state, device) {
+function BindGroup_creation(state, device) {
 
     /**
      *  MVP Matrix UBO
-     * */ 
+     * */
     const MVP_UBO_BindGroup = device.createBindGroup({
         layout: state.main_canvas.Layouts["mvp"],
         entries: [
@@ -31,8 +31,8 @@ function set_BindGroup(state, device) {
 
     /**
      *  Mip Storage Buffer
-     * */ 
-    // vertex stage
+     * */
+    // vertex stage (read only)
     const MIP_SBO_BindGroup_Vertex = device.createBindGroup({
         layout: state.main_canvas.Layouts["mip_vertex"],
         entries: [
@@ -46,8 +46,8 @@ function set_BindGroup(state, device) {
     });
     state.main_canvas.BindGroups["mip_vertex"] = MIP_SBO_BindGroup_Vertex;
 
-    
-    // compute stage
+
+    // compute stage (read-write)
     const MIP_SBO_BindGroup_Compute = device.createBindGroup({
         layout: state.main_canvas.Layouts["mip_compute"],
         entries: [
@@ -64,7 +64,7 @@ function set_BindGroup(state, device) {
 
     /**
      *  Sampler and Texture
-     * */ 
+     * */
     const Sample_UBO_BindGroup = device.createBindGroup({
         layout: state.main_canvas.Layouts["sample"],
         entries: [
@@ -142,9 +142,84 @@ function set_BindGroup(state, device) {
     });
     state.main_canvas.BindGroups["sample"] = Sample_UBO_BindGroup;
 
+
+    /**
+     *  update instance pos compute stage
+     * */
+    const simu_particles_BindGroup = device.createBindGroup({
+        layout: state.main_canvas.Layouts["compute"],
+        entries: [
+            {
+                binding: 0,
+                resource: {
+                    buffer: state.main_canvas.UBOs["compute"]
+                }
+            },
+            {
+                binding: 1,
+                resource: {
+                    buffer: state.main_canvas.VBOs["instances"],
+                    offset: 0,
+                    size: state.main_canvas.instance_info["numInstances"] * state.main_canvas.instance_info["instanceInfoByteSize"]
+                }
+            }
+        ]
+    });
+
+    state.main_canvas.BindGroups["compute"] = simu_particles_BindGroup;
+
+
+    /**
+     *  View and Projection Matrix UBO for update MipLevel compute shader
+     * */
+    const VP_UBO_BindGroup = device.createBindGroup({
+        layout: state.main_canvas.Layouts["view_projection"],
+        entries: [
+            {
+                binding: 0,
+                resource: {
+                    buffer: state.main_canvas.UBOs["view"]
+                }
+            },
+            {
+                binding: 1,
+                resource: {
+                    buffer: state.main_canvas.UBOs["projection"]
+                }
+            },
+        ]
+    });
+    state.main_canvas.BindGroups["view_projection"] = VP_UBO_BindGroup;
+
+    /**
+     *  mipArr and instanceArr SBO for update MipLevel compute shader
+     * */
+    const compute_instance_MipLevel_BindGroup = device.createBindGroup({
+        layout: state.main_canvas.Layouts["mip_instance_arr"],
+        entries: [
+            {
+                binding: 0,
+                resource: {
+                    buffer: state.main_canvas.SBOs["mip"],
+                    offset: 0,
+                    size: state.main_canvas.instance_info["numInstances"] * 4
+                }
+            },
+            {
+                binding: 1,
+                resource: {
+                    buffer: state.main_canvas.VBOs["instances"],
+                    offset: 0,
+                    size: state.main_canvas.instance_info["numInstances"] * state.main_canvas.instance_info["instanceInfoByteSize"]
+                }
+            }
+        ]
+    });
+
+    state.main_canvas.BindGroups["mip_instance_arr"] = compute_instance_MipLevel_BindGroup;
 }
 
 
 
 
-export { set_BindGroup }
+export { BindGroup_creation }

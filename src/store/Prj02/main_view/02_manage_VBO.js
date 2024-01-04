@@ -8,6 +8,33 @@ import {
 
 
 /**
+ *  仅进行 VBO 的创建，并不进行填充
+ * */
+function VBO_creation(state, device) {
+    const numInstances = state.main_canvas.instance_info["numInstances"];
+    const instanceInfoByteSize = state.main_canvas.instance_info["instanceInfoByteSize"];
+    /**
+     *  Instance VBO
+     * */
+    const instancesBuffer = device.createBuffer({
+        size: numInstances * instanceInfoByteSize,
+        usage: GPUBufferUsage.VERTEX | GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
+        // mappedAtCreation: true,
+    })
+    state.main_canvas.VBOs["instances"] = instancesBuffer;
+
+    /**
+     *  Quad VBO
+     * */
+    const quadVertexBuffer = device.createBuffer({
+        size: 6 * 4 * 4, // 6x vec4<f32>
+        usage: GPUBufferUsage.VERTEX,
+        // mappedAtCreation: true,
+    });
+    state.main_canvas.VBOs["quad"] = quadVertexBuffer;
+}
+
+/**
  *  对 VBO 的填充应该分两步来解决：
  *  第一步：在配置texture之前，首先根据投影信息，确定图片的位置坐标。这一步不进行GPUbuffer的填充
  *  第二步：在配置texture之后，根据texture信息以及MipLevel等信息，将图片实例在大纹理中的uv_offset
@@ -15,7 +42,7 @@ import {
  * */
 
 
-function manage_VBO_stage1(state, device) {
+function VBO_creation_(state, device) {
 
     const flow_info = gen_sphere_instance_pos(50, 100, state);
 
@@ -41,7 +68,7 @@ function manage_VBO_stage1(state, device) {
 
     // 这里还不能写GPU buffetr
     state.main_canvas.vertices_arr["instance"] = particles_data;
-    state.main_canvas.storage_arr["mip"] = flow_info["mip_arr"];
+    // state.main_canvas.storage_arr["mip"] = flow_info["mip_arr"];
 
 
 
@@ -87,7 +114,7 @@ function manage_VBO_stage2(state, device) {
     /**
      *  GPU VBO 填充
      * */
-    
+
     const writeBufferArr = new Float32Array(instance_arr);
 
     const particlesBuffer = device.createBuffer({
@@ -140,7 +167,7 @@ function manage_VBO(state, payload) {
 
     const particlesBuffer = device.createBuffer({
         size: writeBufferArr.byteLength,
-        // 這裡的 STORAGE 的用途是什麼
+        // 這裡的 STORAGE 的用途是什麼（compute shader阶段只能使用 storage buffer 数据）
         usage: GPUBufferUsage.VERTEX | GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
     })
     device.queue.writeBuffer(particlesBuffer, 0, writeBufferArr);
@@ -180,8 +207,8 @@ function manage_VBO(state, payload) {
 
 function manage_VBO_Layout(state) {
 
-    const particles_VBO_Layout = {
-        arrayStride: state.main_canvas.particle_info["particleInstanceByteSize"], // 这里是否要补全 padding 呢？？？
+    const instance_VBO_Layout = {
+        arrayStride: state.main_canvas.instance_info["instanceInfoByteSize"], // 这里是否要补全 padding 呢？？？
         stepMode: "instance", // 这个设置的含义是什么
         attributes: [
             {
@@ -226,15 +253,9 @@ function manage_VBO_Layout(state) {
                 offset: 14 * 4,
                 format: 'float32x2'
             },
-            // {
-            //     // miplevel
-            //     shaderLocation: 7,
-            //     offset: 16 * 4,
-            //     format: 'float32'
-            // }
         ]
     };
-    state.main_canvas.VBO_Layouts["particles"] = particles_VBO_Layout;
+    state.main_canvas.VBO_Layouts["instances"] = instance_VBO_Layout;
 
     const quad_VBO_Layout = {
         arrayStride: 4 * 4, // 这里是否要补全 padding 呢？？？
@@ -262,7 +283,7 @@ function manage_VBO_Layout(state) {
 
 export {
     manage_VBO,
-    manage_VBO_stage1,
+    VBO_creation,
     manage_VBO_stage2,
     manage_VBO_Layout,
 }

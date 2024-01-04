@@ -110,6 +110,10 @@ store.state.ws.onmessage = function (e) {
   // 这里只负责更新组件状态, 具体业务逻辑在各个组件中, 通过监视组件状态的改变执行对应操作
   // 而源数据的获取, 即与server进行通信获取message的部分, 在server_link.js中
   switch (json_pack.cmd) {
+    case "void_ret_pack":
+      console.log("server void test info pack return");
+      store.commit("pic_browser/main_canvas_initialize_stage1", json_pack);
+      break;
     case "instanced_texture_pack":
       // console.log("haha, msg received");
       store.dispatch("pic_browser/construct_imgBitMap", json_pack);

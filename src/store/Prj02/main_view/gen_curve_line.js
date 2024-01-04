@@ -38,12 +38,13 @@ function gen_sphere_instance_pos(radius, counts, state) {
 
     let ret_arr = [];
     let mip_arr = [];
-    let mip_descriptor = new Array(13).fill(0);
+    // let mip_descriptor = new Array(13).fill(0);
 
 
-    const zNear = state.main_canvas.prim_camera["z_near"];
-    const viewMatrix = state.main_canvas.prim_camera["view"];
-    const viewProjectMatrix = state.main_canvas.prim_camera["matrix"];
+    // const zNear = state.main_canvas.prim_camera["z_near"];
+    // const viewMatrix = state.main_canvas.prim_camera["view"];
+    // const viewProjectMatrix = state.main_canvas.prim_camera["matrix"];
+    // console.log("projectMatrix = ", state.main_canvas.prim_camera["projection"]);
 
 
     const default_color = [0.1, 0.8, 0.95, 1.0];
@@ -60,7 +61,7 @@ function gen_sphere_instance_pos(radius, counts, state) {
             time += Math.PI;
         }
 
-        ret_arr = ret_arr.concat([pos_x, pos_y, pos_z, 0.0]);   // pos
+        ret_arr = ret_arr.concat([pos_x, pos_y, pos_z, 1.0]);   // pos
         ret_arr = ret_arr.concat(default_color);                // color
         ret_arr = ret_arr.concat([time, 1.0]);                  // liftime + idx
 
@@ -80,46 +81,46 @@ function gen_sphere_instance_pos(radius, counts, state) {
 
 
 
-        /**
-         *  结合相机参数，对 instace 是否在视锥内进行判断
-         * */
-        const pos = vec4.fromValues(pos_x, pos_y, pos_z, 1.0);
-        let projected_pos = vec4.create(0.0, 0.0, 0.0, 0.0);
+        // /**
+        //  *  结合相机参数，对 instace 是否在视锥内进行判断
+        //  * */
+        // const pos = vec4.fromValues(pos_x, pos_y, pos_z, 1.0);
+        // let projected_pos = vec4.create(0.0, 0.0, 0.0, 0.0);
 
-        vec4.transformMat4(pos, viewProjectMatrix, projected_pos);
-
-
-
-        // 归一化到标准向量空间 NDC
-        for (let i = 0; i < 4; i++) {
-            projected_pos[i] /= projected_pos[3];
-        }
-
-        /**
-         *  这里就要进行修改了，计算 MipLevel
-         * */
+        // vec4.transformMat4(pos, viewProjectMatrix, projected_pos);
 
 
-        let mip_val = -1.0;
-        if (check_in_frustum(projected_pos)) {
-            // mip_val = 1.0;
-            mip_val = compute_miplevel(pos, viewMatrix, zNear);
-            mip_descriptor[mip_val]++;
-        }
-        mip_arr.push(mip_val);
+
+        // // 归一化到标准向量空间 NDC
+        // for (let i = 0; i < 4; i++) {
+        //     projected_pos[i] /= projected_pos[3];
+        // }
+
+        // /**
+        //  *  这里就要进行修改了，计算 MipLevel
+        //  * */
+
+
+        // let mip_val = -1.0;
+        // if (check_in_frustum(projected_pos)) {
+        //     // mip_val = 1.0;
+        //     mip_val = compute_miplevel(pos, viewMatrix, zNear);
+        //     mip_descriptor[mip_val]++;
+        // }
+        // mip_arr.push(mip_val);
 
         // ret_arr = ret_arr.concat(mip_val);                      // miplevel
         // ret_arr = ret_arr.concat([0, 0, 0]);                    // padding
     }
 
-    console.log("mip_descriptor = ", mip_descriptor);
+    // console.log("mip_descriptor = ", mip_descriptor);
 
     let flow_info = {};
 
     flow_info["flow_arr"] = ret_arr;
     flow_info["numParticles"] = counts;
     flow_info["lifetime"] = 10.0; // not used
-    flow_info["mip_info"] = mip_descriptor;
+    // flow_info["mip_info"] = mip_descriptor;
     flow_info["mip_arr"] = mip_arr;
 
     return flow_info;
