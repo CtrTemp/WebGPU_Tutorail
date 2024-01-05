@@ -28,11 +28,56 @@ function VBO_creation(state, device) {
      * */
     const quadVertexBuffer = device.createBuffer({
         size: 6 * 4 * 4, // 6x vec4<f32>
-        usage: GPUBufferUsage.VERTEX,
+        usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
         // mappedAtCreation: true,
     });
     state.main_canvas.VBOs["quad"] = quadVertexBuffer;
 }
+
+
+
+/**
+ *  在初始化阶段：仅对 VBOs position 相关的信息进行填充，用于使用compute shader计算MipLevel信息
+ * */ 
+
+function fill_Instance_Pos_VBO(state, device)
+{
+    let instanceArr = state.main_canvas.vertices_arr["instance"];
+    const instancesBuffer = state.main_canvas.VBOs["instances"];
+    // console.log("instance_arr = ", instance_arr);
+    const writeBufferArr = new Float32Array(instanceArr);
+    device.queue.writeBuffer(instancesBuffer, 0, writeBufferArr);
+}
+
+/**
+ *  填充 quad VBO 信息
+ * */ 
+function fill_Quad_VBO(state, device)
+{
+    let quadArr = state.main_canvas.vertices_arr["quad"];
+    const quadBuffer = state.main_canvas.VBOs["quad"];
+
+    const writeBufferArr = new Float32Array(quadArr);
+    device.queue.writeBuffer(quadBuffer, 0, writeBufferArr);
+}
+
+
+/**
+ *  更新/填充 VBOs Atlas Info 相关的信息，并上传GPU
+ * */ 
+function fill_Atlas_Info_VBO(state, device)
+{
+    let instance_arr = state.main_canvas.vertices_arr["instance"];
+    let mip_arr = state.main_canvas.storage_arr["mip"];
+    // console.log("instance_arr = ", instance_arr);
+    // console.log("mip_arr = ", mip_arr);
+    gen_sphere_instance_atlas_info(state, instance_arr, mip_arr);
+    const writeBufferArr = new Float32Array(instance_arr);
+
+    const instancesBuffer = state.main_canvas.VBOs["instances"];
+    device.queue.writeBuffer(instancesBuffer, 0, writeBufferArr);
+}
+
 
 /**
  *  对 VBO 的填充应该分两步来解决：
@@ -284,6 +329,9 @@ function manage_VBO_Layout(state) {
 export {
     manage_VBO,
     VBO_creation,
+    fill_Instance_Pos_VBO,
+    fill_Quad_VBO,
+    fill_Atlas_Info_VBO,
     manage_VBO_stage2,
     manage_VBO_Layout,
 }

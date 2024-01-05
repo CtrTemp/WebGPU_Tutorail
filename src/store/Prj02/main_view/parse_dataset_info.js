@@ -27,6 +27,8 @@ function parse_dataset_info(state, ret_json_pack) {
 
     const mip_range = 13;  // mip level 0~12 后面也应该从数据库中读取获得，这里暂时写死
     state.main_canvas.mip_info["total_length"] = mip_range;
+    state.main_canvas.mip_info["arr"] = new Array(mip_range).fill(0);
+    state.main_canvas["mip_atlas_info"] = new Array(mip_range).fill([]);
 
 
     /**

@@ -145,13 +145,13 @@ function renderLoop_sub(state, device) {
             /**
              *  Render Instance
              * */
-            pass.setPipeline(state.sub_canvas.Pipelines["render_particles"]);
+            pass.setPipeline(state.sub_canvas.Pipelines["render_instances"]);
             pass.setBindGroup(0, state.sub_canvas.BindGroups["mvp"]);
             pass.setBindGroup(1, state.main_canvas.BindGroups["sample"]);
             pass.setBindGroup(2, state.main_canvas.BindGroups["mip_vertex"]);
-            pass.setVertexBuffer(0, state.main_canvas.VBOs["particles"]);
+            pass.setVertexBuffer(0, state.main_canvas.VBOs["instances"]);
             pass.setVertexBuffer(1, state.main_canvas.VBOs["quad"]);
-            pass.draw(6, state.main_canvas.particle_info["numParticles"], 0, 0);
+            pass.draw(6, state.main_canvas.instance_info["numInstances"], 0, 0);
 
 
             pass.end();

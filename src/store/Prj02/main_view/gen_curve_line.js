@@ -133,9 +133,9 @@ function gen_sphere_instance_atlas_info(state, instance_arr, mip_arr) {
     // console.log("instance_arr = ", instance_arr);
     // console.log("mip_arr = ", mip_arr);
 
-    const counts = state.main_canvas.particle_info["numParticles"];
+    const counts = state.main_canvas.instance_info["numInstances"];
 
-    const info_pack_stride = state.main_canvas.particle_info["particleInstanceByteSize"] / 4;
+    const info_pack_stride = state.main_canvas.instance_info["instanceInfoByteSize"] / 4;
     const atlas_stride = 4 + 4 + 1 + 1;
 
     // 深拷贝，用于计数
@@ -145,7 +145,8 @@ function gen_sphere_instance_atlas_info(state, instance_arr, mip_arr) {
     for (let i = 0; i < counts; i++) {
 
         const idx = i * info_pack_stride + atlas_stride;
-        const mip_level = mip_arr[i];
+        const mip_level = Math.floor(mip_arr[i]);
+        
         if (mip_level < 0) {
             continue;
         }

@@ -8,12 +8,16 @@ import { init_Camera } from "./main_view/xx_set_camera.js"
 import { parse_dataset_info } from "./main_view/parse_dataset_info";
 import {
     mipTexture_creation,
+    fill_Mip_Texture,
     manage_Texture,
     manage_Mip_Texture
 } from "./main_view/01_manage_Texture";
 import {
     manage_VBO,
     VBO_creation,
+    fill_Instance_Pos_VBO,
+    fill_Atlas_Info_VBO,
+    fill_Quad_VBO,
     manage_VBO_stage2,
     manage_VBO_Layout
 } from "./main_view/02_manage_VBO"
@@ -129,9 +133,34 @@ export default {
                 }
             }
 
-            // console.log("bitmaps = ", context.state.main_canvas.mipBitMap);
+            console.log("bitmaps = ", context.state.main_canvas.mipBitMap);
             context.state.fence["BITMAP_READY"] = true;
         },
+
+        /**
+         *  从GPU获取返回结果
+         * */
+        async readBackMipLevel_and_FetchPicFromServer(context, device) {
+            const state = context.state;
+            /**
+             *  Read Back MipLevel info from GPU
+             * */
+            await read_back_miplevel_pass(state, device);
+            console.log("Mip data read back done");
+
+            /**
+             *  Fetch Instance Picture from Server
+             * */
+            const mip_info = state.main_canvas.mip_info;
+
+            const cmd_json = {
+                cmd: "fetch_mip_instance",
+                mip_info: mip_info, // mip info 描述信息
+            };
+
+            console.log("cmd_json = ", cmd_json);
+            state.ws.send(JSON.stringify(cmd_json));
+        }
 
     },
     mutations: {
@@ -150,6 +179,7 @@ export default {
          * */
         init_camera(state, device) {
             init_Camera(state, device);
+            init_Camera_sub(state, device);
         },
 
 
@@ -230,15 +260,46 @@ export default {
             fill_MVP_UBO(state, device);
 
             // 以下读取计算返回结果错误，明天来了讨论进行修改（2024/01/04） 
+            // 问题在于忘记了对部分的 VBO 进行填充！
+
+            /**
+             *  Fill instances pos Related VBOs/SBOs 
+             * */
+            fill_Instance_Pos_VBO(state, device);
+
+
             /**
              *  Compute MipLevel on GPU
              * */
             compute_miplevel_pass(state, device);
 
+            state.fence["COMPUTE_MIP_SUBMIT"] = true;
+            console.log("COMPUTE MIP SUBMIT DONE~");
+        },
+        
+        /**
+         *  Stage05：GPU计算MipLevel
+         * */
+        main_canvas_initialize_stage5(state, device) {
+
             /**
-             *  Read Back MipLevel info from GPU
+             *  Fill Texture Memory on GPU
              * */ 
-            read_back_miplevel_pass(state, device);
+            fill_Mip_Texture(state, device);
+
+
+            /**
+             *  Fill Atlas Info of VBO
+             * */ 
+            fill_Atlas_Info_VBO(state, device);
+
+            /**
+             *  Fill quad VBOs
+             * */ 
+            fill_Quad_VBO(state, device);
+
+            state.fence["RENDER_READY"] = true;
+
         },
 
         // main_canvas_UBOs_Layouts_Pipelines_and_Interaction(state, device) {
@@ -361,6 +422,7 @@ export default {
             fence: {
                 DATASET_INFO_READY: { val: false },
                 DEVICE_READY: { val: false },
+                COMPUTE_MIP_SUBMIT: { val: false }, // 已经向GPU提交计算MipLevel的申请，等待数据返回
                 BITMAP_READY: { val: false },
                 // VBO_READY: { val: false },
                 VBO_STAGE1_READY: { val: false },

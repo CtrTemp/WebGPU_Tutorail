@@ -104,6 +104,19 @@ watch(() => {
 
 
 
+
+/**
+ *  Compute MipLevel Submit
+ * */
+watch(() => {
+    return store.state.pic_browser.fence["COMPUTE_MIP_SUBMIT"];
+}, (flag) => {
+    if (flag == true) {
+        store.dispatch("pic_browser/readBackMipLevel_and_FetchPicFromServer", device);
+    }
+}, { deep: true });
+
+
 /**
  *  VBO stage1 Ready
  * */
@@ -136,7 +149,7 @@ watch(() => {
 }, (flag) => {
     if (flag == true) {
         console.log("bitmap ready!!!");
-        store.commit("pic_browser/main_canvas_VBO_stage2", device);
+        store.commit("pic_browser/main_canvas_initialize_stage5", device);
     }
 }, { deep: true });
 
@@ -170,7 +183,7 @@ watch(() => {
     if (flag == true) {
         console.log("RENDER MAIN ready!!!");
         store.commit("pic_browser/main_canvas_renderLoop", device);
-        store.commit("pic_browser/sub_canvas_renderLoop", device);
+        // store.commit("pic_browser/sub_canvas_renderLoop", device);
     }
 }, { deep: true });
 

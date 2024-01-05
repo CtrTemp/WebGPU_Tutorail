@@ -23,8 +23,11 @@ function compute_miplevel_pass(state, device) {
 
 /**
  *  查看MipLevel计算返回结果
+ *  注意，这里是异步函数，使用 await 等待获取结果，在 dispatch 中执行调用
  * */
-function read_back_miplevel_pass(state, device) {
+async function read_back_miplevel_pass(state, device) {
+
+    const instancesLen = state.main_canvas.instance_info["numInstances"];
 
     // Encode Pass 填充
     const readBack_encoder = device.createCommandEncoder();
@@ -33,18 +36,29 @@ function read_back_miplevel_pass(state, device) {
         0,
         state.main_canvas.SBOs["mip_read_back"],
         0,
-        state.main_canvas.instance_info["numInstances"] * 4,
+        instancesLen * 4,
     );
 
     // 队列提交
     device.queue.submit([readBack_encoder.finish()]);
 
-    // 返回结果打印
-    setTimeout(async () => {
-        await state.main_canvas.SBOs["mip_read_back"].mapAsync(GPUMapMode.READ);
-        const arrBuffer = new Float32Array(state.main_canvas.SBOs["mip_read_back"].getMappedRange());
-        console.log("hello~ readBuffer = ", arrBuffer);
-    }, 1000);
+    
+    await state.main_canvas.SBOs["mip_read_back"].mapAsync(GPUMapMode.READ);
+    const arrBuffer = new Float32Array(state.main_canvas.SBOs["mip_read_back"].getMappedRange());
+    console.log("hello~ readBuffer = ", arrBuffer);
+
+    state.main_canvas.storage_arr["mip"] = arrBuffer;
+
+    state.main_canvas.mip_info["arr"].fill(0);
+
+    for(let i=0; i<instancesLen; i++)
+    {
+        if(arrBuffer[i]==-1)
+        {
+            continue;
+        }
+        state.main_canvas.mip_info["arr"][Math.floor(arrBuffer[i])]++;
+    }
 }
 
 
