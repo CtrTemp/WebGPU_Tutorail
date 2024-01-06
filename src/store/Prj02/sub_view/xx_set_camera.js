@@ -4,6 +4,7 @@ import * as dat from "dat.gui"
 
 import { mat4, vec3, vec4 } from "wgpu-matrix"
 
+import { fill_MVP_UBO_sub } from "./03_manage_UBO";
 
 
 function init_Camera_sub(state) {
@@ -130,29 +131,31 @@ function updateSubCamera(state, device) {
     camera["projection"] = projection;
 
 
-    // GPU 端更新相机参数
-    device.queue.writeBuffer(
-        state.sub_canvas.UBOs["mvp"],
-        0,
-        viewProjectionMatrix.buffer,
-        viewProjectionMatrix.byteOffset,
-        viewProjectionMatrix.byteLength
-    );
+    // // GPU 端更新相机参数
+    // device.queue.writeBuffer(
+    //     state.sub_canvas.UBOs["mvp"],
+    //     0,
+    //     viewProjectionMatrix.buffer,
+    //     viewProjectionMatrix.byteOffset,
+    //     viewProjectionMatrix.byteLength
+    // );
 
-    device.queue.writeBuffer(
-        state.sub_canvas.UBOs["right"],
-        0,
-        new Float32Array([
-            view[0], view[4], view[8], // right
-        ])
-    );
-    device.queue.writeBuffer(
-        state.sub_canvas.UBOs["up"],
-        0,
-        new Float32Array([
-            view[1], view[5], view[9], // up
-        ])
-    );
+    // device.queue.writeBuffer(
+    //     state.sub_canvas.UBOs["right"],
+    //     0,
+    //     new Float32Array([
+    //         view[0], view[4], view[8], // right
+    //     ])
+    // );
+    // device.queue.writeBuffer(
+    //     state.sub_canvas.UBOs["up"],
+    //     0,
+    //     new Float32Array([
+    //         view[1], view[5], view[9], // up
+    //     ])
+    // );
+    fill_MVP_UBO_sub(state, device);
+
 
 
     // !!! 注意这里必须手动触发更新才行

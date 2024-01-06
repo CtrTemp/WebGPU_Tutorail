@@ -1,5 +1,6 @@
 import { mat4, vec3, vec4 } from "wgpu-matrix"
 import { updateMipLevel } from "./gen_curve_line";
+import { fill_MVP_UBO } from "./03_manage_UBO";
 
 
 // GUI
@@ -177,29 +178,7 @@ function updateMainCamera(state, device) {
 
 
     // GPU 端更新相机参数
-    device.queue.writeBuffer(
-        state.main_canvas.UBOs["mvp"],
-        0,
-        viewProjectionMatrix.buffer,
-        viewProjectionMatrix.byteOffset,
-        viewProjectionMatrix.byteLength
-    );
-
-    device.queue.writeBuffer(
-        state.main_canvas.UBOs["right"],
-        0,
-        new Float32Array([
-            view[0], view[4], view[8], // right
-        ])
-    );
-    device.queue.writeBuffer(
-        state.main_canvas.UBOs["up"],
-        0,
-        new Float32Array([
-            view[1], view[5], view[9], // up
-        ])
-    );
-
+    fill_MVP_UBO(state, device);
 
     // !!! 注意这里必须手动触发更新才行
     gui.updateDisplay();
@@ -329,7 +308,7 @@ function defocusCamera(state, device, gui) {
             Math.random() * 100, // seed.xy
             1 + Math.random(),
             1 + Math.random(), // seed.zw
-            state.main_canvas.particle_info["lifetime"],
+            0.0, // state.main_canvas.particle_info["lifetime"],
             state.main_canvas.simu_info["simu_pause"], // pause = false
             0.0, // paddings 
             0.0

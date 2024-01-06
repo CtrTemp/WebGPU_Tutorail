@@ -48,7 +48,7 @@ function mouseMovingCallback(state, device, event, gui) {
 
     // console.log("camera = ", state.sub_canvas.prim_camera["viewDir"]);
 
-    updateSubCamera(state, device, gui);
+    updateSubCamera(state, device);
 }
 
 /**
@@ -75,13 +75,13 @@ function mouseWheelCallback(state, device, deltaY, gui) {
         -state.sub_canvas.mouse_info["wheel_speed"] * deltaY
     );
 
-    updateSubCamera(state, device, gui);
+    updateSubCamera(state, device);
 }
 
 /**
  *  Mouse
  * */
-function canvasMouseInteraction(state, device) {
+function subCanvasMouseInteraction(state, device) {
 
     let canvas = state.sub_canvas.canvas;
     let camera = state.sub_canvas.prim_camera;
@@ -112,4 +112,4 @@ function canvasMouseInteraction(state, device) {
 
 
 
-export { canvasMouseInteraction }
+export { subCanvasMouseInteraction }

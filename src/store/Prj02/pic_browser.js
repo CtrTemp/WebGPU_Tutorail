@@ -59,14 +59,11 @@ import { UBO_creation_sub, fill_MVP_UBO_sub } from "./sub_view/03_manage_UBO"
 import { Layout_creation_sub } from "./sub_view/11_set_Layout";
 import { BindGroup_creation_sub } from "./sub_view/12_set_BindGroup";
 import { Pipeline_creation_sub } from "./sub_view/13_set_Pipeline";
-import {
-    init_Camera_sub,
-} from "./sub_view/xx_set_camera.js"
+import { subCanvasMouseInteraction } from "./sub_view/xx_interaction";
+import { init_Camera_sub } from "./sub_view/xx_set_camera.js"
 
 
-import {
-    renderLoop_sub
-} from "./renderLoop_sub_view";
+import { renderLoop_sub } from "./renderLoop_sub_view";
 
 
 import { read_files_from_dir, dataURL2Blob } from "./main_view/util";
@@ -215,7 +212,7 @@ export default {
 
             /**
              *  Creat IBO
-             * */ 
+             * */
             IBO_creation_sub(state, device);
 
 
@@ -295,7 +292,7 @@ export default {
             state.fence["COMPUTE_MIP_SUBMIT"] = true;
             console.log("COMPUTE MIP SUBMIT DONE~");
         },
-        
+
         /**
          *  Stage05：填充渲染管线剩余所需一切
          * */
@@ -303,36 +300,41 @@ export default {
 
             /**
              *  Fill Texture Memory on GPU
-             * */ 
+             * */
             fill_Mip_Texture(state, device);
 
 
             /**
              *  Fill Atlas Info of VBO
-             * */ 
+             * */
             fill_Atlas_Info_VBO(state, device);
 
             /**
              *  Fill quad VBOs
-             * */ 
+             * */
             fill_Quad_VBO(state, device);
 
             /**
              *  Fill cone VBOs
-             * */ 
+             * */
             Update_and_Fill_Cone_VBO(state, device);
 
             /**
              *  Fill cone IBOs
-             * */ 
+             * */
             Fill_cone_IBO(state, device);
 
 
-            // /**
-            //  *  Register Interaction Events
-            //  * */ 
-            // canvasMouseInteraction(state, device);
-            // canvasKeyboardInteraction(state, device);
+            /**
+             *  Register Interaction Events
+             * */
+            // Main-Canvas
+            canvasMouseInteraction(state, device);
+            canvasKeyboardInteraction(state, device);
+            // Sub-Canvas
+            subCanvasMouseInteraction(state, device);
+
+
 
 
             state.fence["RENDER_READY"] = true;

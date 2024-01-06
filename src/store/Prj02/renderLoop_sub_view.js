@@ -8,6 +8,7 @@ import { render_sub_view } from "./sub_view/21_GPU_Pass";
 
 import { canvasMouseInteraction } from "./sub_view/xx_interaction";
 
+import { Update_and_Fill_Cone_VBO } from "./sub_view/02_manage_VBO";
 
 /**  
  *  Stage04：启动渲染循环
@@ -125,6 +126,11 @@ function renderLoop_sub(state, device) {
         //     ])
         // );
 
+
+        /**
+         *  update cone vertex from current main camera
+         * */ 
+        Update_and_Fill_Cone_VBO(state, device);
 
 
         const renderPassDescriptor = state.sub_canvas.passDescriptors["render_instances"];

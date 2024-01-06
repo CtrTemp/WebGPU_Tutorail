@@ -14,7 +14,7 @@ import {
 /**
  *  Dragging
  * */
-function mouseMovingCallback(state, device, event, gui) {
+function mouseMovingCallback(state, device, event) {
     if (!state.main_canvas.mouse_info["dragging"]) {
         // console.log("invalid mouse moving~ ");
         return;
@@ -60,7 +60,7 @@ function mouseMovingCallback(state, device, event, gui) {
 
     state.main_canvas.prim_camera["up"] = new_up_dir;
 
-    updateMainCamera(state, device, gui);
+    updateMainCamera(state, device);
 }
 
 /**
@@ -79,7 +79,7 @@ function mouseClickCallback(state, flag) {
 /**
  *  Wheel
  * */
-function mouseWheelCallback(state, device, deltaY, gui) {
+function mouseWheelCallback(state, device, deltaY) {
     let camera = state.main_canvas.prim_camera;
     camera["lookFrom"] = vec3.addScaled(
         camera["lookFrom"],
@@ -87,7 +87,7 @@ function mouseWheelCallback(state, device, deltaY, gui) {
         -state.main_canvas.mouse_info["wheel_speed"] * deltaY
     );
 
-    updateMainCamera(state, device, gui);
+    updateMainCamera(state, device);
 }
 
 /**
@@ -102,7 +102,7 @@ function canvasMouseInteraction(state, device) {
     canvas.addEventListener("mousemove", (event) => {
         // 这里的一个优点在于可以直接获取鼠标的移动距离信息
         // console.log("event = ", event.movementX);
-        mouseMovingCallback(state, device, event, gui);
+        mouseMovingCallback(state, device, event);
     })
 
 
@@ -114,7 +114,7 @@ function canvasMouseInteraction(state, device) {
     })
 
     canvas.addEventListener("mousewheel", (event) => {
-        mouseWheelCallback(state, device, event.deltaY, gui);
+        mouseWheelCallback(state, device, event.deltaY);
     })
 
 }
@@ -136,7 +136,7 @@ function leftMovingCallback(state, device) {
             leftDir,
             state.main_canvas.keyboard_info["speed"]
         );
-        updateMainCamera(state, device, gui);
+        updateMainCamera(state, device);
     }
     else {
         let camera = state.sub_canvas.prim_camera;
@@ -160,7 +160,7 @@ function rightMovingCallback(state, device, gui) {
             leftDir,
             state.main_canvas.keyboard_info["speed"]
         );
-        updateMainCamera(state, device, gui);
+        updateMainCamera(state, device);
     }
     else {
         let camera = state.sub_canvas.prim_camera;
@@ -182,7 +182,7 @@ function frontMovingCallback(state, device, gui) {
             camera["viewDir"],
             state.main_canvas.keyboard_info["speed"]
         );
-        updateMainCamera(state, device, gui);
+        updateMainCamera(state, device);
     }
     else {
         let camera = state.sub_canvas.prim_camera;
@@ -204,7 +204,7 @@ function backMovingCallback(state, device, gui) {
             camera["viewDir"],
             -state.main_canvas.keyboard_info["speed"]
         );
-        updateMainCamera(state, device, gui);
+        updateMainCamera(state, device);
     }
     else {
         let camera = state.sub_canvas.prim_camera;
@@ -226,7 +226,7 @@ function upMovingCallback(state, device, gui) {
             camera["up"],
             state.main_canvas.keyboard_info["speed"]
         );
-        updateMainCamera(state, device, gui);
+        updateMainCamera(state, device);
     }
     else {
         let camera = state.sub_canvas.prim_camera;
@@ -248,7 +248,7 @@ function downMovingCallback(state, device, gui) {
             camera["up"],
             -state.main_canvas.keyboard_info["speed"]
         );
-        updateMainCamera(state, device, gui);
+        updateMainCamera(state, device);
     }
     else {
         let camera = state.sub_canvas.prim_camera;
