@@ -26,8 +26,9 @@ function VBO_creation(state, device) {
     /**
      *  Quad VBO
      * */
+    const quadArr = state.main_canvas.vertices_arr["quad"];
     const quadVertexBuffer = device.createBuffer({
-        size: 6 * 4 * 4, // 6x vec4<f32>
+        size: quadArr.length * Float32Array.BYTES_PER_ELEMENT, // 6x vec4<f32>
         usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
         // mappedAtCreation: true,
     });

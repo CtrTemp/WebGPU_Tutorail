@@ -183,7 +183,7 @@ watch(() => {
     if (flag == true) {
         console.log("RENDER MAIN ready!!!");
         store.commit("pic_browser/main_canvas_renderLoop", device);
-        // store.commit("pic_browser/sub_canvas_renderLoop", device);
+        store.commit("pic_browser/sub_canvas_renderLoop", device);
     }
 }, { deep: true });
 

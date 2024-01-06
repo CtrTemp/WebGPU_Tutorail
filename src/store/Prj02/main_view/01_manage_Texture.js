@@ -131,7 +131,7 @@ function fill_Mip_Texture(state, device) {
     }
 
 
-    console.log("atlas info = ", state.main_canvas["mip_atlas_info"]);
+    // console.log("atlas info = ", state.main_canvas["mip_atlas_info"]);
 }
 
 function manage_Texture(state, device) {

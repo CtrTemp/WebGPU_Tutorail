@@ -4,13 +4,13 @@ import { mat4, vec3, vec4 } from "wgpu-matrix"
 /**
  *  从一个已经定义好的相机参数中得到梯台的顶点信息
  * */
-function gen_cone_vertex_from_camera(camera, range_near, range_far) {
+function gen_cone_vertex_from_camera(camera) {
 
     const fov = camera.fov;
     const aspect = camera.aspect;
 
-    range_near = camera["z_near"];
-    range_far = camera["z_far"];
+    const range_near = camera["z_near"];
+    const range_far = camera["z_far"];
 
     const y_offset_near = range_near * Math.tan(fov / 2);
     const x_offset_near = y_offset_near * aspect;

@@ -45,16 +45,20 @@ import {
  *  Sub-View Related
  * */
 import { init_device_sub } from "./sub_view/00_init_device";
-import { manage_Texture_sub } from "./sub_view/01_manage_Texture";
+import { subViewTexture_creation } from "./sub_view/01_manage_Texture";
 import {
+    VBO_creation_sub,
+    IBO_creation_sub,
+    Update_and_Fill_Cone_VBO,
+    Fill_cone_IBO,
     manage_VBO_sub,
     manage_VBO_Layout_sub,
     manage_IBO_sub
 } from "./sub_view/02_manage_VBO"
-import { manage_UBO_sub } from "./sub_view/03_manage_UBO"
-import { set_Layout_sub } from "./sub_view/11_set_Layout";
-import { set_BindGroup_sub } from "./sub_view/12_set_BindGroup";
-import { set_Pipeline_sub } from "./sub_view/13_set_Pipeline";
+import { UBO_creation_sub, fill_MVP_UBO_sub } from "./sub_view/03_manage_UBO"
+import { Layout_creation_sub } from "./sub_view/11_set_Layout";
+import { BindGroup_creation_sub } from "./sub_view/12_set_BindGroup";
+import { Pipeline_creation_sub } from "./sub_view/13_set_Pipeline";
 import {
     init_Camera_sub,
 } from "./sub_view/xx_set_camera.js"
@@ -99,7 +103,7 @@ export default {
         },
 
         async construct_mip_imgBitMap(context, ret_json_pack) {
-            console.log("json pack received = ", ret_json_pack);
+            // console.log("json pack received = ", ret_json_pack);
 
             let flag = false;
             if (context.state.main_canvas.mipBitMap.length == 13) {
@@ -133,7 +137,7 @@ export default {
                 }
             }
 
-            console.log("bitmaps = ", context.state.main_canvas.mipBitMap);
+            // console.log("bitmaps = ", context.state.main_canvas.mipBitMap);
             context.state.fence["BITMAP_READY"] = true;
         },
 
@@ -146,7 +150,7 @@ export default {
              *  Read Back MipLevel info from GPU
              * */
             await read_back_miplevel_pass(state, device);
-            console.log("Mip data read back done");
+            console.log("Mip data read back Done~");
 
             /**
              *  Fetch Instance Picture from Server
@@ -158,7 +162,7 @@ export default {
                 mip_info: mip_info, // mip info 描述信息
             };
 
-            console.log("cmd_json = ", cmd_json);
+            // console.log("cmd_json = ", cmd_json);
             state.ws.send(JSON.stringify(cmd_json));
         }
 
@@ -180,6 +184,7 @@ export default {
         init_camera(state, device) {
             init_Camera(state, device);
             init_Camera_sub(state, device);
+            console.log("main camera = ", state.main_canvas.prim_camera);
         },
 
 
@@ -200,21 +205,31 @@ export default {
              *  Create Texture
              * */
             mipTexture_creation(state, device);
+            subViewTexture_creation(state, device);
 
             /**
              *  Create VBO
              * */
             VBO_creation(state, device);
+            VBO_creation_sub(state, device);
+
+            /**
+             *  Creat IBO
+             * */ 
+            IBO_creation_sub(state, device);
+
 
             /**
              *  Manage VBO Layout
              * */
             manage_VBO_Layout(state);
+            manage_VBO_Layout_sub(state);
 
             /**
              *  Create UBO
              * */
             UBO_creation(state, device);
+            UBO_creation_sub(state, device);
 
             /**
              *  Create SBO
@@ -234,16 +249,19 @@ export default {
              *  Create Layout
              * */
             Layout_creation(state, device);
+            Layout_creation_sub(state, device);
 
             /**
              *  Create BindGroup
              * */
             BindGroup_creation(state, device);
+            BindGroup_creation_sub(state, device);
 
             /**
              *  Create Pipeline
              * */
             Pipeline_creation(state, device);
+            Pipeline_creation_sub(state, device);
 
 
             console.log("Layout/BindGroup/Pipeline creation Done~");
@@ -258,6 +276,7 @@ export default {
              *  Fill MVP Related UBOs
              * */
             fill_MVP_UBO(state, device);
+            fill_MVP_UBO_sub(state, device);
 
             // 以下读取计算返回结果错误，明天来了讨论进行修改（2024/01/04） 
             // 问题在于忘记了对部分的 VBO 进行填充！
@@ -278,7 +297,7 @@ export default {
         },
         
         /**
-         *  Stage05：GPU计算MipLevel
+         *  Stage05：填充渲染管线剩余所需一切
          * */
         main_canvas_initialize_stage5(state, device) {
 
@@ -297,6 +316,24 @@ export default {
              *  Fill quad VBOs
              * */ 
             fill_Quad_VBO(state, device);
+
+            /**
+             *  Fill cone VBOs
+             * */ 
+            Update_and_Fill_Cone_VBO(state, device);
+
+            /**
+             *  Fill cone IBOs
+             * */ 
+            Fill_cone_IBO(state, device);
+
+
+            // /**
+            //  *  Register Interaction Events
+            //  * */ 
+            // canvasMouseInteraction(state, device);
+            // canvasKeyboardInteraction(state, device);
+
 
             state.fence["RENDER_READY"] = true;
 

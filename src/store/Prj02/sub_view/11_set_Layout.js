@@ -1,4 +1,4 @@
-function set_Layout_sub(state, device) {
+function Layout_creation_sub(state, device) {
 
     const MVP_UBO_Layout = device.createBindGroupLayout({
         entries: [{
@@ -25,4 +25,4 @@ function set_Layout_sub(state, device) {
 }
 
 
-export { set_Layout_sub }
+export { Layout_creation_sub }

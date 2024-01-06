@@ -2,7 +2,7 @@
 import { vertex_shader, fragment_shader } from '../../../assets/Shaders/Prj02/sub_canvas/shader.js'
 import { instance_vert, instance_frag } from '../../../assets/Shaders/Prj02/sub_canvas/instance.js'
 
-function set_Pipeline_sub(state, device) {
+function Pipeline_creation_sub(state, device) {
 
     /* ########################### Render Cone Pipeline ########################### */
 
@@ -11,7 +11,7 @@ function set_Pipeline_sub(state, device) {
             state.sub_canvas.Layouts["mvp"]
         ]
     });
-    state.sub_canvas.Layouts["render_particles"] = Render_Pipeline_Layout;
+    state.sub_canvas.Layouts["render_cone"] = Render_Pipeline_Layout;
 
     // 创建渲染流水线
     const Render_Pipeline = device.createRenderPipeline({
@@ -83,15 +83,15 @@ function set_Pipeline_sub(state, device) {
 
     /* ########################### Render Instance Pipeline ########################### */
 
-    const render_particles_pipeline = device.createRenderPipeline({
-        layout: state.main_canvas.Pipeline_Layouts["render_particles"],
+    const render_instances_pipeline = device.createRenderPipeline({
+        layout: state.main_canvas.Pipeline_Layouts["render_instances"],
         vertex: {
             module: device.createShaderModule({
                 code: instance_vert
             }),
             entryPoint: "vs_main",
             buffers: [
-                state.main_canvas.VBO_Layouts["particles"],
+                state.main_canvas.VBO_Layouts["instances"],
                 state.main_canvas.VBO_Layouts["quad"]
             ]
         },
@@ -131,10 +131,9 @@ function set_Pipeline_sub(state, device) {
             format: 'depth24plus',
         },
     });
-    state.sub_canvas.Pipelines["render_particles"] = render_particles_pipeline;
+    state.sub_canvas.Pipelines["render_instances"] = render_instances_pipeline;
 
 
-    
 
     const renderInstancePassDescriptor = {
         colorAttachments: [
@@ -152,11 +151,11 @@ function set_Pipeline_sub(state, device) {
             depthStoreOp: "store"
         }
     };
-    state.sub_canvas.passDescriptors["render_instance"] = renderInstancePassDescriptor;
+    state.sub_canvas.passDescriptors["render_instances"] = renderInstancePassDescriptor;
 
 }
 
 
 
 
-export { set_Pipeline_sub }
+export { Pipeline_creation_sub }

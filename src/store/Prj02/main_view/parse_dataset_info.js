@@ -2,6 +2,7 @@
  *  解析场景信息，并填充相关全局变量
  * */
 import { gen_sphere_instance_pos } from "./gen_curve_line";
+import { gen_cone_vertex_from_camera } from "../sub_view/gen_cone_vertex";
 
 
 function parse_dataset_info(state, ret_json_pack) {
@@ -52,6 +53,40 @@ function parse_dataset_info(state, ret_json_pack) {
     state.main_canvas.vertices_arr["quad"] = quadArr;
 
     // console.log("flow_info = ", flow_info);
+
+    /**
+     *  生成 cone vertex 信息
+     * */ 
+    const prim_camera = state.main_canvas.prim_camera;
+    const cone_vertices = gen_cone_vertex_from_camera(prim_camera);
+    state.main_canvas.vertices_arr["cone"] = cone_vertices;
+
+    /**
+     *  生成 cone index 信息
+     * */ 
+    const default_idx_data_arr = [
+        // // near rect
+        // 0, 1, 2,
+        // 0, 2, 3,
+        // // far rect
+        // 4, 5, 6,
+        // 4, 6, 7,
+
+        // left trap
+        5, 0, 1,
+        0, 5, 4,
+        // rigth trap
+        3, 6, 2,
+        6, 3, 7,
+        // up trap
+        4, 3, 0,
+        3, 4, 7,
+        // bottom trap
+        2, 5, 1,
+        5, 2, 6,
+    ];
+    state.sub_canvas.indices_arr["cone"] = default_idx_data_arr;
+    
 }
 
 

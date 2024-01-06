@@ -42,19 +42,17 @@ async function read_back_miplevel_pass(state, device) {
     // 队列提交
     device.queue.submit([readBack_encoder.finish()]);
 
-    
+
     await state.main_canvas.SBOs["mip_read_back"].mapAsync(GPUMapMode.READ);
     const arrBuffer = new Float32Array(state.main_canvas.SBOs["mip_read_back"].getMappedRange());
-    console.log("hello~ readBuffer = ", arrBuffer);
+    // console.log("hello~ readBuffer = ", arrBuffer);
 
     state.main_canvas.storage_arr["mip"] = arrBuffer;
 
     state.main_canvas.mip_info["arr"].fill(0);
 
-    for(let i=0; i<instancesLen; i++)
-    {
-        if(arrBuffer[i]==-1)
-        {
+    for (let i = 0; i < instancesLen; i++) {
+        if (arrBuffer[i] == -1) {
             continue;
         }
         state.main_canvas.mip_info["arr"][Math.floor(arrBuffer[i])]++;
@@ -64,6 +62,37 @@ async function read_back_miplevel_pass(state, device) {
 
 
 
+/**
+ *  main view render pass
+ * */
+function render_main_view(state, device, renderPassDescriptor) {
+    const encoder = device.createCommandEncoder();
+    const pass = encoder.beginRenderPass(renderPassDescriptor);
+    pass.setPipeline(state.main_canvas.Pipelines["render_instances"]);
+    pass.setBindGroup(0, state.main_canvas.BindGroups["mvp_pack"]);
+    pass.setBindGroup(1, state.main_canvas.BindGroups["sample"]);
+    pass.setBindGroup(2, state.main_canvas.BindGroups["mip_vertex"]);
+    pass.setVertexBuffer(0, state.main_canvas.VBOs["instances"]);
+    pass.setVertexBuffer(1, state.main_canvas.VBOs["quad"]);
+    pass.draw(6, state.main_canvas.instance_info["numInstances"], 0, 0);
+    pass.end();
+
+    device.queue.submit([encoder.finish()]);
+}
+
+
+// /**
+//  *  main view animation（暂不启用）
+//  * */ 
+// function simulate_main_view(state, device) {
+//     const encoder = device.createCommandEncoder();
+//     const pass = encoder.beginComputePass();
+//     pass.setPipeline(state.main_canvas.Pipelines["simu_particles"]);
+//     pass.setBindGroup(0, state.main_canvas.BindGroups["compute"]);
+//     pass.dispatchWorkgroups(Math.ceil(state.main_canvas.instance_info["numInstances"] / 64));
+//     pass.end();
+//     device.queue.submit([encoder.finish()]);
+// }
 
 
 
@@ -73,5 +102,6 @@ async function read_back_miplevel_pass(state, device) {
 export {
     compute_miplevel_pass,
     read_back_miplevel_pass,
+    render_main_view,
 }
 
