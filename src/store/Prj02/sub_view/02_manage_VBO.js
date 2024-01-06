@@ -55,44 +55,6 @@ function Fill_cone_IBO(state, device)
 }
 
 
-function manage_VBO_sub(state, device) {
-
-    // // CPU 端数据
-    // const vertices = new Float32Array([
-    //     // near rect
-    //     0.2, 0.2, 0.0,
-    //     0.2, -0.2, 0.0,
-    //     -0.2, -0.2, 0.0,
-    //     -0.2, 0.2, 0.0,
-
-    //     // far rect
-    //     8.8, 8.8, 12.5,
-    //     0.8, -8.8, 12.5,
-    //     -8.8, -8.8, 12.5,
-    //     -8.8, 8.8, 12.5,
-    // ]);
-
-    // console.log("camera = ", state.main_canvas.prim_camera);
-    const ret_vec = gen_cone_vertex_from_camera(state.main_canvas.prim_camera, 0.1, 25.0);
-    // console.log("ret_vec = ", ret_vec);
-    const vertices = new Float32Array(ret_vec);
-
-    state.sub_canvas.vertices_arr["cone"] = vertices;
-
-
-    // 顶点缓冲区创建
-    const vertexBuffer = device.createBuffer({
-        label: "Cell vertices",
-        size: vertices.byteLength,
-        usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
-    });
-
-    state.sub_canvas.VBOs["cone"] = vertexBuffer;
-
-    device.queue.writeBuffer(vertexBuffer, /*bufferOffset=*/0, vertices);
-}
-
-
 
 function manage_VBO_Layout_sub(state) {
 
@@ -152,7 +114,6 @@ export {
     IBO_creation_sub,
     Update_and_Fill_Cone_VBO,
     Fill_cone_IBO,
-    manage_VBO_sub,
     manage_VBO_Layout_sub,
     manage_IBO_sub
 }

@@ -74,18 +74,18 @@ onMounted(() => {
 // 需要用一个返回该属性的 getter 函数来完成监听： 
 
 
-/**
- *  Device Ready
- * */
-watch(() => {
-    return store.state.pic_browser.fence["DEVICE_READY"];
-}, (flag) => {
-    if (flag == true) {
-        console.log("device ready!!!");
-        // store.commit("pic_browser/main_canvas_initialize_stage1", device);
-        // store.commit("pic_browser/main_canvas_initialize_stage1", device);
-    }
-}, { deep: true });
+// /**
+//  *  Device Ready
+//  * */
+// watch(() => {
+//     return store.state.pic_browser.fence["DEVICE_READY"];
+// }, (flag) => {
+//     if (flag == true) {
+//         console.log("device ready!!!");
+//         // store.commit("pic_browser/main_canvas_initialize_stage1", device);
+//         // store.commit("pic_browser/main_canvas_initialize_stage1", device);
+//     }
+// }, { deep: true });
 
 
 
@@ -104,7 +104,6 @@ watch(() => {
 
 
 
-
 /**
  *  Compute MipLevel Submit
  * */
@@ -115,29 +114,6 @@ watch(() => {
         store.dispatch("pic_browser/readBackMipLevel_and_FetchPicFromServer", device);
     }
 }, { deep: true });
-
-
-/**
- *  VBO stage1 Ready
- * */
-watch(() => {
-    return store.state.pic_browser.fence["VBO_STAGE1_READY"];
-}, (flag) => {
-    if (flag == true) {
-        console.log("VBO stage1 ready!!!");
-        /**
-         *  fetch instanced texture
-         * */
-        const mip_info = store.state.pic_browser.main_canvas.mip_info;
-        const cmd_json = {
-            cmd: "fetch_mip_instance",
-            mip_info: mip_info, // mip info 描述信息
-        };
-
-        ws.send(JSON.stringify(cmd_json));
-    }
-}, { deep: true });
-
 
 
 
@@ -156,26 +132,7 @@ watch(() => {
 
 
 /**
- *  VBO stage2 Ready
- * */
-watch(() => {
-    return store.state.pic_browser.fence["VBO_STAGE2_READY"];
-}, (flag) => {
-    if (flag == true) {
-        console.log("VBO stage2 ready!!!");
-        store.commit("pic_browser/main_canvas_manage_rest_of_all", device);
-        /**
-         *  同样提交对辅助视图的全体配置
-         * */
-        store.commit("pic_browser/sub_canvas_management", device);
-    }
-}, { deep: true });
-
-
-
-
-/**
- *  main canvas RENDER Ready
+ *  RENDER Ready
  * */
 watch(() => {
     return store.state.pic_browser.fence["RENDER_READY"];
@@ -186,20 +143,6 @@ watch(() => {
         store.commit("pic_browser/sub_canvas_renderLoop", device);
     }
 }, { deep: true });
-
-
-
-// /**
-//  *  sub canvas RENDER Ready
-//  * */
-// watch(() => {
-//     return store.state.pic_browser.fence["RENDER_READY_SUB"];
-// }, (flag) => {
-//     if (flag == true) {
-//         console.log("RENDER SUB ready!!!");
-//         store.commit("pic_browser/sub_canvas_renderLoop", device);
-//     }
-// }, { deep: true });
 
 
 

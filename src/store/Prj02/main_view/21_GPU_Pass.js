@@ -81,23 +81,6 @@ function render_main_view(state, device, renderPassDescriptor) {
 }
 
 
-// /**
-//  *  main view animation（暂不启用）
-//  * */ 
-// function simulate_main_view(state, device) {
-//     const encoder = device.createCommandEncoder();
-//     const pass = encoder.beginComputePass();
-//     pass.setPipeline(state.main_canvas.Pipelines["simu_particles"]);
-//     pass.setBindGroup(0, state.main_canvas.BindGroups["compute"]);
-//     pass.dispatchWorkgroups(Math.ceil(state.main_canvas.instance_info["numInstances"] / 64));
-//     pass.end();
-//     device.queue.submit([encoder.finish()]);
-// }
-
-
-
-
-
 
 export {
     compute_miplevel_pass,

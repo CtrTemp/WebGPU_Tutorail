@@ -1,5 +1,4 @@
 import { vertex_shader, fragment_shader } from '../../../assets/Shaders/Prj02/shader';
-import { simulation_compute } from '../../../assets/Shaders/Prj02/compute';
 import { update_mip_compute } from '../../../assets/Shaders/Prj02/update_mip';
 
 
@@ -87,28 +86,6 @@ function Pipeline_creation(state, device) {
         }
     };
     state.main_canvas.passDescriptors["render_instances"] = renderPassDescriptor;
-
-
-    /* ########################### Compute Pipeline ########################### */
-
-    /**
-     *  update instance pos
-     * */ 
-    const particle_Compute_Pipeline_Layout = device.createPipelineLayout({
-        bindGroupLayouts: [state.main_canvas.Layouts["compute"]]
-    });
-    state.main_canvas.Pipeline_Layouts["simu_particles"] = particle_Render_Pipeline_Layout;
-
-    const computePipeline = device.createComputePipeline({
-        layout: particle_Compute_Pipeline_Layout,
-        compute: {
-            module: device.createShaderModule({
-                code: simulation_compute,
-            }),
-            entryPoint: 'simulate',
-        },
-    });
-    state.main_canvas.Pipelines["simu_particles"] = computePipeline;
 
 
 

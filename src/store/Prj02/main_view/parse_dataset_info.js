@@ -1,7 +1,7 @@
 /**
  *  解析场景信息，并填充相关全局变量
  * */
-import { gen_sphere_instance_pos } from "./gen_curve_line";
+import { gen_sphere_instance_pos, gen_customized_instance_pos } from "./gen_curve_line";
 import { gen_cone_vertex_from_camera } from "../sub_view/gen_cone_vertex";
 
 
@@ -35,7 +35,7 @@ function parse_dataset_info(state, ret_json_pack) {
     /**
      *  暂时在这里生成随机的场景信息
      * */ 
-    const flow_info = gen_sphere_instance_pos(50, numInstances, state);
+    const flow_info = gen_sphere_instance_pos(50, numInstances);
     state.main_canvas.vertices_arr["instance"] = flow_info.flow_arr;
 
     /**

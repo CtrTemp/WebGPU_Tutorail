@@ -1,4 +1,9 @@
 
+/**
+ *  Utils
+ * */
+
+import { dataURL2Blob } from "./bitMap";
 
 /**
  *  Main-View Related
@@ -9,16 +14,12 @@ import { parse_dataset_info } from "./main_view/parse_dataset_info";
 import {
     mipTexture_creation,
     fill_Mip_Texture,
-    manage_Texture,
-    manage_Mip_Texture
 } from "./main_view/01_manage_Texture";
 import {
-    manage_VBO,
     VBO_creation,
     fill_Instance_Pos_VBO,
     fill_Atlas_Info_VBO,
     fill_Quad_VBO,
-    manage_VBO_stage2,
     manage_VBO_Layout
 } from "./main_view/02_manage_VBO"
 import { UBO_creation, fill_MVP_UBO } from "./main_view/03_manage_UBO"
@@ -51,9 +52,7 @@ import {
     IBO_creation_sub,
     Update_and_Fill_Cone_VBO,
     Fill_cone_IBO,
-    manage_VBO_sub,
     manage_VBO_Layout_sub,
-    manage_IBO_sub
 } from "./sub_view/02_manage_VBO"
 import { UBO_creation_sub, fill_MVP_UBO_sub } from "./sub_view/03_manage_UBO"
 import { Layout_creation_sub } from "./sub_view/11_set_Layout";
@@ -66,7 +65,6 @@ import { init_Camera_sub } from "./sub_view/xx_set_camera.js"
 import { renderLoop_sub } from "./renderLoop_sub_view";
 
 
-import { read_files_from_dir, dataURL2Blob } from "./main_view/util";
 
 
 
@@ -264,7 +262,6 @@ export default {
             console.log("Layout/BindGroup/Pipeline creation Done~");
         },
 
-
         /**
          *  Stage04：GPU计算MipLevel
          * */
@@ -341,110 +338,17 @@ export default {
 
         },
 
-        // main_canvas_UBOs_Layouts_Pipelines_and_Interaction(state, device) {
-        main_canvas_manage_rest_of_all(state, device) {
-            // console.log("UBOs_LAYOUTs_PIPELINEs_STAGE");
-            /**
-             *  VBO Layout
-             * */
-            manage_VBO_Layout(state);
-            /**
-             *  UBO
-             * */
-            manage_UBO(state, device);
 
-            /**
-             *  SBO
-             * */
-            manage_SBO(state, device);
-
-            /**
-             *  UBO Layout
-             * */
-            set_Layout(state, device);
-            /**
-             *  BindGroups
-             * */
-            set_BindGroup(state, device);
-
-            /**
-             *  Pipelines
-             * */
-            set_Pipeline(state, device);
-
-            /**
-             *  Interactions
-             * */
-            // Keyboard
-            canvasKeyboardInteraction(state, device);
-            // Mouse
-            canvasMouseInteraction(state, device);
-
-            state.fence["RENDER_READY"] = true;
-        },
-
+        /**
+         *  Main View Render Loop
+         * */ 
         main_canvas_renderLoop(state, device) {
             renderLoop_main(state, device);
         },
 
-
         /**
-         *  sub canvas 相关渲染配置
-         *  由于 sub canvas 辅助视图中的所有需要延迟加载的资源都在主视图中加载完毕
-         * 故，当主视图渲染flag被置位后，即可提交 sub canvas 的所有配置并渲染
-         * */
-
-        sub_canvas_management(state, device) {
-
-            /**
-             *  Sub Camera
-             * */
-            init_Camera_sub(state, device);
-
-            /**
-             *  Depth Texture
-             * */
-            manage_Texture_sub(state, device);
-            /**
-             *  VBO
-             * */
-            manage_VBO_sub(state, device);
-
-            /**
-             *  VBO Layout
-             * */
-            manage_VBO_Layout_sub(state);
-
-            /**
-             *  IBO
-             * */
-            manage_IBO_sub(state, device);
-
-            /**
-             *  UBO
-             * */
-            manage_UBO_sub(state, device);
-
-            /**
-             *  UBO Layout
-             * */
-            set_Layout_sub(state, device);
-
-            /**
-             *  BindGroups
-             * */
-            set_BindGroup_sub(state, device);
-
-            /**
-             *  Pipelines
-             * */
-            set_Pipeline_sub(state, device);
-
-            state.fence["RENDER_READY_SUB"] = true;
-        },
-
-
-
+         *  Sub View Render Loop
+         * */ 
         sub_canvas_renderLoop(state, device) {
             renderLoop_sub(state, device);
         },
@@ -459,14 +363,11 @@ export default {
              *  全局时序控制器，设置一些flag，并通过监控它们来获取正确的程序执行
              * */
             fence: {
-                DATASET_INFO_READY: { val: false },
-                DEVICE_READY: { val: false },
+                // DEVICE_READY: { val: false },    // 暂时没用到
+                DATASET_INFO_READY: { val: false }, // 初始化阶段向后台申请数据库信息
                 COMPUTE_MIP_SUBMIT: { val: false }, // 已经向GPU提交计算MipLevel的申请，等待数据返回
-                BITMAP_READY: { val: false },
-                // VBO_READY: { val: false },
-                VBO_STAGE1_READY: { val: false },
-                VBO_STAGE2_READY: { val: false },
-                RENDER_READY: { val: false },
+                BITMAP_READY: { val: false },       // BitMap构建完成，可以填充Texture Memory
+                RENDER_READY: { val: false },       // 
             },
             main_canvas: {
 
@@ -509,9 +410,6 @@ export default {
                     simu_time: 0.0,
                     simu_speed: 0.0,
                 },
-                // simu_pause: 0.0,
-                // simu_time: 0.0,
-                // simu_speed: 0.0,
                 atlas_info: {
                     size: [],       // 用于记录大纹理的长宽尺寸
                     uv_offset: [],  // 用于记录instance对应图片纹理在大纹理中的uv偏移

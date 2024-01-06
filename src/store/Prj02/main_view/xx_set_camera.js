@@ -1,49 +1,10 @@
 import { mat4, vec3, vec4 } from "wgpu-matrix"
-import { updateMipLevel } from "./gen_curve_line";
 import { fill_MVP_UBO } from "./03_manage_UBO";
 
 
 // GUI
 import * as dat from "dat.gui"
 
-
-
-function gen_perspective_project_matrix(fov, aspect, z_near, z_far) {
-    const n = z_near;
-    const f = z_far;
-    const t = Math.tan(fov / 2) * z_near;
-    console.log("t = ", t);
-    const b = -t;
-    const r = t * aspect;
-    const l = -r;
-    console.log("r = ", r);
-
-
-    // // 右手系，z轴投影范围为 -1~1
-    // const perspective_matrix = mat4.create(
-    //     2 * n / (r - l), 0, -(r + l) / (r - l), 0,
-    //     0, 2 * n / (t - b), -(t + b) / (t - b), 0,
-    //     0, 0, (n + f) / (n - f), 2 * n * f / (n - f),
-    //     0, 0, -1, 0
-    // );
-
-    // 右手系，z轴投影范围为 0~1 （WebGPU默认的是这种做法）
-    const perspective_matrix = mat4.create(
-        2 * n / (r - l), 0, -(r + l) / (r - l), 0,
-        0, 2 * n / (t - b), -(t + b) / (t - b), 0,
-        0, 0, f / (n - f), n * f / (n - f),
-        0, 0, -1, 0
-    );
-
-    console.log("own generated project matrix = ", perspective_matrix);
-
-    return perspective_matrix;
-}
-
-/**
- *  2023/12/20
- *  发现一个比较重要的bug？！你的相机up方向没有更新？！
- * */
 
 
 function init_Camera(state) {
@@ -180,40 +141,8 @@ function updateMainCamera(state, device) {
     // GPU 端更新相机参数
     fill_MVP_UBO(state, device);
 
-    // !!! 注意这里必须手动触发更新才行
+    // !!! 注意这里必须手动触发才行更新GUI
     gui.updateDisplay();
-
-    // /**
-    //  *  根据新的相机视锥，更新 instance 的 miplevel
-    //  * */
-
-    // updateMipLevel(state, device);
-
-
-    
-    // /**
-    //  *  复位相关标志位，等待向后端申请数据，停止渲染
-    //  * */ 
-    // state.fence["RENDER_READY"] = false;
-    // state.fence["BITMAP_READY"] = false;
-    // // state.fence["VBO_READY"] = false;
-    // state.fence["VBO_STAGE1_READY"] = false;
-    // state.fence["VBO_STAGE2_READY"] = false;
-
-
-    // /**
-    //  *  通过向后端提交数据申请，触发 BITMAP_READY 置位，从而引发后续一系列的标志位置位
-    //  * */
-
-    // const mip_info = state.main_canvas.mip_info;
-    // const cmd_json = {
-    //     cmd: "fetch_mip_instance",
-    //     mip_info: mip_info, // mip info 描述信息
-    // };
-    // // console.log("new mip descriptor = ", mip_info);
-
-    // state.ws.send(JSON.stringify(cmd_json));
-
 }
 
 
