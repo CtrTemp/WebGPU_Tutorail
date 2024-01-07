@@ -9,7 +9,7 @@ function UBO_creation(state, device) {
         size: MVP_Buffer_size,
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
     });
-    state.main_canvas.UBOs["mvp"] = MVP_UBO_Buffer;
+    state.GPU_memory.UBOs["mvp"] = MVP_UBO_Buffer;
 
     /**
      *  View-Matrix
@@ -19,7 +19,7 @@ function UBO_creation(state, device) {
         size: View_Buffer_size,
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
     });
-    state.main_canvas.UBOs["view"] = View_UBO_Buffer;
+    state.GPU_memory.UBOs["view"] = View_UBO_Buffer;
 
     /**
      *  Projection-Matrix
@@ -29,7 +29,7 @@ function UBO_creation(state, device) {
         size: Projection_Buffer_size,
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
     });
-    state.main_canvas.UBOs["projection"] = Projection_UBO_Buffer;
+    state.GPU_memory.UBOs["projection"] = Projection_UBO_Buffer;
 
     /**
      *  right side vec
@@ -39,7 +39,7 @@ function UBO_creation(state, device) {
         size: RIGHT_Buffer_size,
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
     });
-    state.main_canvas.UBOs["right"] = RIGHT_UBO_Buffer;
+    state.GPU_memory.UBOs["right"] = RIGHT_UBO_Buffer;
 
     /**
      *  up side vec
@@ -49,7 +49,7 @@ function UBO_creation(state, device) {
         size: UP_Buffer_size,
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
     });
-    state.main_canvas.UBOs["up"] = UP_UBO_Buffer;
+    state.GPU_memory.UBOs["up"] = UP_UBO_Buffer;
 
 
     const simu_Control_UBO_BufferSize =
@@ -64,7 +64,7 @@ function UBO_creation(state, device) {
         size: simu_Control_UBO_BufferSize,
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     });
-    state.main_canvas.UBOs["compute"] = simu_Control_UBO_Buffer;
+    state.GPU_memory.UBOs["compute"] = simu_Control_UBO_Buffer;
 }
 
 function fill_MVP_UBO(state, device) {
@@ -72,9 +72,9 @@ function fill_MVP_UBO(state, device) {
     /**
      *  View Matrix
      * */ 
-    const viewMatrix = state.main_canvas.prim_camera["view"];
+    const viewMatrix = state.camera.prim_camera["view"];
     device.queue.writeBuffer(
-        state.main_canvas.UBOs["view"],
+        state.GPU_memory.UBOs["view"],
         0,
         viewMatrix.buffer,
         viewMatrix.byteOffset,
@@ -85,9 +85,9 @@ function fill_MVP_UBO(state, device) {
     /**
      *  Projection Matrix
      * */ 
-    const projectionMatrix = state.main_canvas.prim_camera["projection"];
+    const projectionMatrix = state.camera.prim_camera["projection"];
     device.queue.writeBuffer(
-        state.main_canvas.UBOs["projection"],
+        state.GPU_memory.UBOs["projection"],
         0,
         projectionMatrix.buffer,
         projectionMatrix.byteOffset,
@@ -98,9 +98,9 @@ function fill_MVP_UBO(state, device) {
     /**
      *  View-Projection Matrix
      * */ 
-    const viewProjectionMatrix = state.main_canvas.prim_camera["matrix"];
+    const viewProjectionMatrix = state.camera.prim_camera["matrix"];
     device.queue.writeBuffer(
-        state.main_canvas.UBOs["mvp"],
+        state.GPU_memory.UBOs["mvp"],
         0,
         viewProjectionMatrix.buffer,
         viewProjectionMatrix.byteOffset,
@@ -111,14 +111,14 @@ function fill_MVP_UBO(state, device) {
      *  Right Up Vector
      * */ 
     device.queue.writeBuffer(
-        state.main_canvas.UBOs["right"],
+        state.GPU_memory.UBOs["right"],
         0,
         new Float32Array([
             viewMatrix[0], viewMatrix[4], viewMatrix[8], // right
         ])
     );
     device.queue.writeBuffer(
-        state.main_canvas.UBOs["up"],
+        state.GPU_memory.UBOs["up"],
         0,
         new Float32Array([
             viewMatrix[1], viewMatrix[5], viewMatrix[9], // up

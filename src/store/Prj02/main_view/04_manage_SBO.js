@@ -2,7 +2,7 @@
 
 function SBO_creation(state, device) {
 
-    const mip_SBO_Arr_size = state.main_canvas.instance_info["numInstances"];
+    const mip_SBO_Arr_size = state.CPU_storage.instance_info["numInstances"];
     /**
      *  GPU 端 Storage Buffer
      * */ 
@@ -12,7 +12,7 @@ function SBO_creation(state, device) {
         // mappedAtCreation: true,
     });
 
-    state.main_canvas.SBOs["mip"] = mipStorageBuffer;
+    state.GPU_memory.SBOs["mip"] = mipStorageBuffer;
 
 
     /**
@@ -23,7 +23,7 @@ function SBO_creation(state, device) {
         usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST,
         // mappedAtCreation: true,
     });
-    state.main_canvas.SBOs["mip_read_back"] = mip_info_MappedBuffer;
+    state.GPU_memory.SBOs["mip_read_back"] = mip_info_MappedBuffer;
 }
 
 

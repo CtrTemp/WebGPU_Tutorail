@@ -15,24 +15,24 @@ function render_sub_view(state, device, renderPassDescriptor) {
      *  Render Cone
      * */
     {
-        pass.setPipeline(state.sub_canvas.Pipelines["cone"]);
-        pass.setBindGroup(0, state.sub_canvas.BindGroups["mvp"]);
-        pass.setVertexBuffer(0, state.sub_canvas.VBOs["cone"]);
-        pass.setIndexBuffer(state.sub_canvas.IBOs["cone"], 'uint16');
-        pass.drawIndexed(state.sub_canvas.indices_arr["cone"].length); // cone
+        pass.setPipeline(state.CPU_storage.Pipelines["render_cone"]);
+        pass.setBindGroup(0, state.CPU_storage.BindGroups["mvp_sub"]);
+        pass.setVertexBuffer(0, state.GPU_memory.VBOs["cone"]);
+        pass.setIndexBuffer(state.GPU_memory.IBOs["cone"], 'uint16');
+        pass.drawIndexed(state.CPU_storage.indices_arr["cone"].length); // cone
     }
 
     /**
      *  Render Instance
      * */
     {
-        pass.setPipeline(state.sub_canvas.Pipelines["render_instances"]);
-        pass.setBindGroup(0, state.sub_canvas.BindGroups["mvp"]);
-        pass.setBindGroup(1, state.main_canvas.BindGroups["sample"]);
-        pass.setBindGroup(2, state.main_canvas.BindGroups["mip_vertex"]);
-        pass.setVertexBuffer(0, state.main_canvas.VBOs["instances"]);
-        pass.setVertexBuffer(1, state.main_canvas.VBOs["quad"]);
-        pass.draw(6, state.main_canvas.instance_info["numInstances"], 0, 0);
+        pass.setPipeline(state.CPU_storage.Pipelines["render_instances_sub"]);
+        pass.setBindGroup(0, state.CPU_storage.BindGroups["mvp_sub"]);
+        pass.setBindGroup(1, state.CPU_storage.BindGroups["sample"]);
+        pass.setBindGroup(2, state.CPU_storage.BindGroups["mip_vertex"]);
+        pass.setVertexBuffer(0, state.GPU_memory.VBOs["instances"]);
+        pass.setVertexBuffer(1, state.GPU_memory.VBOs["quad"]);
+        pass.draw(6, state.CPU_storage.instance_info["numInstances"], 0, 0);
 
     }
 

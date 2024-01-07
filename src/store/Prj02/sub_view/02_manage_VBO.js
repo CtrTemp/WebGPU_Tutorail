@@ -4,26 +4,26 @@ import { gen_cone_vertex_from_camera } from "./gen_cone_vertex";
  *  Cone VBO creation
  * */
 function VBO_creation_sub(state, device) {
-    const cone_vertices = state.main_canvas.vertices_arr["cone"];
+    const cone_vertices = state.CPU_storage.vertices_arr["cone"];
     const coneVBO = device.createBuffer({
         size: cone_vertices.length * Float32Array.BYTES_PER_ELEMENT,
         usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
     });
 
-    state.sub_canvas.VBOs["cone"] = coneVBO;
+    state.GPU_memory.VBOs["cone"] = coneVBO;
 }
 
 /**
  *  Cone IBO creation
  * */ 
 function IBO_creation_sub(state, device) {
-    const IBO_Arr = state.sub_canvas.indices_arr["cone"];
+    const IBO_Arr = state.CPU_storage.indices_arr["cone"];
     const indexCount = IBO_Arr.length;
     const indexBuffer = device.createBuffer({
         size: indexCount * Uint16Array.BYTES_PER_ELEMENT,
         usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST,
     });
-    state.sub_canvas.IBOs["cone"] = indexBuffer;
+    state.GPU_memory.IBOs["cone"] = indexBuffer;
 }
 
 
@@ -31,12 +31,12 @@ function IBO_creation_sub(state, device) {
  *  Fill Cone VBO
  * */
 function Update_and_Fill_Cone_VBO(state, device) {
-    const prim_camera = state.main_canvas.prim_camera;
+    const prim_camera = state.camera.prim_camera;
 
     const cone_vec = gen_cone_vertex_from_camera(prim_camera);
-    state.sub_canvas.vertices_arr["cone"] = cone_vec; // update
+    state.CPU_storage.vertices_arr["cone"] = cone_vec; // update
 
-    const coneVBO = state.sub_canvas.VBOs["cone"];
+    const coneVBO = state.GPU_memory.VBOs["cone"];
     const writeBufferArr = new Float32Array(cone_vec);
     
     device.queue.writeBuffer(coneVBO, /*bufferOffset=*/0, writeBufferArr);
@@ -47,8 +47,8 @@ function Update_and_Fill_Cone_VBO(state, device) {
  * */ 
 function Fill_cone_IBO(state, device)
 {
-    const coneIBO = state.sub_canvas.IBOs["cone"];
-    const coneArr = state.sub_canvas.indices_arr["cone"];
+    const coneIBO = state.GPU_memory.IBOs["cone"];
+    const coneArr = state.CPU_storage.indices_arr["cone"];
     const writeBufferArr = new Uint16Array(coneArr);
     
     device.queue.writeBuffer(coneIBO, /*bufferOffset=*/0, writeBufferArr);
@@ -66,7 +66,7 @@ function manage_VBO_Layout_sub(state) {
             shaderLocation: 0, // 等到 vertex shader 章节进行介绍
         }],
     };
-    state.sub_canvas.VBO_Layouts["cone"] = vertexBufferLayout;
+    state.CPU_storage.VBO_Layouts["cone"] = vertexBufferLayout;
 
 }
 
@@ -93,7 +93,7 @@ function manage_IBO_sub(state, device) {
         2, 5, 1,
         5, 2, 6,
     ]);
-    state.sub_canvas.indices_arr["cone"] = default_idx_data_arr;
+    state.CPU_storage.indices_arr["cone"] = default_idx_data_arr;
     const indexCount = default_idx_data_arr.length;
     const indexBuffer = device.createBuffer({
         size: indexCount * Uint16Array.BYTES_PER_ELEMENT,
@@ -105,7 +105,7 @@ function manage_IBO_sub(state, device) {
         mapping.set(default_idx_data_arr, 0);
         indexBuffer.unmap();
     }
-    state.sub_canvas.IBOs["cone"] = indexBuffer;
+    state.GPU_memory.IBOs["cone"] = indexBuffer;
 }
 
 

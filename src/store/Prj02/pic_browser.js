@@ -90,18 +90,18 @@ export default {
 
                 const img_bitMap = await createImageBitmap(blob);
 
-                context.state.main_canvas.instancedBitMap.push(img_bitMap);
+                context.state.CPU_storage.instancedBitMap.push(img_bitMap);
             }
 
             context.state.fence["BITMAP_READY"] = true;
-            // console.log("bitmaps = ", context.state.main_canvas.instancedBitMap);
+            // console.log("bitmaps = ", context.state.CPU_storage.instancedBitMap);
         },
 
         async construct_mip_imgBitMap(context, ret_json_pack) {
             // console.log("json pack received = ", ret_json_pack);
 
             let flag = false;
-            if (context.state.main_canvas.mipBitMap.length == 13) {
+            if (context.state.CPU_storage.mipBitMap.length == 13) {
                 flag = true;
             }
 
@@ -125,14 +125,14 @@ export default {
 
                 }
                 if (flag) {
-                    context.state.main_canvas.mipBitMap[i] = current_level_mapArr;
+                    context.state.CPU_storage.mipBitMap[i] = current_level_mapArr;
                 }
                 else {
-                    context.state.main_canvas.mipBitMap.push(current_level_mapArr);
+                    context.state.CPU_storage.mipBitMap.push(current_level_mapArr);
                 }
             }
 
-            // console.log("bitmaps = ", context.state.main_canvas.mipBitMap);
+            // console.log("bitmaps = ", context.state.CPU_storage.mipBitMap);
             context.state.fence["BITMAP_READY"] = true;
         },
 
@@ -150,7 +150,7 @@ export default {
             /**
              *  Fetch Instance Picture from Server
              * */
-            const mip_info = state.main_canvas.mip_info;
+            const mip_info = state.CPU_storage.mip_info;
 
             const cmd_json = {
                 cmd: "fetch_mip_instance",
@@ -179,7 +179,7 @@ export default {
         init_camera(state, device) {
             init_Camera(state, device);
             init_Camera_sub(state, device);
-            console.log("main camera = ", state.main_canvas.prim_camera);
+            console.log("main camera = ", state.camera.prim_camera);
         },
 
 
@@ -231,7 +231,6 @@ export default {
              * */
             SBO_creation(state, device);
 
-            // state.fence["VBO_STAGE1_READY"] = true;
             console.log("Buffer/Texture creation on Device Done~");
         },
 
@@ -341,14 +340,14 @@ export default {
 
         /**
          *  Main View Render Loop
-         * */ 
+         * */
         main_canvas_renderLoop(state, device) {
             renderLoop_main(state, device);
         },
 
         /**
          *  Sub View Render Loop
-         * */ 
+         * */
         sub_canvas_renderLoop(state, device) {
             renderLoop_sub(state, device);
         },
@@ -359,6 +358,10 @@ export default {
         return {
             ws: undefined,
             GUI: {},
+            camera: {
+                prim_camera: {},
+                sub_camera: {},
+            },
             /**
              *  全局时序控制器，设置一些flag，并通过监控它们来获取正确的程序执行
              * */
@@ -369,47 +372,32 @@ export default {
                 BITMAP_READY: { val: false },       // BitMap构建完成，可以填充Texture Memory
                 RENDER_READY: { val: false },       // 
             },
-            main_canvas: {
+            GPU_memory: {
 
-                // 我們假定目前只有一個 canvas
-                canvas: null,
-                canvasFormat: null,
-                // 指向當前GPU上下文，所以只需要一個 
-                GPU_context: null,
-                // 渲染管線可以有多條，我們使用一個對象來定義
-                Pipelines: {},
-                Pipeline_Layouts: {},
-                // 各类纹理
+                VBOs: {},
+                IBOs: {},
+                UBOs: {},
+                SBOs: {},
                 Textures: {
                     instance: [],
                     mip_instance: [],
                 },
-                // VBO、UBO這些都可能有多個，所以同樣使用對象來定義
-                VBOs: {},
-                VBO_Layouts: {},
-                IBOs: {},
-                UBOs: {},
-                Layouts: {},
-                BindGroups: {},
-                SBOs: {}, // Storage Buffer Object
+            },
+            CPU_storage: {
                 storage_arr: {}, // storage data in CPU for SBOs
                 vertices_arr: {},
                 indices_arr: {},  // 暂时不需要
-                passDescriptors: {},
-                simulationParams: {}, // 仿真运行参数
 
-                instance_info: {}, // 描述instance数量等数据集信息，后端读取文件获得
-                additional_info: {},
-                prim_camera: {},
-                mouse_info: {},
-                keyboard_info: {},
+                VBO_Layouts: {},
+                Pipelines: {},
+                passDescriptors: {},
+                Pipeline_Layouts: {},
+                Layouts: {},
+                BindGroups: {},
+
                 instancedBitMap: [],
                 mipBitMap: [],
-                simu_info: {
-                    simu_pause: 0.0,
-                    simu_time: 0.0,
-                    simu_speed: 0.0,
-                },
+
                 atlas_info: {
                     size: [],       // 用于记录大纹理的长宽尺寸
                     uv_offset: [],  // 用于记录instance对应图片纹理在大纹理中的uv偏移
@@ -422,6 +410,31 @@ export default {
                     total_length: 0,// 用于记录miplevel的最大深度（也就是应该创建多少个大纹理）
                     arr: []         // 用于记录当前视场中图片的MipLevel信息
                 },
+
+                instance_info: {}, // 描述instance数量等数据集信息，后端读取文件获得
+                additional_info: {},
+            },
+            flow_temp: {
+
+            },
+            main_canvas: {
+
+                canvas: null,
+                canvasFormat: null,
+                // 指向當前GPU上下文，所以只需要一個 
+                GPU_context: null,
+
+
+                simulationParams: {}, // 仿真运行参数
+
+                prim_camera: {},
+                mouse_info: {},
+                keyboard_info: {},
+                simu_info: {
+                    simu_pause: 0.0,
+                    simu_time: 0.0,
+                    simu_speed: 0.0,
+                },
             },
             sub_canvas: {
                 // 我們假定目前只有一個 canvas
@@ -429,26 +442,6 @@ export default {
                 canvasFormat: null,
                 // 指向當前GPU上下文，所以只需要一個 
                 GPU_context: null,
-                // 渲染管線可以有多條，我們使用一個對象來定義
-                Pipelines: {},
-                Pipeline_Layouts: {},
-                // 各类纹理
-                Textures: {
-                    instance: []
-                },
-                // VBO、UBO這些都可能有多個，所以同樣使用對象來定義
-                VBOs: {},
-                VBO_Layouts: {},
-                IBOs: {},
-                UBOs: {},
-                Layouts: {},
-                BindGroups: {},
-                SBOs: {}, // Storage Buffer Object
-                vertices_arr: {}, // Float32Array
-                indices_arr: {},  // Int16Array
-                passDescriptors: {},
-                additional_info: {},
-                prim_camera: {},
                 mouse_info: {},
                 keyboard_info: {},
             }

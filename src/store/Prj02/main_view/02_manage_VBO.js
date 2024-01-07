@@ -6,8 +6,8 @@ import { gen_sphere_instance_atlas_info } from "./gen_curve_line";
  *  仅进行 VBO 的创建，并不进行填充
  * */
 function VBO_creation(state, device) {
-    const numInstances = state.main_canvas.instance_info["numInstances"];
-    const instanceInfoByteSize = state.main_canvas.instance_info["instanceInfoByteSize"];
+    const numInstances = state.CPU_storage.instance_info["numInstances"];
+    const instanceInfoByteSize = state.CPU_storage.instance_info["instanceInfoByteSize"];
     /**
      *  Instance VBO
      * */
@@ -16,18 +16,18 @@ function VBO_creation(state, device) {
         usage: GPUBufferUsage.VERTEX | GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
         // mappedAtCreation: true,
     })
-    state.main_canvas.VBOs["instances"] = instancesBuffer;
+    state.GPU_memory.VBOs["instances"] = instancesBuffer;
 
     /**
      *  Quad VBO
      * */
-    const quadArr = state.main_canvas.vertices_arr["quad"];
+    const quadArr = state.CPU_storage.vertices_arr["quad"];
     const quadVertexBuffer = device.createBuffer({
         size: quadArr.length * Float32Array.BYTES_PER_ELEMENT, // 6x vec4<f32>
         usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
         // mappedAtCreation: true,
     });
-    state.main_canvas.VBOs["quad"] = quadVertexBuffer;
+    state.GPU_memory.VBOs["quad"] = quadVertexBuffer;
 }
 
 
@@ -36,8 +36,8 @@ function VBO_creation(state, device) {
  * */
 
 function fill_Instance_Pos_VBO(state, device) {
-    let instanceArr = state.main_canvas.vertices_arr["instance"];
-    const instancesBuffer = state.main_canvas.VBOs["instances"];
+    let instanceArr = state.CPU_storage.vertices_arr["instance"];
+    const instancesBuffer = state.GPU_memory.VBOs["instances"];
     // console.log("instance_arr = ", instance_arr);
     const writeBufferArr = new Float32Array(instanceArr);
     device.queue.writeBuffer(instancesBuffer, 0, writeBufferArr);
@@ -48,8 +48,8 @@ function fill_Instance_Pos_VBO(state, device) {
  *  填充 quad VBO 信息
  * */
 function fill_Quad_VBO(state, device) {
-    let quadArr = state.main_canvas.vertices_arr["quad"];
-    const quadBuffer = state.main_canvas.VBOs["quad"];
+    let quadArr = state.CPU_storage.vertices_arr["quad"];
+    const quadBuffer = state.GPU_memory.VBOs["quad"];
 
     const writeBufferArr = new Float32Array(quadArr);
     device.queue.writeBuffer(quadBuffer, 0, writeBufferArr);
@@ -60,14 +60,14 @@ function fill_Quad_VBO(state, device) {
  *  更新/填充 VBOs Atlas Info 相关的信息，并上传GPU
  * */
 function fill_Atlas_Info_VBO(state, device) {
-    let instance_arr = state.main_canvas.vertices_arr["instance"];
-    let mip_arr = state.main_canvas.storage_arr["mip"];
+    let instance_arr = state.CPU_storage.vertices_arr["instance"];
+    let mip_arr = state.CPU_storage.storage_arr["mip"];
     // console.log("instance_arr = ", instance_arr);
     // console.log("mip_arr = ", mip_arr);
     gen_sphere_instance_atlas_info(state, instance_arr, mip_arr);
     const writeBufferArr = new Float32Array(instance_arr);
 
-    const instancesBuffer = state.main_canvas.VBOs["instances"];
+    const instancesBuffer = state.GPU_memory.VBOs["instances"];
     device.queue.writeBuffer(instancesBuffer, 0, writeBufferArr);
 }
 
@@ -78,7 +78,7 @@ function fill_Atlas_Info_VBO(state, device) {
 function manage_VBO_Layout(state) {
 
     const instance_VBO_Layout = {
-        arrayStride: state.main_canvas.instance_info["instanceInfoByteSize"], // 这里是否要补全 padding 呢？？？
+        arrayStride: state.CPU_storage.instance_info["instanceInfoByteSize"], // 这里是否要补全 padding 呢？？？
         stepMode: "instance", // 这个设置的含义是什么
         attributes: [
             {
@@ -125,7 +125,7 @@ function manage_VBO_Layout(state) {
             },
         ]
     };
-    state.main_canvas.VBO_Layouts["instances"] = instance_VBO_Layout;
+    state.CPU_storage.VBO_Layouts["instances"] = instance_VBO_Layout;
 
     const quad_VBO_Layout = {
         arrayStride: 4 * 4, // 这里是否要补全 padding 呢？？？
@@ -146,7 +146,7 @@ function manage_VBO_Layout(state) {
             },
         ]
     };
-    state.main_canvas.VBO_Layouts["quad"] = quad_VBO_Layout;
+    state.CPU_storage.VBO_Layouts["quad"] = quad_VBO_Layout;
 
 }
 

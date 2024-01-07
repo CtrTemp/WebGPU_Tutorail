@@ -43,13 +43,13 @@ function gen_sphere_instance_atlas_info(state, instance_arr, mip_arr) {
     // console.log("instance_arr = ", instance_arr);
     // console.log("mip_arr = ", mip_arr);
 
-    const counts = state.main_canvas.instance_info["numInstances"];
+    const counts = state.CPU_storage.instance_info["numInstances"];
 
-    const info_pack_stride = state.main_canvas.instance_info["instanceInfoByteSize"] / 4;
+    const info_pack_stride = state.CPU_storage.instance_info["instanceInfoByteSize"] / 4;
     const atlas_stride = 4 + 4 + 1 + 1;
 
     // 深拷贝，用于计数
-    let mip_counter = JSON.parse(JSON.stringify(state.main_canvas.mip_info["arr"]));
+    let mip_counter = JSON.parse(JSON.stringify(state.CPU_storage.mip_info["arr"]));
     // console.log("mip counter = ", mip_counter);
 
     for (let i = 0; i < counts; i++) {
@@ -61,7 +61,7 @@ function gen_sphere_instance_atlas_info(state, instance_arr, mip_arr) {
             continue;
         }
 
-        const atlas_info = state.main_canvas.mip_atlas_info[mip_level];
+        const atlas_info = state.CPU_storage.mip_atlas_info[mip_level];
 
         let img_idx = --mip_counter[mip_level];
 
@@ -109,9 +109,9 @@ function gen_customized_instance_pos(pos_arr, state) {
         ret_arr = ret_arr.concat([0.0, 1.0]);                   // liftime + idx
 
 
-        let uv_offset = state.main_canvas.atlas_info["uv_offset"][i % 5];
-        let tex_aspect = state.main_canvas.atlas_info["tex_aspect"][i % 5];
-        let uv_size = state.main_canvas.atlas_info["uv_size"][i % 5];
+        let uv_offset = state.CPU_storage.atlas_info["uv_offset"][i % 5];
+        let tex_aspect = state.CPU_storage.atlas_info["tex_aspect"][i % 5];
+        let uv_size = state.CPU_storage.atlas_info["uv_size"][i % 5];
 
         ret_arr = ret_arr.concat(uv_offset);                    // uv-offset
         ret_arr = ret_arr.concat(tex_aspect);                   // uv-scale

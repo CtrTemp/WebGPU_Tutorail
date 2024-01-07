@@ -13,7 +13,7 @@ function init_Camera_sub(state) {
     const gui = new dat.GUI();
     state.GUI["sub"] = gui;
 
-    let camera = state.sub_canvas.prim_camera;
+    let camera = state.camera.sub_camera;
 
 
     const fov = (2 * Math.PI) / 4;//90°
@@ -85,11 +85,11 @@ function init_Camera_sub(state) {
      *  GUI para 
      * */
     const range = 50;
-    gui.add(state.sub_canvas.prim_camera, 'pitch', -2 * Math.PI, 2 * Math.PI, 0.01);
-    gui.add(state.sub_canvas.prim_camera, 'yaw', -2 * Math.PI, 2 * Math.PI, 0.01);
-    gui.add(state.sub_canvas.prim_camera.pos, "x", -range, range, 0.01);
-    gui.add(state.sub_canvas.prim_camera.pos, "y", -range, range, 0.01);
-    gui.add(state.sub_canvas.prim_camera.pos, "z", -range, range, 0.01);
+    gui.add(state.camera.sub_camera, 'pitch', -2 * Math.PI, 2 * Math.PI, 0.01);
+    gui.add(state.camera.sub_camera, 'yaw', -2 * Math.PI, 2 * Math.PI, 0.01);
+    gui.add(state.camera.sub_camera.pos, "x", -range, range, 0.01);
+    gui.add(state.camera.sub_camera.pos, "y", -range, range, 0.01);
+    gui.add(state.camera.sub_camera.pos, "z", -range, range, 0.01);
 
 }
 
@@ -99,7 +99,7 @@ function init_Camera_sub(state) {
  *  根据相机的基本参数，更新相机矩阵
  * */
 function updateSubCamera(state, device) {
-    let camera = state.sub_canvas.prim_camera;
+    let camera = state.camera.sub_camera;
     let gui = state.GUI["sub"];
 
     camera.pos.x = camera.lookFrom.at(0);
@@ -135,7 +135,7 @@ function updateSubCamera(state, device) {
 
 
 function moveCamera(state, device) {
-    let camera = state.sub_canvas.prim_camera;
+    let camera = state.camera.sub_camera;
     camera["lookFrom"][2] = Math.sin(Date.now() / 1000) * 2 - 5;
     updateSubCamera(state, device, gui);
 }
@@ -148,7 +148,7 @@ function defocusCamera(state, device, gui) {
     let step = 50;
     let time_stride = 25; // 25ms 一次坐标更新（尽量保证与帧率一致或小于帧率）
 
-    let camera = state.sub_canvas.prim_camera;
+    let camera = state.camera.sub_camera;
 
     const current_camera_pos = camera.lookFrom;  // vec3
     const targets_camera_pos = vec3.fromValues(27.45, 28.94, -31.91);
@@ -182,12 +182,12 @@ function defocusCamera(state, device, gui) {
 
         // 进一步更新 viewDir
         let new_view_dir = vec3.fromValues(
-            Math.cos(state.sub_canvas.prim_camera["yaw"]) * Math.cos(state.sub_canvas.prim_camera["pitch"]),
-            Math.sin(state.sub_canvas.prim_camera["pitch"]),
-            Math.sin(state.sub_canvas.prim_camera["yaw"]) * Math.cos(state.sub_canvas.prim_camera["pitch"])
+            Math.cos(state.camera.sub_camera["yaw"]) * Math.cos(state.camera.sub_camera["pitch"]),
+            Math.sin(state.camera.sub_camera["pitch"]),
+            Math.sin(state.camera.sub_camera["yaw"]) * Math.cos(state.camera.sub_camera["pitch"])
         );
 
-        state.sub_canvas.prim_camera["viewDir"] = new_view_dir;
+        state.camera.sub_camera["viewDir"] = new_view_dir;
 
         updateSubCamera(state, device, gui);
 
@@ -239,7 +239,7 @@ function focusCamera(state, device, gui) {
     let step = 20;
     let time_stride = 25; // 25ms 一次坐标更新（尽量保证与帧率一致或小于帧率）
 
-    let camera = state.sub_canvas.prim_camera;
+    let camera = state.camera.sub_camera;
 
     const current_camera_pos = camera.lookFrom;  // vec3
     const targets_camera_pos = vec3.fromValues(9.15, 8.22, -8.91);
@@ -267,7 +267,7 @@ function focusCamera(state, device, gui) {
         camera["lookFrom"] = vec3.add(camera["lookFrom"], dir_vec_unit);
 
         // 更新 viewDir
-        let new_view_dir = (vec3.add(state.sub_canvas.prim_camera["viewDir"], view_dir_unit));
+        let new_view_dir = (vec3.add(state.camera.sub_camera["viewDir"], view_dir_unit));
 
         // 进而更新方位角
         const x = new_view_dir[0];
@@ -275,7 +275,7 @@ function focusCamera(state, device, gui) {
         camera["pitch"] = Math.asin(y);
         camera["yaw"] = Math.acos(x / (Math.sqrt(1 - y * y)));
 
-        state.sub_canvas.prim_camera["viewDir"] = new_view_dir;
+        state.camera.sub_camera["viewDir"] = new_view_dir;
 
         updateSubCamera(state, device, gui);
 
@@ -321,7 +321,7 @@ function focusOnRandomPic(state, device, gui, flow_info) {
     let step = 50;
     let time_stride = 25; // 25ms 一次坐标更新（尽量保证与帧率一致或小于帧率）
 
-    let camera = state.sub_canvas.prim_camera;
+    let camera = state.camera.sub_camera;
 
 
     /**
@@ -344,7 +344,7 @@ function focusOnRandomPic(state, device, gui, flow_info) {
 
 
     // view dir 直接更新，不用再计算方位角
-    const cur_view_dir = state.sub_canvas.prim_camera["viewDir"];
+    const cur_view_dir = state.camera.sub_camera["viewDir"];
     const new_view_dir = vec3.normalize(vec3.fromValues(-p_x, -p_y, -p_z));
     const view_dir_unit = vec3.divScalar(vec3.sub(new_view_dir, cur_view_dir), step);
 
@@ -371,7 +371,7 @@ function focusOnRandomPic(state, device, gui, flow_info) {
         camera["lookFrom"] = vec3.add(camera["lookFrom"], dir_vec_unit);
 
         // 更新 viewDir
-        let new_view_dir = (vec3.add(state.sub_canvas.prim_camera["viewDir"], view_dir_unit));
+        let new_view_dir = (vec3.add(state.camera.sub_camera["viewDir"], view_dir_unit));
 
         // 进而更新方位角
         const x = new_view_dir[0];
@@ -379,7 +379,7 @@ function focusOnRandomPic(state, device, gui, flow_info) {
         camera["pitch"] = Math.asin(y);
         camera["yaw"] = Math.acos(x / (Math.sqrt(1 - y * y)));
 
-        state.sub_canvas.prim_camera["viewDir"] = new_view_dir;
+        state.camera.sub_camera["viewDir"] = new_view_dir;
 
         updateSubCamera(state, device, gui);
         step_count++;

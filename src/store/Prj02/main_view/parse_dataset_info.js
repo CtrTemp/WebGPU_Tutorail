@@ -22,21 +22,21 @@ function parse_dataset_info(state, ret_json_pack) {
         // 3 * 4 + // padding （注意，padding补全是非常有必要的！）
         0;
 
-    state.main_canvas.instance_info["numInstances"] = numInstances;
-    state.main_canvas.instance_info["instanceInfoByteSize"] = instanceInfoByteSize;
+    state.CPU_storage.instance_info["numInstances"] = numInstances;
+    state.CPU_storage.instance_info["instanceInfoByteSize"] = instanceInfoByteSize;
 
 
     const mip_range = 13;  // mip level 0~12 后面也应该从数据库中读取获得，这里暂时写死
-    state.main_canvas.mip_info["total_length"] = mip_range;
-    state.main_canvas.mip_info["arr"] = new Array(mip_range).fill(0);
-    state.main_canvas["mip_atlas_info"] = new Array(mip_range).fill([]);
+    state.CPU_storage.mip_info["total_length"] = mip_range;
+    state.CPU_storage.mip_info["arr"] = new Array(mip_range).fill(0);
+    state.CPU_storage["mip_atlas_info"] = new Array(mip_range).fill([]);
 
 
     /**
      *  暂时在这里生成随机的场景信息
      * */ 
     const flow_info = gen_sphere_instance_pos(50, numInstances);
-    state.main_canvas.vertices_arr["instance"] = flow_info.flow_arr;
+    state.CPU_storage.vertices_arr["instance"] = flow_info.flow_arr;
 
     /**
      *  生成 quad 信息（这个的确是写死的）
@@ -50,16 +50,16 @@ function parse_dataset_info(state, ret_json_pack) {
         +1.0, -1.0, 1.0, 0.0,
         +1.0, +1.0, 1.0, 1.0
     ];
-    state.main_canvas.vertices_arr["quad"] = quadArr;
+    state.CPU_storage.vertices_arr["quad"] = quadArr;
 
     // console.log("flow_info = ", flow_info);
 
     /**
      *  生成 cone vertex 信息
      * */ 
-    const prim_camera = state.main_canvas.prim_camera;
+    const prim_camera = state.camera.prim_camera;
     const cone_vertices = gen_cone_vertex_from_camera(prim_camera);
-    state.main_canvas.vertices_arr["cone"] = cone_vertices;
+    state.CPU_storage.vertices_arr["cone"] = cone_vertices;
 
     /**
      *  生成 cone index 信息
@@ -85,7 +85,7 @@ function parse_dataset_info(state, ret_json_pack) {
         2, 5, 1,
         5, 2, 6,
     ];
-    state.sub_canvas.indices_arr["cone"] = default_idx_data_arr;
+    state.CPU_storage.indices_arr["cone"] = default_idx_data_arr;
     
 }
 

@@ -32,23 +32,23 @@ function mouseMovingCallback(state, device, event) {
     yoffset *= state.main_canvas.mouse_info["drag_speed"];
 
     // 这里的改变没有触发GUI的更新
-    state.main_canvas.prim_camera["yaw"] += xoffset;
-    state.main_canvas.prim_camera["pitch"] -= yoffset;
+    state.camera.prim_camera["yaw"] += xoffset;
+    state.camera.prim_camera["pitch"] -= yoffset;
 
-    if (state.main_canvas.prim_camera["pitch"] > Math.PI * 0.99) {
-        state.main_canvas.prim_camera["pitch"] = Math.PI * 0.99
+    if (state.camera.prim_camera["pitch"] > Math.PI * 0.99) {
+        state.camera.prim_camera["pitch"] = Math.PI * 0.99
     }
-    if (state.main_canvas.prim_camera["pitch"] < -Math.PI * 0.99) {
-        state.main_canvas.prim_camera["pitch"] = -Math.PI * 0.99
+    if (state.camera.prim_camera["pitch"] < -Math.PI * 0.99) {
+        state.camera.prim_camera["pitch"] = -Math.PI * 0.99
     }
 
     let new_view_dir = vec3.fromValues(
-        Math.cos(state.main_canvas.prim_camera["yaw"]) * Math.cos(state.main_canvas.prim_camera["pitch"]),
-        Math.sin(state.main_canvas.prim_camera["pitch"]),
-        Math.sin(state.main_canvas.prim_camera["yaw"]) * Math.cos(state.main_canvas.prim_camera["pitch"])
+        Math.cos(state.camera.prim_camera["yaw"]) * Math.cos(state.camera.prim_camera["pitch"]),
+        Math.sin(state.camera.prim_camera["pitch"]),
+        Math.sin(state.camera.prim_camera["yaw"]) * Math.cos(state.camera.prim_camera["pitch"])
     );
 
-    state.main_canvas.prim_camera["viewDir"] = new_view_dir;
+    state.camera.prim_camera["viewDir"] = new_view_dir;
 
 
     /**
@@ -58,7 +58,7 @@ function mouseMovingCallback(state, device, event) {
     const new_right_dir = vec3.normalize(vec3.cross(new_view_dir, vec3.fromValues(0.0, 1.0, 0.0)));
     const new_up_dir = vec3.normalize(vec3.cross(new_right_dir, new_view_dir));
 
-    state.main_canvas.prim_camera["up"] = new_up_dir;
+    state.camera.prim_camera["up"] = new_up_dir;
 
     updateMainCamera(state, device);
 }
@@ -80,7 +80,7 @@ function mouseClickCallback(state, flag) {
  *  Wheel
  * */
 function mouseWheelCallback(state, device, deltaY) {
-    let camera = state.main_canvas.prim_camera;
+    let camera = state.camera.prim_camera;
     camera["lookFrom"] = vec3.addScaled(
         camera["lookFrom"],
         camera["viewDir"],
@@ -96,7 +96,7 @@ function mouseWheelCallback(state, device, deltaY) {
 function canvasMouseInteraction(state, device) {
 
     let canvas = state.main_canvas.canvas;
-    // let camera = state.main_canvas.prim_camera;
+    // let camera = state.camera.prim_camera;
     const gui = state.GUI["prim"];
 
     canvas.addEventListener("mousemove", (event) => {
@@ -129,7 +129,7 @@ function leftMovingCallback(state, device) {
     const gui = state.GUI["prim"];
 
     if (state.main_canvas.keyboard_info.active == true) {
-        let camera = state.main_canvas.prim_camera;
+        let camera = state.camera.prim_camera;
         const leftDir = vec3.normalize(vec3.cross(camera["up"], camera["viewDir"]));
         camera["lookFrom"] = vec3.addScaled(
             camera["lookFrom"],
@@ -139,7 +139,7 @@ function leftMovingCallback(state, device) {
         updateMainCamera(state, device);
     }
     else {
-        let camera = state.sub_canvas.prim_camera;
+        let camera = state.camera.sub_camera;
         const leftDir = vec3.normalize(vec3.cross(camera["up"], camera["viewDir"]));
         camera["lookFrom"] = vec3.addScaled(
             camera["lookFrom"],
@@ -153,7 +153,7 @@ function leftMovingCallback(state, device) {
 
 function rightMovingCallback(state, device, gui) {
     if (state.main_canvas.keyboard_info.active == true) {
-        let camera = state.main_canvas.prim_camera;
+        let camera = state.camera.prim_camera;
         const leftDir = vec3.normalize(vec3.cross(camera["viewDir"], camera["up"]));
         camera["lookFrom"] = vec3.addScaled(
             camera["lookFrom"],
@@ -163,7 +163,7 @@ function rightMovingCallback(state, device, gui) {
         updateMainCamera(state, device);
     }
     else {
-        let camera = state.sub_canvas.prim_camera;
+        let camera = state.camera.sub_camera;
         const leftDir = vec3.normalize(vec3.cross(camera["viewDir"], camera["up"]));
         camera["lookFrom"] = vec3.addScaled(
             camera["lookFrom"],
@@ -176,7 +176,7 @@ function rightMovingCallback(state, device, gui) {
 
 function frontMovingCallback(state, device, gui) {
     if (state.main_canvas.keyboard_info.active == true) {
-        let camera = state.main_canvas.prim_camera;
+        let camera = state.camera.prim_camera;
         camera["lookFrom"] = vec3.addScaled(
             camera["lookFrom"],
             camera["viewDir"],
@@ -185,7 +185,7 @@ function frontMovingCallback(state, device, gui) {
         updateMainCamera(state, device);
     }
     else {
-        let camera = state.sub_canvas.prim_camera;
+        let camera = state.camera.sub_camera;
         camera["lookFrom"] = vec3.addScaled(
             camera["lookFrom"],
             camera["viewDir"],
@@ -198,7 +198,7 @@ function frontMovingCallback(state, device, gui) {
 
 function backMovingCallback(state, device, gui) {
     if (state.main_canvas.keyboard_info.active == true) {
-        let camera = state.main_canvas.prim_camera;
+        let camera = state.camera.prim_camera;
         camera["lookFrom"] = vec3.addScaled(
             camera["lookFrom"],
             camera["viewDir"],
@@ -207,7 +207,7 @@ function backMovingCallback(state, device, gui) {
         updateMainCamera(state, device);
     }
     else {
-        let camera = state.sub_canvas.prim_camera;
+        let camera = state.camera.sub_camera;
         camera["lookFrom"] = vec3.addScaled(
             camera["lookFrom"],
             camera["viewDir"],
@@ -220,7 +220,7 @@ function backMovingCallback(state, device, gui) {
 
 function upMovingCallback(state, device, gui) {
     if (state.main_canvas.keyboard_info.active == true) {
-        let camera = state.main_canvas.prim_camera;
+        let camera = state.camera.prim_camera;
         camera["lookFrom"] = vec3.addScaled(
             camera["lookFrom"],
             camera["up"],
@@ -229,7 +229,7 @@ function upMovingCallback(state, device, gui) {
         updateMainCamera(state, device);
     }
     else {
-        let camera = state.sub_canvas.prim_camera;
+        let camera = state.camera.sub_camera;
         camera["lookFrom"] = vec3.addScaled(
             camera["lookFrom"],
             camera["up"],
@@ -242,7 +242,7 @@ function upMovingCallback(state, device, gui) {
 
 function downMovingCallback(state, device, gui) {
     if (state.main_canvas.keyboard_info.active == true) {
-        let camera = state.main_canvas.prim_camera;
+        let camera = state.camera.prim_camera;
         camera["lookFrom"] = vec3.addScaled(
             camera["lookFrom"],
             camera["up"],
@@ -251,7 +251,7 @@ function downMovingCallback(state, device, gui) {
         updateMainCamera(state, device);
     }
     else {
-        let camera = state.sub_canvas.prim_camera;
+        let camera = state.camera.sub_camera;
         camera["lookFrom"] = vec3.addScaled(
             camera["lookFrom"],
             camera["up"],
@@ -301,7 +301,7 @@ function exchangeKeyboardActive(state) {
  * */
 function canvasKeyboardInteraction(state, device, gui) {
 
-    let camera = state.main_canvas.prim_camera;
+    let camera = state.camera.prim_camera;
 
     /**
      *  初始化状态下，将键盘交互绑定在主视图上
@@ -331,17 +331,19 @@ function canvasKeyboardInteraction(state, device, gui) {
             case "E".charCodeAt(0):
                 upMovingCallback(state, device, gui);
                 break;
-            // defocus
-            case "K".charCodeAt(0):
-                defocusCamera(state, device, gui);
-                break;
+            // // defocus
+            // case "K".charCodeAt(0):
+            //     defocusCamera(state, device, gui);
+            //     break;
+            // // focus
             // case "F".charCodeAt(0):
             //     // focusCamera(state, device, gui);
             //     focusOnRandomPic(state, device, gui, flow_info);
             //     break;
-            case "P".charCodeAt(0):
-                pauseBrowseAnimation(state, device)
-                break;
+            // // pause
+            // case "P".charCodeAt(0):
+            //     pauseBrowseAnimation(state, device)
+            //     break;
             case "B".charCodeAt(0):
                 exchangeKeyboardActive(state)
                 break;

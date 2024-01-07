@@ -11,7 +11,7 @@ function mipTexture_creation(state, device) {
     });
 
 
-    state.main_canvas.additional_info["sampler"] = sampler;
+    state.CPU_storage.additional_info["sampler"] = sampler;
 
 
     /**
@@ -22,7 +22,7 @@ function mipTexture_creation(state, device) {
         format: "depth24plus",
         usage: GPUTextureUsage.RENDER_ATTACHMENT
     });
-    state.main_canvas.Textures["depth"] = depthTexture;
+    state.GPU_memory.Textures["depth"] = depthTexture;
 
 
 
@@ -31,16 +31,16 @@ function mipTexture_creation(state, device) {
      * */
 
     const global_texture_size = Math.pow(2, 13);    // 大纹理尺寸为 8192*8192
-    state.main_canvas.atlas_info["size"] = [global_texture_size, global_texture_size];
+    state.CPU_storage.atlas_info["size"] = [global_texture_size, global_texture_size];
 
     /**
      *  遍历每一个 MipLevel
      * */
-    const mip_range = state.main_canvas.mip_info["total_length"];
+    const mip_range = state.CPU_storage.mip_info["total_length"];
     for (let i = 0; i < mip_range; i++) {
         // 为每一个MipLevel创建一张大纹理
         const global_texture_size = Math.pow(2, 13);  // 8192 * 8192
-        state.main_canvas.atlas_info["size"].push([global_texture_size, global_texture_size]);
+        state.CPU_storage.atlas_info["size"].push([global_texture_size, global_texture_size]);
         const instanceTexture = device.createTexture({
             dimension: '2d',
             size: [global_texture_size, global_texture_size, 1],
@@ -51,20 +51,20 @@ function mipTexture_creation(state, device) {
                 GPUTextureUsage.RENDER_ATTACHMENT,
         });
 
-        state.main_canvas.Textures["mip_instance"].push(instanceTexture);
+        state.GPU_memory.Textures["mip_instance"].push(instanceTexture);
     }
 }
 
 
 function fill_Mip_Texture(state, device) {
 
-    const mipBitMap = state.main_canvas["mipBitMap"];
+    const mipBitMap = state.CPU_storage["mipBitMap"];
 
     
-    state.main_canvas["mip_atlas_info"].fill([]); // 清空原有图片集信息
+    state.CPU_storage["mip_atlas_info"].fill([]); // 清空原有图片集信息
 
 
-    const global_texture_size = state.main_canvas.atlas_info["size"][0];
+    const global_texture_size = state.CPU_storage.atlas_info["size"][0];
 
     /**
      *  遍历每一个 MipLevel
@@ -75,7 +75,7 @@ function fill_Mip_Texture(state, device) {
         /**
          *  为每一个MipLevel创建一张大纹理
          * */
-        const instanceTexture = state.main_canvas.Textures["mip_instance"][i]
+        const instanceTexture = state.GPU_memory.Textures["mip_instance"][i]
 
         let offset = 0;         // 总内存偏移
 
@@ -126,12 +126,12 @@ function fill_Mip_Texture(state, device) {
             height_offset += img_height;
 
         }
-        state.main_canvas["mip_atlas_info"][i] = mip_atlas_info;
-        state.main_canvas.Textures["mip_instance"][i] = instanceTexture;
+        state.CPU_storage["mip_atlas_info"][i] = mip_atlas_info;
+        state.GPU_memory.Textures["mip_instance"][i] = instanceTexture;
     }
 
 
-    // console.log("atlas info = ", state.main_canvas["mip_atlas_info"]);
+    // console.log("atlas info = ", state.CPU_storage["mip_atlas_info"]);
 }
 
 

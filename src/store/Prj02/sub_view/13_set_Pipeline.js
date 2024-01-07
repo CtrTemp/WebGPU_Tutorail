@@ -8,10 +8,12 @@ function Pipeline_creation_sub(state, device) {
 
     const Render_Pipeline_Layout = device.createPipelineLayout({
         bindGroupLayouts: [
-            state.sub_canvas.Layouts["mvp"]
+            state.CPU_storage.Layouts["mvp_sub"]
         ]
     });
-    state.sub_canvas.Layouts["render_cone"] = Render_Pipeline_Layout;
+    state.CPU_storage.Layouts["render_cone"] = Render_Pipeline_Layout;
+
+    console.log("Render_Pipeline_Layout = ", Render_Pipeline_Layout);
 
     // 创建渲染流水线
     const Render_Pipeline = device.createRenderPipeline({
@@ -21,7 +23,7 @@ function Pipeline_creation_sub(state, device) {
                 code: vertex_shader
             }),
             entryPoint: "vertexMain",   // 指定 vertex shader 入口函数
-            buffers: [state.sub_canvas.VBO_Layouts["cone"]]
+            buffers: [state.CPU_storage.VBO_Layouts["cone"]]
         },
         fragment: {
             module: device.createShaderModule({
@@ -62,7 +64,7 @@ function Pipeline_creation_sub(state, device) {
         },
     });
 
-    state.sub_canvas.Pipelines["cone"] = Render_Pipeline;
+    state.CPU_storage.Pipelines["render_cone"] = Render_Pipeline;
 
     
     const conRenderPassDescriptor = {
@@ -73,26 +75,26 @@ function Pipeline_creation_sub(state, device) {
             storeOp: "store",
         }],
         depthStencilAttachment: {
-            view: state.sub_canvas.Textures["depth"].createView(),
+            view: state.GPU_memory.Textures["depth_sub"].createView(),
             depthClearValue: 1.0,
             depthLoadOp: 'clear',
             depthStoreOp: 'store',
         },
     };
-    state.sub_canvas.passDescriptors["cone"] = conRenderPassDescriptor;
+    state.CPU_storage.passDescriptors["render_cone"] = conRenderPassDescriptor;
 
     /* ########################### Render Instance Pipeline ########################### */
 
     const render_instances_pipeline = device.createRenderPipeline({
-        layout: state.main_canvas.Pipeline_Layouts["render_instances"],
+        layout: state.CPU_storage.Pipeline_Layouts["render_instances"],
         vertex: {
             module: device.createShaderModule({
                 code: instance_vert
             }),
             entryPoint: "vs_main",
             buffers: [
-                state.main_canvas.VBO_Layouts["instances"],
-                state.main_canvas.VBO_Layouts["quad"]
+                state.CPU_storage.VBO_Layouts["instances"],
+                state.CPU_storage.VBO_Layouts["quad"]
             ]
         },
         fragment: {
@@ -102,7 +104,7 @@ function Pipeline_creation_sub(state, device) {
             entryPoint: "fs_main",
             targets: [
                 {
-                    format: state.main_canvas["canvasFormat"],
+                    format: state.sub_canvas["canvasFormat"],
                     // 這一步是設置 半透明度 必須的要素（取消设置，得到默认遮挡）
                     // 如果使用半透明，则将以下 depthStencil 中 depthWriteEnabled 字段设为 false
                     blend: {
@@ -131,7 +133,7 @@ function Pipeline_creation_sub(state, device) {
             format: 'depth24plus',
         },
     });
-    state.sub_canvas.Pipelines["render_instances"] = render_instances_pipeline;
+    state.CPU_storage.Pipelines["render_instances_sub"] = render_instances_pipeline;
 
 
 
@@ -145,13 +147,13 @@ function Pipeline_creation_sub(state, device) {
             }
         ],
         depthStencilAttachment: {
-            view: state.sub_canvas.Textures["depth"].createView(),
+            view: state.GPU_memory.Textures["depth_sub"].createView(),
             depthClearValue: 1.0,
             depthLoadOp: "clear",
             depthStoreOp: "store"
         }
     };
-    state.sub_canvas.passDescriptors["render_instances"] = renderInstancePassDescriptor;
+    state.CPU_storage.passDescriptors["render_instances_sub"] = renderInstancePassDescriptor;
 
 }
 

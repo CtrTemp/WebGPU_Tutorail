@@ -54,7 +54,7 @@ function recursive_read_file(idx, edge, mip_info_arr, ret_arr) {
 
         recursive_read_file(idx + 1, edge, mip_info_arr, ret_arr).then(() => {
 
-            const read_dir = `../../../data_set/mip${idx}`;
+            const read_dir = `../../../data_set/mip_img/mip${idx}`;
             fs.readdir(read_dir, (err, files) => {
                 if (err) {
                     console.log("read data err = ", err);
@@ -64,7 +64,7 @@ function recursive_read_file(idx, edge, mip_info_arr, ret_arr) {
                     // console.log("files = ", files);
                     for (let j = 0; j < mip_info_arr[idx]; j++) {
 
-                        const path = `../../../data_set/mip${idx}/` + files[j];
+                        const path = `../../../data_set/mip_img/mip${idx}/` + files[j];
                         const file = fs.readFileSync(path);
 
                         url_arr.push(file.toString("base64"));
@@ -100,5 +100,13 @@ async function read_mip_instance(json_pack) {
 
     return ret_promise;
 }
+
+
+/**
+ *  读取 quad_img 图片方格
+ * */ 
+
+
+
 
 module.exports = { read_instanced_texture, read_mip_instance }

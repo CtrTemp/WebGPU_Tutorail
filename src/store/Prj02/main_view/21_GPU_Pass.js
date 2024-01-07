@@ -11,10 +11,10 @@ function compute_miplevel_pass(state, device) {
     // Encode Pass 填充
     const encoder = device.createCommandEncoder();
     const pass = encoder.beginComputePass();
-    pass.setPipeline(state.main_canvas.Pipelines["update_miplevel"]);
-    pass.setBindGroup(0, state.main_canvas.BindGroups["mip_instance_arr"]); // group0
-    pass.setBindGroup(1, state.main_canvas.BindGroups["view_projection"]);  // group1
-    pass.dispatchWorkgroups(Math.ceil(state.main_canvas.instance_info["numInstances"] / 64));
+    pass.setPipeline(state.CPU_storage.Pipelines["update_miplevel"]);
+    pass.setBindGroup(0, state.CPU_storage.BindGroups["mip_instance_arr"]); // group0
+    pass.setBindGroup(1, state.CPU_storage.BindGroups["view_projection"]);  // group1
+    pass.dispatchWorkgroups(Math.ceil(state.CPU_storage.instance_info["numInstances"] / 64));
     pass.end();
 
     // 队列提交
@@ -27,14 +27,14 @@ function compute_miplevel_pass(state, device) {
  * */
 async function read_back_miplevel_pass(state, device) {
 
-    const instancesLen = state.main_canvas.instance_info["numInstances"];
+    const instancesLen = state.CPU_storage.instance_info["numInstances"];
 
     // Encode Pass 填充
     const readBack_encoder = device.createCommandEncoder();
     readBack_encoder.copyBufferToBuffer(
-        state.main_canvas.SBOs["mip"],
+        state.GPU_memory.SBOs["mip"],
         0,
-        state.main_canvas.SBOs["mip_read_back"],
+        state.GPU_memory.SBOs["mip_read_back"],
         0,
         instancesLen * 4,
     );
@@ -43,19 +43,19 @@ async function read_back_miplevel_pass(state, device) {
     device.queue.submit([readBack_encoder.finish()]);
 
 
-    await state.main_canvas.SBOs["mip_read_back"].mapAsync(GPUMapMode.READ);
-    const arrBuffer = new Float32Array(state.main_canvas.SBOs["mip_read_back"].getMappedRange());
+    await state.GPU_memory.SBOs["mip_read_back"].mapAsync(GPUMapMode.READ);
+    const arrBuffer = new Float32Array(state.GPU_memory.SBOs["mip_read_back"].getMappedRange());
     // console.log("hello~ readBuffer = ", arrBuffer);
 
-    state.main_canvas.storage_arr["mip"] = arrBuffer;
+    state.CPU_storage.storage_arr["mip"] = arrBuffer;
 
-    state.main_canvas.mip_info["arr"].fill(0);
+    state.CPU_storage.mip_info["arr"].fill(0);
 
     for (let i = 0; i < instancesLen; i++) {
         if (arrBuffer[i] == -1) {
             continue;
         }
-        state.main_canvas.mip_info["arr"][Math.floor(arrBuffer[i])]++;
+        state.CPU_storage.mip_info["arr"][Math.floor(arrBuffer[i])]++;
     }
 }
 
@@ -68,13 +68,13 @@ async function read_back_miplevel_pass(state, device) {
 function render_main_view(state, device, renderPassDescriptor) {
     const encoder = device.createCommandEncoder();
     const pass = encoder.beginRenderPass(renderPassDescriptor);
-    pass.setPipeline(state.main_canvas.Pipelines["render_instances"]);
-    pass.setBindGroup(0, state.main_canvas.BindGroups["mvp_pack"]);
-    pass.setBindGroup(1, state.main_canvas.BindGroups["sample"]);
-    pass.setBindGroup(2, state.main_canvas.BindGroups["mip_vertex"]);
-    pass.setVertexBuffer(0, state.main_canvas.VBOs["instances"]);
-    pass.setVertexBuffer(1, state.main_canvas.VBOs["quad"]);
-    pass.draw(6, state.main_canvas.instance_info["numInstances"], 0, 0);
+    pass.setPipeline(state.CPU_storage.Pipelines["render_instances"]);
+    pass.setBindGroup(0, state.CPU_storage.BindGroups["mvp_pack"]);
+    pass.setBindGroup(1, state.CPU_storage.BindGroups["sample"]);
+    pass.setBindGroup(2, state.CPU_storage.BindGroups["mip_vertex"]);
+    pass.setVertexBuffer(0, state.GPU_memory.VBOs["instances"]);
+    pass.setVertexBuffer(1, state.GPU_memory.VBOs["quad"]);
+    pass.draw(6, state.CPU_storage.instance_info["numInstances"], 0, 0);
     pass.end();
 
     device.queue.submit([encoder.finish()]);

@@ -24,7 +24,7 @@ function Layout_creation(state, device) {
             }
         }]
     });
-    state.main_canvas.Layouts["mvp"] = MVP_UBO_Layout;
+    state.CPU_storage.Layouts["mvp"] = MVP_UBO_Layout;
 
 
     /**
@@ -40,7 +40,7 @@ function Layout_creation(state, device) {
             }
         }]
     });
-    state.main_canvas.Layouts["mip_vertex"] = MIP_SBO_Layout_Vertex;
+    state.CPU_storage.Layouts["mip_vertex"] = MIP_SBO_Layout_Vertex;
     // read-write-storage for compute shader stage
     const MIP_SBO_Layout_Compute = device.createBindGroupLayout({
         entries: [{
@@ -51,7 +51,7 @@ function Layout_creation(state, device) {
             }
         }]
     });
-    state.main_canvas.Layouts["mip_compute"] = MIP_SBO_Layout_Compute;
+    state.CPU_storage.Layouts["mip_compute"] = MIP_SBO_Layout_Compute;
 
 
     /**
@@ -174,7 +174,7 @@ function Layout_creation(state, device) {
 
         ]
     });
-    state.main_canvas.Layouts["sample"] = Sample_UBO_Layout;
+    state.CPU_storage.Layouts["sample"] = Sample_UBO_Layout;
 
     const compute_UBO_Layout = device.createBindGroupLayout({
         entries: [
@@ -194,7 +194,7 @@ function Layout_creation(state, device) {
             }
         ]
     });
-    state.main_canvas.Layouts["compute"] = compute_UBO_Layout;
+    state.CPU_storage.Layouts["compute"] = compute_UBO_Layout;
 
 
     /**
@@ -216,7 +216,7 @@ function Layout_creation(state, device) {
             }
         }]
     });
-    state.main_canvas.Layouts["view_projection"] = VP_UBO_Layout;
+    state.CPU_storage.Layouts["view_projection"] = VP_UBO_Layout;
 
 
     /**
@@ -237,7 +237,7 @@ function Layout_creation(state, device) {
             }
         }]
     });
-    state.main_canvas.Layouts["mip_instance_arr"] = mipArr_instanceArr_UBO_Layout;
+    state.CPU_storage.Layouts["mip_instance_arr"] = mipArr_instanceArr_UBO_Layout;
 
 }
 

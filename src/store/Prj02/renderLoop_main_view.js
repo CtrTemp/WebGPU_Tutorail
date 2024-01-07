@@ -16,7 +16,7 @@ function renderLoop_main(state, device) {
      * */
     let timerID = setInterval(() => {
 
-        const renderPassDescriptor = state.main_canvas.passDescriptors["render_instances"];
+        const renderPassDescriptor = state.CPU_storage.passDescriptors["render_instances"];
 
         // 自适应 canvas 大小
         const window_width = window.innerWidth;
@@ -35,18 +35,18 @@ function renderLoop_main(state, device) {
         /**
          *  depth attachement reconstruct
          * */ 
-        state.main_canvas.Textures["depth"].destroy();
-        state.main_canvas.Textures["depth"] = device.createTexture({
+        state.GPU_memory.Textures["depth"].destroy();
+        state.GPU_memory.Textures["depth"] = device.createTexture({
             size: [window_width, window_height],
             format: 'depth24plus',
             usage: GPUTextureUsage.RENDER_ATTACHMENT,
         })
-        renderPassDescriptor.depthStencilAttachment.view = state.main_canvas.Textures["depth"].createView();
+        renderPassDescriptor.depthStencilAttachment.view = state.GPU_memory.Textures["depth"].createView();
 
         /**
          *  camera aspect update
          * */ 
-        state.main_canvas.prim_camera["aspect"] = window_width / window_height;
+        state.camera.prim_camera["aspect"] = window_width / window_height;
 
         /**
          *  submit a pass to CMD queue as a render call

@@ -10,12 +10,12 @@ function Pipeline_creation(state, device) {
 
     const particle_Render_Pipeline_Layout = device.createPipelineLayout({
         bindGroupLayouts: [
-            state.main_canvas.Layouts["mvp"],           // group0
-            state.main_canvas.Layouts["sample"],        // group1
-            state.main_canvas.Layouts["mip_vertex"]     // group2
+            state.CPU_storage.Layouts["mvp"],           // group0
+            state.CPU_storage.Layouts["sample"],        // group1
+            state.CPU_storage.Layouts["mip_vertex"]     // group2
         ]
     });
-    state.main_canvas.Pipeline_Layouts["render_instances"] = particle_Render_Pipeline_Layout;
+    state.CPU_storage.Pipeline_Layouts["render_instances"] = particle_Render_Pipeline_Layout;
 
 
     const render_instances_pipeline = device.createRenderPipeline({
@@ -26,8 +26,8 @@ function Pipeline_creation(state, device) {
             }),
             entryPoint: "vs_main",
             buffers: [
-                state.main_canvas.VBO_Layouts["instances"],
-                state.main_canvas.VBO_Layouts["quad"]
+                state.CPU_storage.VBO_Layouts["instances"],
+                state.CPU_storage.VBO_Layouts["quad"]
             ]
         },
         fragment: {
@@ -66,7 +66,7 @@ function Pipeline_creation(state, device) {
             format: 'depth24plus',
         },
     });
-    state.main_canvas.Pipelines["render_instances"] = render_instances_pipeline;
+    state.CPU_storage.Pipelines["render_instances"] = render_instances_pipeline;
 
 
     const renderPassDescriptor = {
@@ -79,13 +79,13 @@ function Pipeline_creation(state, device) {
             }
         ],
         depthStencilAttachment: {
-            view: state.main_canvas.Textures["depth"].createView(),
+            view: state.GPU_memory.Textures["depth"].createView(),
             depthClearValue: 1.0,
             depthLoadOp: "clear",
             depthStoreOp: "store"
         }
     };
-    state.main_canvas.passDescriptors["render_instances"] = renderPassDescriptor;
+    state.CPU_storage.passDescriptors["render_instances"] = renderPassDescriptor;
 
 
 
@@ -94,11 +94,11 @@ function Pipeline_creation(state, device) {
      * */ 
     const MipLevel_Compute_Pipeline_Layout = device.createPipelineLayout({
         bindGroupLayouts: [
-            state.main_canvas.Layouts["mip_instance_arr"],  // group0
-            state.main_canvas.Layouts["view_projection"],   // group1
+            state.CPU_storage.Layouts["mip_instance_arr"],  // group0
+            state.CPU_storage.Layouts["view_projection"],   // group1
         ]
     });
-    state.main_canvas.Pipeline_Layouts["compute_miplevel"] = MipLevel_Compute_Pipeline_Layout;
+    state.CPU_storage.Pipeline_Layouts["compute_miplevel"] = MipLevel_Compute_Pipeline_Layout;
 
     const MipLevelUpdatePipeline = device.createComputePipeline({
         layout: MipLevel_Compute_Pipeline_Layout,
@@ -109,7 +109,7 @@ function Pipeline_creation(state, device) {
             entryPoint: 'simulate',
         },
     });
-    state.main_canvas.Pipelines["update_miplevel"] = MipLevelUpdatePipeline;
+    state.CPU_storage.Pipelines["update_miplevel"] = MipLevelUpdatePipeline;
 }
 
 

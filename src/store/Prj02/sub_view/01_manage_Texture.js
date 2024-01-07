@@ -8,7 +8,7 @@ function subViewTexture_creation(state, device) {
         usage: GPUTextureUsage.RENDER_ATTACHMENT,
     });
 
-    state.sub_canvas.Textures["depth"] = depthTexture;
+    state.GPU_memory.Textures["depth_sub"] = depthTexture;
 }
 
 

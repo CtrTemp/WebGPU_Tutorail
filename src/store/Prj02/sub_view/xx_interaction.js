@@ -28,25 +28,25 @@ function mouseMovingCallback(state, device, event, gui) {
     yoffset *= state.sub_canvas.mouse_info["drag_speed"];
 
     // 这里的改变没有触发GUI的更新
-    state.sub_canvas.prim_camera["yaw"] += xoffset;
-    state.sub_canvas.prim_camera["pitch"] -= yoffset;
+    state.camera.sub_camera["yaw"] += xoffset;
+    state.camera.sub_camera["pitch"] -= yoffset;
 
-    if (state.sub_canvas.prim_camera["pitch"] > Math.PI * 0.99) {
-        state.sub_canvas.prim_camera["pitch"] = Math.PI * 0.99
+    if (state.camera.sub_camera["pitch"] > Math.PI * 0.99) {
+        state.camera.sub_camera["pitch"] = Math.PI * 0.99
     }
-    if (state.sub_canvas.prim_camera["pitch"] < -Math.PI * 0.99) {
-        state.sub_canvas.prim_camera["pitch"] = -Math.PI * 0.99
+    if (state.camera.sub_camera["pitch"] < -Math.PI * 0.99) {
+        state.camera.sub_camera["pitch"] = -Math.PI * 0.99
     }
 
     let new_view_dir = vec3.fromValues(
-        Math.cos(state.sub_canvas.prim_camera["yaw"]) * Math.cos(state.sub_canvas.prim_camera["pitch"]),
-        Math.sin(state.sub_canvas.prim_camera["pitch"]),
-        Math.sin(state.sub_canvas.prim_camera["yaw"]) * Math.cos(state.sub_canvas.prim_camera["pitch"])
+        Math.cos(state.camera.sub_camera["yaw"]) * Math.cos(state.camera.sub_camera["pitch"]),
+        Math.sin(state.camera.sub_camera["pitch"]),
+        Math.sin(state.camera.sub_camera["yaw"]) * Math.cos(state.camera.sub_camera["pitch"])
     );
 
-    state.sub_canvas.prim_camera["viewDir"] = new_view_dir;
+    state.camera.sub_camera["viewDir"] = new_view_dir;
 
-    // console.log("camera = ", state.sub_canvas.prim_camera["viewDir"]);
+    // console.log("camera = ", state.camera.sub_camera["viewDir"]);
 
     updateSubCamera(state, device);
 }
@@ -68,7 +68,7 @@ function mouseClickCallback(state, flag) {
  *  Wheel
  * */
 function mouseWheelCallback(state, device, deltaY, gui) {
-    let camera = state.sub_canvas.prim_camera;
+    let camera = state.camera.sub_camera;
     camera["lookFrom"] = vec3.addScaled(
         camera["lookFrom"],
         camera["viewDir"],
@@ -84,7 +84,7 @@ function mouseWheelCallback(state, device, deltaY, gui) {
 function subCanvasMouseInteraction(state, device) {
 
     let canvas = state.sub_canvas.canvas;
-    let camera = state.sub_canvas.prim_camera;
+    let camera = state.camera.sub_camera;
 
     const gui = state.GUI["sub"];
 
