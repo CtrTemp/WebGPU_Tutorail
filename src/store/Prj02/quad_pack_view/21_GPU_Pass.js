@@ -30,6 +30,8 @@ function compute_miplevel_pass_quad(state, device) {
  * */
 async function read_back_miplevel_pass_quad(state, device) {
 
+    state.GPU_memory.SBOs["mip_read_back"].unmap();
+
     const instancesLen = state.CPU_storage.instance_info["numInstances"];
 
 
@@ -61,6 +63,7 @@ async function read_back_miplevel_pass_quad(state, device) {
         }
         state.CPU_storage.mip_info["arr"][Math.floor(arrBuffer[i])]++;
     }
+
 }
 
 

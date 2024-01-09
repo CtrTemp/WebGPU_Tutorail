@@ -47,7 +47,7 @@ function mouseMovingCallback(state, device, event, gui) {
 
     // console.log("camera = ", state.camera.sub_camera["viewDir"]);
 
-    update_sub_Camera(state, device);
+    // update_sub_Camera(state, device);
 }
 
 /**
@@ -74,7 +74,7 @@ function mouseWheelCallback(state, device, deltaY, gui) {
         -state.sub_canvas.mouse_info["wheel_speed"] * deltaY
     );
 
-    update_sub_Camera(state, device);
+    // update_sub_Camera(state, device);
 }
 
 /**

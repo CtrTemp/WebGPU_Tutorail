@@ -54,7 +54,7 @@ function mouseMovingCallback(state, device, event) {
 
     state.camera.prim_camera["up"] = new_up_dir;
 
-    update_prim_Camera(state, device);
+    // update_prim_Camera(state, device);
 }
 
 /**
@@ -81,7 +81,7 @@ function mouseWheelCallback(state, device, deltaY) {
         -state.main_canvas.mouse_info["wheel_speed"] * deltaY
     );
 
-    update_prim_Camera(state, device);
+    // update_prim_Camera(state, device);
 }
 
 /**
@@ -130,7 +130,7 @@ function leftMovingCallback(state, device) {
             leftDir,
             state.main_canvas.keyboard_info["speed"]
         );
-        update_prim_Camera(state, device);
+        // update_prim_Camera(state, device);
     }
     else {
         let camera = state.camera.sub_camera;
@@ -154,7 +154,7 @@ function rightMovingCallback(state, device, gui) {
             leftDir,
             state.main_canvas.keyboard_info["speed"]
         );
-        update_prim_Camera(state, device);
+        // update_prim_Camera(state, device);
     }
     else {
         let camera = state.camera.sub_camera;
@@ -176,7 +176,7 @@ function frontMovingCallback(state, device, gui) {
             camera["viewDir"],
             state.main_canvas.keyboard_info["speed"]
         );
-        update_prim_Camera(state, device);
+        // update_prim_Camera(state, device);
     }
     else {
         let camera = state.camera.sub_camera;
@@ -198,7 +198,7 @@ function backMovingCallback(state, device, gui) {
             camera["viewDir"],
             -state.main_canvas.keyboard_info["speed"]
         );
-        update_prim_Camera(state, device);
+        // update_prim_Camera(state, device);
     }
     else {
         let camera = state.camera.sub_camera;
@@ -220,7 +220,7 @@ function upMovingCallback(state, device, gui) {
             camera["up"],
             state.main_canvas.keyboard_info["speed"]
         );
-        update_prim_Camera(state, device);
+        // update_prim_Camera(state, device);
     }
     else {
         let camera = state.camera.sub_camera;
@@ -242,7 +242,7 @@ function downMovingCallback(state, device, gui) {
             camera["up"],
             -state.main_canvas.keyboard_info["speed"]
         );
-        update_prim_Camera(state, device);
+        // update_prim_Camera(state, device);
     }
     else {
         let camera = state.camera.sub_camera;

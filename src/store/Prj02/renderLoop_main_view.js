@@ -1,5 +1,6 @@
 
 import { render_main_view } from "./main_view/21_GPU_Pass";
+import { update_prim_Camera } from "./utils/set_camera";
 
 /**
  *  Stage04：启动渲染循环
@@ -15,6 +16,13 @@ function renderLoop_main(state, device) {
      *  Loop
      * */
     let timerID = setInterval(() => {
+
+
+        /**
+         *  Update Camera Parameter
+         * */ 
+
+        update_prim_Camera(state, device);
 
         const renderPassDescriptor = state.main_view_flow_3d.passDescriptors["render_instances"];
 

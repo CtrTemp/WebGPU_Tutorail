@@ -168,7 +168,7 @@ export default {
             }
 
             // console.log("bitmaps = ", context.state.CPU_storage.mipBitMap);
-            console.log("【Global】BitMaps Parse Done~");
+            // console.log("【Global】BitMaps Parse Done~");
             context.state.main_view_flow_3d.fence["BITMAP_READY"] = true;
         },
 
@@ -184,8 +184,8 @@ export default {
             await read_back_miplevel_pass_quad(state, device);
             // sub debug view 到这一步就可以进行绘制了
             state.sub_view_flow_debug.fence["RENDER_READY"] = true;
-            console.log("【Global】Mip data read back Done~");
-            console.log("【Sub】Ready to render sub view Debug~");
+            // console.log("【Global】Mip data read back Done~");
+            // console.log("【Sub】Ready to render sub view Debug~");
 
             /**
              *  Fetch Instance Picture from Server
@@ -204,11 +204,11 @@ export default {
         async readBackMipLevel_and_FetchQuadPicSetFromServer(context, device) {
             const state = context.state;
             await read_back_miplevel_pass_quad(state, device);
-            console.log("【Global】Mip data read back Done~");
-            console.log("【Sub】Ready to render sub view Debug~");
+            // console.log("【Global】Mip data read back Done~");
+            // console.log("【Sub】Ready to render sub view Debug~");
             state.sub_view_flow_debug.fence["RENDER_READY"] = true;
             const mip_info = state.CPU_storage.mip_info;
-            console.log("mip_info = ", mip_info);
+            // console.log("mip_info = ", mip_info);
 
             const cmd_json = {
                 cmd: "fetch_quad_instance",
@@ -257,7 +257,7 @@ export default {
             }
 
             // console.log("bitmaps = ", context.state.CPU_storage.quadBitMap);
-            console.log("【Global】BitMaps Parse Done~");
+            // console.log("【Global】BitMaps Parse Done~");
             context.state.main_view_flow_quad.fence["BITMAP_READY"] = true;
         },
 
@@ -475,6 +475,14 @@ export default {
 
             console.log("【Main】Compute mipLevel submit Done~");
 
+            
+            /**
+             *  Register Interaction Events
+             * */
+            // Main-Canvas
+            canvasMouseInteraction(state, device);
+            canvasKeyboardInteraction(state, device);
+            console.log("【Main】Interaction register for Main Canvas Done~");
         },
 
         main_quad_flow_bitmap_ready_ready(state, device) {
@@ -496,13 +504,6 @@ export default {
             fill_Quad_VBO(state, device);
 
 
-            /**
-             *  Register Interaction Events
-             * */
-            // Main-Canvas
-            canvasMouseInteraction(state, device);
-            canvasKeyboardInteraction(state, device);
-            console.log("【Main】Interaction register for Main Canvas Done~");
 
 
             state.main_view_flow_quad.fence["RENDER_READY"] = true;
