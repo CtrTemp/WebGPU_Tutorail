@@ -111,8 +111,13 @@ store.state.ws.onmessage = function (e) {
   // 而源数据的获取, 即与server进行通信获取message的部分, 在server_link.js中
   switch (json_pack.cmd) {
     case "void_ret_pack":
-      console.log("server void test info pack return");
-      store.commit("pic_browser/main_canvas_initialize_stage1", json_pack);
+      console.log("【Test】server void test info pack return");
+      // store.commit("pic_browser/main_canvas_initialize_stage1", json_pack);
+      // 这里不应该直接提交，而应该通过触发标志位，来间接触发后续初始化
+      store.state.pic_browser.CPU_storage.server_raw_info["dataset_info_pack"] = json_pack;
+      // store.state.pic_browser.main_view_flow_3d.fence["DATASET_INFO_READY"] = true;
+      store.state.pic_browser.main_view_flow_quad.fence["DATASET_INFO_READY"] = true;
+      store.state.pic_browser.sub_view_flow_debug.fence["DATASET_INFO_READY"] = true;
       break;
     case "instanced_texture_pack":
       // console.log("haha, msg received");
@@ -120,7 +125,14 @@ store.state.ws.onmessage = function (e) {
       break;
 
     case "mip_texture_pack":
-      store.dispatch("pic_browser/construct_mip_imgBitMap", json_pack);
+      // store.dispatch("pic_browser/construct_mip_imgBitMap", json_pack);
+      store.state.pic_browser.CPU_storage.server_raw_info["mip_bitmap_info_pack"] = json_pack;
+      // store.state.pic_browser.main_view_flow_3d.fence["BITMAP_RECEIVED"] = true;
+      break;
+      
+    case "quad_texture_pack":
+      store.state.pic_browser.CPU_storage.server_raw_info["quad_bitmap_info_pack"] = json_pack;
+      store.state.pic_browser.main_view_flow_quad.fence["BITMAP_RECEIVED"] = true;
       break;
 
     default:

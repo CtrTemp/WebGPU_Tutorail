@@ -71,34 +71,20 @@ onMounted(() => {
 
 })
 
-// 需要用一个返回该属性的 getter 函数来完成监听： 
 
-
-// /**
-//  *  Device Ready
-//  * */
-// watch(() => {
-//     return store.state.pic_browser.fence["DEVICE_READY"];
-// }, (flag) => {
-//     if (flag == true) {
-//         console.log("device ready!!!");
-//         // store.commit("pic_browser/main_canvas_initialize_stage1", device);
-//         // store.commit("pic_browser/main_canvas_initialize_stage1", device);
-//     }
-// }, { deep: true });
-
+/*** ################# Main View 3d Flow Control Watcher Group ################# ***/
 
 
 /**
  *  Dataset Info Ready
  * */
+// 需要用一个返回该属性的 getter 函数来完成监听：
 watch(() => {
-    return store.state.pic_browser.fence["DATASET_INFO_READY"];
+    return store.state.pic_browser.main_view_flow_3d.fence["DATASET_INFO_READY"];
 }, (flag) => {
     if (flag == true) {
-        store.commit("pic_browser/main_canvas_initialize_stage2", device);
-        store.commit("pic_browser/main_canvas_initialize_stage3", device);
-        store.commit("pic_browser/main_canvas_initialize_stage4", device);
+        store.commit("pic_browser/main_flow_dataset_info_ready", device);
+
     }
 }, { deep: true });
 
@@ -108,10 +94,22 @@ watch(() => {
  *  Compute MipLevel Submit
  * */
 watch(() => {
-    return store.state.pic_browser.fence["COMPUTE_MIP_SUBMIT"];
+    return store.state.pic_browser.main_view_flow_3d.fence["COMPUTE_MIP_SUBMIT"];
 }, (flag) => {
     if (flag == true) {
         store.dispatch("pic_browser/readBackMipLevel_and_FetchPicFromServer", device);
+    }
+}, { deep: true });
+
+
+/**
+ *  BitMap Received
+ * */
+watch(() => {
+    return store.state.pic_browser.main_view_flow_3d.fence["BITMAP_RECEIVED"];
+}, (flag) => {
+    if (flag == true) {
+        store.dispatch("pic_browser/construct_mip_imgBitMap");
     }
 }, { deep: true });
 
@@ -121,11 +119,10 @@ watch(() => {
  *  BitMap Ready
  * */
 watch(() => {
-    return store.state.pic_browser.fence["BITMAP_READY"];
+    return store.state.pic_browser.main_view_flow_3d.fence["BITMAP_READY"];
 }, (flag) => {
     if (flag == true) {
-        console.log("bitmap ready!!!");
-        store.commit("pic_browser/main_canvas_initialize_stage5", device);
+        store.commit("pic_browser/main_flow_bitmap_ready", device);
     }
 }, { deep: true });
 
@@ -135,15 +132,98 @@ watch(() => {
  *  RENDER Ready
  * */
 watch(() => {
-    return store.state.pic_browser.fence["RENDER_READY"];
+    return store.state.pic_browser.main_view_flow_3d.fence["RENDER_READY"];
 }, (flag) => {
     if (flag == true) {
-        console.log("RENDER MAIN ready!!!");
         store.commit("pic_browser/main_canvas_renderLoop", device);
+        // store.commit("pic_browser/sub_canvas_renderLoop", device);
+    }
+}, { deep: true });
+
+
+
+
+
+/*** ################# Sub View Debug Flow Control Watcher Group ################# ***/
+
+watch(() => {
+    return store.state.pic_browser.sub_view_flow_debug.fence["DATASET_INFO_READY"];
+}, (flag) => {
+    if (flag == true) {
+        store.commit("pic_browser/sub_flow_dataset_info_ready", device);
+    }
+}, { deep: true });
+
+watch(() => {
+    return store.state.pic_browser.sub_view_flow_debug.fence["RENDER_READY"];
+}, (flag) => {
+    if (flag == true) {
         store.commit("pic_browser/sub_canvas_renderLoop", device);
     }
 }, { deep: true });
 
+
+
+/*** ################# Main View Quad Flow Control Watcher Group ################# ***/
+
+watch(() => {
+    return store.state.pic_browser.main_view_flow_quad.fence["DATASET_INFO_READY"];
+}, (flag) => {
+    if (flag == true) {
+        store.commit("pic_browser/main_quad_flow_dataset_info_ready", device);
+
+    }
+}, { deep: true });
+
+
+watch(() => {
+    return store.state.pic_browser.main_view_flow_quad.fence["COMPUTE_MIP_SUBMIT"];
+}, (flag) => {
+    if (flag == true) {
+        store.dispatch("pic_browser/readBackMipLevel_and_FetchQuadPicSetFromServer", device);
+    }
+}, { deep: true });
+
+
+
+
+/**
+ *  BitMap Received
+ * */
+watch(() => {
+    return store.state.pic_browser.main_view_flow_quad.fence["BITMAP_RECEIVED"];
+}, (flag) => {
+    if (flag == true) {
+        store.dispatch("pic_browser/construct_quad_imgBitMap");
+    }
+}, { deep: true });
+
+
+
+/**
+ *  BitMap Ready
+ * */
+watch(() => {
+    return store.state.pic_browser.main_view_flow_quad.fence["BITMAP_READY"];
+}, (flag) => {
+    if (flag == true) {
+        // console.log("quad bit map ready");
+        store.commit("pic_browser/main_quad_flow_bitmap_ready_ready", device);
+    }
+}, { deep: true });
+
+
+
+/**
+ *  RENDER Ready
+ * */
+watch(() => {
+    return store.state.pic_browser.main_view_flow_quad.fence["RENDER_READY"];
+}, (flag) => {
+    if (flag == true) {
+        store.commit("pic_browser/main_canvas_quad_renderLoop", device);
+    }
+}, { deep: true });
 
 
 </script>

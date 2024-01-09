@@ -8,12 +8,12 @@ function Pipeline_creation_sub(state, device) {
 
     const Render_Pipeline_Layout = device.createPipelineLayout({
         bindGroupLayouts: [
-            state.CPU_storage.Layouts["mvp_sub"]
+            state.sub_view_flow_debug.Layouts["mvp_pack"]
         ]
     });
-    state.CPU_storage.Layouts["render_cone"] = Render_Pipeline_Layout;
+    state.sub_view_flow_debug.Layouts["render_cone"] = Render_Pipeline_Layout;
 
-    console.log("Render_Pipeline_Layout = ", Render_Pipeline_Layout);
+    // console.log("Render_Pipeline_Layout = ", Render_Pipeline_Layout);
 
     // 创建渲染流水线
     const Render_Pipeline = device.createRenderPipeline({
@@ -56,7 +56,7 @@ function Pipeline_creation_sub(state, device) {
         /**
          *  使能深度测试，小于深度纹理的fragment将会被保留，如果要使用半透明物体，则以下的
          * depthWriteEnabled 字段需要被设为 false
-         * */ 
+         * */
         depthStencil: {
             depthWriteEnabled: false,
             depthCompare: 'less',
@@ -64,9 +64,9 @@ function Pipeline_creation_sub(state, device) {
         },
     });
 
-    state.CPU_storage.Pipelines["render_cone"] = Render_Pipeline;
+    state.sub_view_flow_debug.Pipelines["render_cone"] = Render_Pipeline;
 
-    
+
     const conRenderPassDescriptor = {
         colorAttachments: [{
             view: undefined,
@@ -81,12 +81,12 @@ function Pipeline_creation_sub(state, device) {
             depthStoreOp: 'store',
         },
     };
-    state.CPU_storage.passDescriptors["render_cone"] = conRenderPassDescriptor;
+    state.sub_view_flow_debug.passDescriptors["render_cone"] = conRenderPassDescriptor;
 
     /* ########################### Render Instance Pipeline ########################### */
 
     const render_instances_pipeline = device.createRenderPipeline({
-        layout: state.CPU_storage.Pipeline_Layouts["render_instances"],
+        layout: state.main_view_flow_quad.Pipeline_Layouts["render_instances"],
         vertex: {
             module: device.createShaderModule({
                 code: instance_vert
@@ -133,7 +133,7 @@ function Pipeline_creation_sub(state, device) {
             format: 'depth24plus',
         },
     });
-    state.CPU_storage.Pipelines["render_instances_sub"] = render_instances_pipeline;
+    state.sub_view_flow_debug.Pipelines["render_instances_sub"] = render_instances_pipeline;
 
 
 
@@ -153,7 +153,7 @@ function Pipeline_creation_sub(state, device) {
             depthStoreOp: "store"
         }
     };
-    state.CPU_storage.passDescriptors["render_instances_sub"] = renderInstancePassDescriptor;
+    state.sub_view_flow_debug.passDescriptors["render_instances_sub"] = renderInstancePassDescriptor;
 
 }
 

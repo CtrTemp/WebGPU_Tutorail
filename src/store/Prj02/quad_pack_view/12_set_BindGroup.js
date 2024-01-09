@@ -1,10 +1,11 @@
-function BindGroup_creation(state, device) {
+function BindGroup_creation_quad(state, device) {
 
     /**
      *  MVP Matrix UBO
      * */
+
     const MVP_UBO_BindGroup = device.createBindGroup({
-        layout: state.main_view_flow_3d.Layouts["mvp_pack"],
+        layout: state.main_view_flow_quad.Layouts["mvp_pack"],
         entries: [
             {
                 binding: 0,
@@ -26,7 +27,7 @@ function BindGroup_creation(state, device) {
             },
         ]
     });
-    state.main_view_flow_3d.BindGroups["mvp_pack"] = MVP_UBO_BindGroup;
+    state.main_view_flow_quad.BindGroups["mvp_pack"] = MVP_UBO_BindGroup;
 
 
     /**
@@ -34,7 +35,7 @@ function BindGroup_creation(state, device) {
      * */
     // vertex stage (read only)
     const MIP_SBO_BindGroup_Vertex = device.createBindGroup({
-        layout: state.main_view_flow_3d.Layouts["mip_vertex"],
+        layout: state.main_view_flow_quad.Layouts["mip_vertex"],
         entries: [
             {
                 binding: 0,
@@ -44,12 +45,12 @@ function BindGroup_creation(state, device) {
             }
         ]
     });
-    state.main_view_flow_3d.BindGroups["mip_vertex"] = MIP_SBO_BindGroup_Vertex;
+    state.main_view_flow_quad.BindGroups["mip_vertex"] = MIP_SBO_BindGroup_Vertex;
 
 
     // compute stage (read-write)
     const MIP_SBO_BindGroup_Compute = device.createBindGroup({
-        layout: state.main_view_flow_3d.Layouts["mip_compute"],
+        layout: state.main_view_flow_quad.Layouts["mip_compute"],
         entries: [
             {
                 binding: 0,
@@ -59,95 +60,95 @@ function BindGroup_creation(state, device) {
             }
         ]
     });
-    state.main_view_flow_3d.BindGroups["mip_compute"] = MIP_SBO_BindGroup_Compute;
+    state.main_view_flow_quad.BindGroups["mip_compute"] = MIP_SBO_BindGroup_Compute;
 
 
     /**
      *  Sampler and Texture
      * */
     const Sample_UBO_BindGroup = device.createBindGroup({
-        layout: state.main_view_flow_3d.Layouts["sample"],
+        layout: state.main_view_flow_quad.Layouts["sample"],
         entries: [
             // texture sampler
             {
                 binding: 0,
                 resource: state.CPU_storage.additional_info["sampler"]
             },
-            // big texture Mip0
+            // quad texture Mip0
             {
                 binding: 1,
-                resource: state.GPU_memory.Textures["mip_instance"][0].createView()
+                resource: state.GPU_memory.Textures["quad_instance"][0].createView()
             },
-            // big texture Mip1
+            // quad texture Mip1
             {
                 binding: 2,
-                resource: state.GPU_memory.Textures["mip_instance"][1].createView()
+                resource: state.GPU_memory.Textures["quad_instance"][1].createView()
             },
-            // big texture Mip2
+            // quad texture Mip2
             {
                 binding: 3,
-                resource: state.GPU_memory.Textures["mip_instance"][2].createView()
+                resource: state.GPU_memory.Textures["quad_instance"][2].createView()
             },
-            // big texture Mip3
+            // quad texture Mip3
             {
                 binding: 4,
-                resource: state.GPU_memory.Textures["mip_instance"][3].createView()
+                resource: state.GPU_memory.Textures["quad_instance"][3].createView()
             },
-            // big texture Mip4
+            // quad texture Mip4
             {
                 binding: 5,
-                resource: state.GPU_memory.Textures["mip_instance"][4].createView()
+                resource: state.GPU_memory.Textures["quad_instance"][4].createView()
             },
-            // big texture Mip5
+            // quad texture Mip5
             {
                 binding: 6,
-                resource: state.GPU_memory.Textures["mip_instance"][5].createView()
+                resource: state.GPU_memory.Textures["quad_instance"][5].createView()
             },
-            // big texture Mip6
+            // quad texture Mip6
             {
                 binding: 7,
-                resource: state.GPU_memory.Textures["mip_instance"][6].createView()
+                resource: state.GPU_memory.Textures["quad_instance"][6].createView()
             },
-            // big texture Mip7
+            // quad texture Mip7
             {
                 binding: 8,
-                resource: state.GPU_memory.Textures["mip_instance"][7].createView()
+                resource: state.GPU_memory.Textures["quad_instance"][7].createView()
             },
-            // big texture Mip8
+            // quad texture Mip8
             {
                 binding: 9,
-                resource: state.GPU_memory.Textures["mip_instance"][8].createView()
+                resource: state.GPU_memory.Textures["quad_instance"][8].createView()
             },
-            // big texture Mip9
+            // quad texture Mip9
             {
                 binding: 10,
-                resource: state.GPU_memory.Textures["mip_instance"][9].createView()
+                resource: state.GPU_memory.Textures["quad_instance"][9].createView()
             },
-            // big texture Mip10
+            // quad texture Mip10
             {
                 binding: 11,
-                resource: state.GPU_memory.Textures["mip_instance"][10].createView()
+                resource: state.GPU_memory.Textures["quad_instance"][10].createView()
             },
-            // big texture Mip11
+            // quad texture Mip11
             {
                 binding: 12,
-                resource: state.GPU_memory.Textures["mip_instance"][11].createView()
+                resource: state.GPU_memory.Textures["quad_instance"][11].createView()
             },
-            // big texture Mip12
+            // quad texture Mip12
             {
                 binding: 13,
-                resource: state.GPU_memory.Textures["mip_instance"][12].createView()
+                resource: state.GPU_memory.Textures["quad_instance"][12].createView()
             },
         ]
     });
-    state.main_view_flow_3d.BindGroups["sample"] = Sample_UBO_BindGroup;
+    state.main_view_flow_quad.BindGroups["sample"] = Sample_UBO_BindGroup;
 
 
     /**
      *  update instance pos compute stage
      * */
     const simu_particles_BindGroup = device.createBindGroup({
-        layout: state.main_view_flow_3d.Layouts["compute"],
+        layout: state.main_view_flow_quad.Layouts["compute"],
         entries: [
             {
                 binding: 0,
@@ -166,14 +167,14 @@ function BindGroup_creation(state, device) {
         ]
     });
 
-    state.main_view_flow_3d.BindGroups["compute"] = simu_particles_BindGroup;
+    state.main_view_flow_quad.BindGroups["compute"] = simu_particles_BindGroup;
 
 
     /**
      *  View and Projection Matrix UBO for update MipLevel compute shader
      * */
     const VP_UBO_BindGroup = device.createBindGroup({
-        layout: state.main_view_flow_3d.Layouts["view_projection"],
+        layout: state.main_view_flow_quad.Layouts["view_projection"],
         entries: [
             {
                 binding: 0,
@@ -189,13 +190,13 @@ function BindGroup_creation(state, device) {
             },
         ]
     });
-    state.main_view_flow_3d.BindGroups["view_projection"] = VP_UBO_BindGroup;
+    state.main_view_flow_quad.BindGroups["view_projection"] = VP_UBO_BindGroup;
 
     /**
      *  mipArr and instanceArr SBO for update MipLevel compute shader
      * */
     const compute_instance_MipLevel_BindGroup = device.createBindGroup({
-        layout: state.main_view_flow_3d.Layouts["mip_instance_arr"],
+        layout: state.main_view_flow_quad.Layouts["mip_instance_arr"],
         entries: [
             {
                 binding: 0,
@@ -216,10 +217,10 @@ function BindGroup_creation(state, device) {
         ]
     });
 
-    state.main_view_flow_3d.BindGroups["mip_instance_arr"] = compute_instance_MipLevel_BindGroup;
+    state.main_view_flow_quad.BindGroups["mip_instance_arr"] = compute_instance_MipLevel_BindGroup;
 }
 
 
 
 
-export { BindGroup_creation }
+export { BindGroup_creation_quad }

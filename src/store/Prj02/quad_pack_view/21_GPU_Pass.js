@@ -7,13 +7,13 @@
 /**
  *  调用 compute shader 计算 MipLevel
  * */
-function compute_miplevel_pass(state, device) {
+function compute_miplevel_pass_quad(state, device) {
     // Encode Pass 填充
     const encoder = device.createCommandEncoder();
     const pass = encoder.beginComputePass();
-    pass.setPipeline(state.main_view_flow_3d.Pipelines["update_miplevel"]);
-    pass.setBindGroup(0, state.main_view_flow_3d.BindGroups["mip_instance_arr"]); // group0
-    pass.setBindGroup(1, state.main_view_flow_3d.BindGroups["view_projection"]);  // group1
+    pass.setPipeline(state.main_view_flow_quad.Pipelines["update_miplevel"]);
+    pass.setBindGroup(0, state.main_view_flow_quad.BindGroups["mip_instance_arr"]); // group0
+    pass.setBindGroup(1, state.main_view_flow_quad.BindGroups["view_projection"]);  // group1
     pass.dispatchWorkgroups(Math.ceil(state.CPU_storage.instance_info["numInstances"] / 64));
     pass.end();
 
@@ -21,16 +21,17 @@ function compute_miplevel_pass(state, device) {
     device.queue.submit([encoder.finish()]);
     // 在这里更新标志位
 
-    state.main_view_flow_3d.fence["COMPUTE_MIP_SUBMIT"] = true;
+    state.main_view_flow_quad.fence["COMPUTE_MIP_SUBMIT"] = true;
 }
 
 /**
  *  查看MipLevel计算返回结果
  *  注意，这里是异步函数，使用 await 等待获取结果，在 dispatch 中执行调用
  * */
-async function read_back_miplevel_pass(state, device) {
+async function read_back_miplevel_pass_quad(state, device) {
 
     const instancesLen = state.CPU_storage.instance_info["numInstances"];
+
 
     // Encode Pass 填充
     const readBack_encoder = device.createCommandEncoder();
@@ -68,13 +69,13 @@ async function read_back_miplevel_pass(state, device) {
 /**
  *  main view render pass
  * */
-function render_main_view(state, device, renderPassDescriptor) {
+function render_main_view_quad(state, device, renderPassDescriptor) {
     const encoder = device.createCommandEncoder();
     const pass = encoder.beginRenderPass(renderPassDescriptor);
-    pass.setPipeline(state.main_view_flow_3d.Pipelines["render_instances"]);
-    pass.setBindGroup(0, state.main_view_flow_3d.BindGroups["mvp_pack"]);
-    pass.setBindGroup(1, state.main_view_flow_3d.BindGroups["sample"]);
-    pass.setBindGroup(2, state.main_view_flow_3d.BindGroups["mip_vertex"]);
+    pass.setPipeline(state.main_view_flow_quad.Pipelines["render_instances"]);
+    pass.setBindGroup(0, state.main_view_flow_quad.BindGroups["mvp_pack"]);
+    pass.setBindGroup(1, state.main_view_flow_quad.BindGroups["sample"]);
+    pass.setBindGroup(2, state.main_view_flow_quad.BindGroups["mip_vertex"]);
     pass.setVertexBuffer(0, state.GPU_memory.VBOs["instances"]);
     pass.setVertexBuffer(1, state.GPU_memory.VBOs["quad"]);
     pass.draw(6, state.CPU_storage.instance_info["numInstances"], 0, 0);
@@ -86,8 +87,8 @@ function render_main_view(state, device, renderPassDescriptor) {
 
 
 export {
-    compute_miplevel_pass,
-    read_back_miplevel_pass,
-    render_main_view,
+    compute_miplevel_pass_quad,
+    read_back_miplevel_pass_quad,
+    render_main_view_quad,
 }
 

@@ -17,7 +17,7 @@ function renderLoop_sub(state, device) {
      * */
     setInterval(() => {
 
-        const renderPassDescriptor = state.CPU_storage.passDescriptors["render_instances_sub"];
+        const renderPassDescriptor = state.sub_view_flow_debug.passDescriptors["render_instances_sub"];
         /**
          *  update cone vertex from current main camera
          * */ 

@@ -21,7 +21,7 @@ function Layout_creation_sub(state, device) {
             }
         }]
     });
-    state.CPU_storage.Layouts["mvp_sub"] = MVP_UBO_Layout;
+    state.sub_view_flow_debug.Layouts["mvp_pack"] = MVP_UBO_Layout;
 }
 
 

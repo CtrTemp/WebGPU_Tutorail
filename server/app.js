@@ -15,7 +15,7 @@ const socket_server_handler = function (socket) {
 
         // 进入Router，进行业务发配
         service_distribution(socket, json_pack).then(send_data => {
-            // console.log("send_data = ", send_data); // 数据库操作完毕后，返回数据库端发回前端的数据
+            // console.log("send_data = ", send_data.cmd); // 数据库操作完毕后，返回数据库端发回前端的数据
             socket.sendText(JSON.stringify(send_data));
         });
 

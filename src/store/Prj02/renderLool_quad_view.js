@@ -1,10 +1,10 @@
 
-import { render_main_view } from "./main_view/21_GPU_Pass";
+import { render_main_view_quad } from "./quad_pack_view/21_GPU_Pass";
 
 /**
  *  Stage04：启动渲染循环
  * */
-function renderLoop_main(state, device) {
+function renderLoop_quad(state, device) {
 
     /**
      *  Pre-Process
@@ -16,7 +16,7 @@ function renderLoop_main(state, device) {
      * */
     let timerID = setInterval(() => {
 
-        const renderPassDescriptor = state.main_view_flow_3d.passDescriptors["render_instances"];
+        const renderPassDescriptor = state.main_view_flow_quad.passDescriptors["render_instances"];
 
         // 自适应 canvas 大小
         const window_width = window.innerWidth;
@@ -51,10 +51,10 @@ function renderLoop_main(state, device) {
         /**
          *  submit a pass to CMD queue as a render call
          * */ 
-        render_main_view(state, device, renderPassDescriptor);
+        render_main_view_quad(state, device, renderPassDescriptor);
 
     }, 25);
 }
 
 
-export { renderLoop_main }
+export { renderLoop_quad }

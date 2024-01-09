@@ -1,7 +1,7 @@
 function BindGroup_creation_sub(state, device) {
 
     const MVP_UBO_BindGroup = device.createBindGroup({
-        layout: state.CPU_storage.Layouts["mvp_sub"],
+        layout: state.sub_view_flow_debug.Layouts["mvp_pack"],
         entries: [
             {
                 binding: 0,
@@ -23,7 +23,7 @@ function BindGroup_creation_sub(state, device) {
             },
         ]
     });
-    state.CPU_storage.BindGroups["mvp_sub"] = MVP_UBO_BindGroup;
+    state.sub_view_flow_debug.BindGroups["mvp_pack"] = MVP_UBO_BindGroup;
 
 }
 

@@ -1,4 +1,4 @@
-function Layout_creation(state, device) {
+function Layout_creation_quad(state, device) {
 
     /**
      *  MVP matrix UBO
@@ -24,7 +24,7 @@ function Layout_creation(state, device) {
             }
         }]
     });
-    state.main_view_flow_3d.Layouts["mvp_pack"] = MVP_UBO_Layout;
+    state.main_view_flow_quad.Layouts["mvp_pack"] = MVP_UBO_Layout;
 
 
     /**
@@ -40,7 +40,7 @@ function Layout_creation(state, device) {
             }
         }]
     });
-    state.main_view_flow_3d.Layouts["mip_vertex"] = MIP_SBO_Layout_Vertex;
+    state.main_view_flow_quad.Layouts["mip_vertex"] = MIP_SBO_Layout_Vertex;
     // read-write-storage for compute shader stage
     const MIP_SBO_Layout_Compute = device.createBindGroupLayout({
         entries: [{
@@ -51,7 +51,7 @@ function Layout_creation(state, device) {
             }
         }]
     });
-    state.main_view_flow_3d.Layouts["mip_compute"] = MIP_SBO_Layout_Compute;
+    state.main_view_flow_quad.Layouts["mip_compute"] = MIP_SBO_Layout_Compute;
 
 
     /**
@@ -67,7 +67,7 @@ function Layout_creation(state, device) {
                     type: "filtering"
                 }
             },
-            // big texture Mip0
+            // quad texture Mip0
             {
                 binding: 1,
                 visibility: GPUShaderStage.FRAGMENT,
@@ -75,7 +75,7 @@ function Layout_creation(state, device) {
                     sampleType: 'float'
                 }
             },
-            // big texture Mip1
+            // quad texture Mip1
             {
                 binding: 2,
                 visibility: GPUShaderStage.FRAGMENT,
@@ -83,7 +83,7 @@ function Layout_creation(state, device) {
                     sampleType: 'float'
                 }
             },
-            // big texture Mip2
+            // quad texture Mip2
             {
                 binding: 3,
                 visibility: GPUShaderStage.FRAGMENT,
@@ -91,7 +91,7 @@ function Layout_creation(state, device) {
                     sampleType: 'float'
                 }
             },
-            // big texture Mip3
+            // quad texture Mip3
             {
                 binding: 4,
                 visibility: GPUShaderStage.FRAGMENT,
@@ -99,7 +99,7 @@ function Layout_creation(state, device) {
                     sampleType: 'float'
                 }
             },
-            // big texture Mip4
+            // quad texture Mip4
             {
                 binding: 5,
                 visibility: GPUShaderStage.FRAGMENT,
@@ -107,7 +107,7 @@ function Layout_creation(state, device) {
                     sampleType: 'float'
                 }
             },
-            // big texture Mip5
+            // quad texture Mip5
             {
                 binding: 6,
                 visibility: GPUShaderStage.FRAGMENT,
@@ -115,7 +115,7 @@ function Layout_creation(state, device) {
                     sampleType: 'float'
                 }
             },
-            // big texture Mip6
+            // quad texture Mip6
             {
                 binding: 7,
                 visibility: GPUShaderStage.FRAGMENT,
@@ -123,7 +123,7 @@ function Layout_creation(state, device) {
                     sampleType: 'float'
                 }
             },
-            // big texture Mip7
+            // quad texture Mip7
             {
                 binding: 8,
                 visibility: GPUShaderStage.FRAGMENT,
@@ -131,7 +131,7 @@ function Layout_creation(state, device) {
                     sampleType: 'float'
                 }
             },
-            // big texture Mip8
+            // quad texture Mip8
             {
                 binding: 9,
                 visibility: GPUShaderStage.FRAGMENT,
@@ -139,7 +139,7 @@ function Layout_creation(state, device) {
                     sampleType: 'float'
                 }
             },
-            // big texture Mip9
+            // quad texture Mip9
             {
                 binding: 10,
                 visibility: GPUShaderStage.FRAGMENT,
@@ -147,7 +147,7 @@ function Layout_creation(state, device) {
                     sampleType: 'float'
                 }
             },
-            // big texture Mip10
+            // quad texture Mip10
             {
                 binding: 11,
                 visibility: GPUShaderStage.FRAGMENT,
@@ -155,7 +155,7 @@ function Layout_creation(state, device) {
                     sampleType: 'float'
                 }
             },
-            // big texture Mip11
+            // quad texture Mip11
             {
                 binding: 12,
                 visibility: GPUShaderStage.FRAGMENT,
@@ -163,7 +163,7 @@ function Layout_creation(state, device) {
                     sampleType: 'float'
                 }
             },
-            // big texture Mip12
+            // quad texture Mip12
             {
                 binding: 13,
                 visibility: GPUShaderStage.FRAGMENT,
@@ -171,10 +171,9 @@ function Layout_creation(state, device) {
                     sampleType: 'float'
                 }
             },
-
         ]
     });
-    state.main_view_flow_3d.Layouts["sample"] = Sample_UBO_Layout;
+    state.main_view_flow_quad.Layouts["sample"] = Sample_UBO_Layout;
 
     const compute_UBO_Layout = device.createBindGroupLayout({
         entries: [
@@ -194,7 +193,7 @@ function Layout_creation(state, device) {
             }
         ]
     });
-    state.main_view_flow_3d.Layouts["compute"] = compute_UBO_Layout;
+    state.main_view_flow_quad.Layouts["compute"] = compute_UBO_Layout;
 
 
     /**
@@ -216,7 +215,7 @@ function Layout_creation(state, device) {
             }
         }]
     });
-    state.main_view_flow_3d.Layouts["view_projection"] = VP_UBO_Layout;
+    state.main_view_flow_quad.Layouts["view_projection"] = VP_UBO_Layout;
 
 
     /**
@@ -237,11 +236,11 @@ function Layout_creation(state, device) {
             }
         }]
     });
-    state.main_view_flow_3d.Layouts["mip_instance_arr"] = mipArr_instanceArr_UBO_Layout;
+    state.main_view_flow_quad.Layouts["mip_instance_arr"] = mipArr_instanceArr_UBO_Layout;
 
 }
 
 
 
 
-export { Layout_creation }
+export { Layout_creation_quad }

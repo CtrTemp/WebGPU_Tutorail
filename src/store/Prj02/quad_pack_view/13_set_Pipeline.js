@@ -1,8 +1,7 @@
-import { vertex_shader, fragment_shader } from '../../../assets/Shaders/Prj02/shader';
-import { update_mip_compute } from '../../../assets/Shaders/Prj02/update_mip';
+import { vertex_shader, fragment_shader } from '../../../assets/Shaders/Prj02/quad_view/shader';
+import { update_mip_compute } from '../../../assets/Shaders/Prj02/quad_view/update_mip';
 
-
-function Pipeline_creation(state, device) {
+function Pipeline_creation_quad(state, device) {
 
 
     /* ########################### Render Pipeline ########################### */
@@ -10,12 +9,12 @@ function Pipeline_creation(state, device) {
 
     const particle_Render_Pipeline_Layout = device.createPipelineLayout({
         bindGroupLayouts: [
-            state.main_view_flow_3d.Layouts["mvp_pack"],           // group0
-            state.main_view_flow_3d.Layouts["sample"],        // group1
-            state.main_view_flow_3d.Layouts["mip_vertex"]     // group2
+            state.main_view_flow_quad.Layouts["mvp_pack"],           // group0
+            state.main_view_flow_quad.Layouts["sample"],        // group1
+            state.main_view_flow_quad.Layouts["mip_vertex"]     // group2
         ]
     });
-    state.main_view_flow_3d.Pipeline_Layouts["render_instances"] = particle_Render_Pipeline_Layout;
+    state.main_view_flow_quad.Pipeline_Layouts["render_instances"] = particle_Render_Pipeline_Layout;
 
 
     const render_instances_pipeline = device.createRenderPipeline({
@@ -66,7 +65,7 @@ function Pipeline_creation(state, device) {
             format: 'depth24plus',
         },
     });
-    state.main_view_flow_3d.Pipelines["render_instances"] = render_instances_pipeline;
+    state.main_view_flow_quad.Pipelines["render_instances"] = render_instances_pipeline;
 
 
     const renderPassDescriptor = {
@@ -85,20 +84,21 @@ function Pipeline_creation(state, device) {
             depthStoreOp: "store"
         }
     };
-    state.main_view_flow_3d.passDescriptors["render_instances"] = renderPassDescriptor;
+    state.main_view_flow_quad.passDescriptors["render_instances"] = renderPassDescriptor;
 
 
+    
 
     /**
      *  compute instance mip level
      * */ 
     const MipLevel_Compute_Pipeline_Layout = device.createPipelineLayout({
         bindGroupLayouts: [
-            state.main_view_flow_3d.Layouts["mip_instance_arr"],  // group0
-            state.main_view_flow_3d.Layouts["view_projection"],   // group1
+            state.main_view_flow_quad.Layouts["mip_instance_arr"],  // group0
+            state.main_view_flow_quad.Layouts["view_projection"],   // group1
         ]
     });
-    state.main_view_flow_3d.Pipeline_Layouts["compute_miplevel"] = MipLevel_Compute_Pipeline_Layout;
+    state.main_view_flow_quad.Pipeline_Layouts["compute_miplevel"] = MipLevel_Compute_Pipeline_Layout;
 
     const MipLevelUpdatePipeline = device.createComputePipeline({
         layout: MipLevel_Compute_Pipeline_Layout,
@@ -109,10 +109,11 @@ function Pipeline_creation(state, device) {
             entryPoint: 'simulate',
         },
     });
-    state.main_view_flow_3d.Pipelines["update_miplevel"] = MipLevelUpdatePipeline;
+    state.main_view_flow_quad.Pipelines["update_miplevel"] = MipLevelUpdatePipeline;
+
 }
 
 
 
 
-export { Pipeline_creation }
+export { Pipeline_creation_quad }

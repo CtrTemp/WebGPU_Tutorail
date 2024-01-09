@@ -1,13 +1,19 @@
 /**
  *  解析场景信息，并填充相关全局变量
  * */
-import { gen_sphere_instance_pos, gen_customized_instance_pos } from "./gen_curve_line";
+import {
+    gen_sphere_instance_pos,
+    gen_customized_instance_pos
+} from "../main_view/gen_curve_line";
+
+import { gen_rect_instance_pos } from "../quad_pack_view/gen_quad_pos_arr";
+
 import { gen_cone_vertex_from_camera } from "../sub_view/gen_cone_vertex";
 
 
 function parse_dataset_info(state) {
-    
-    
+
+
     const ret_json_pack = state.CPU_storage.server_raw_info["dataset_info_pack"];
     /**
      *  后续使用读取到的信息进行填充，现阶段先写死
@@ -33,17 +39,25 @@ function parse_dataset_info(state) {
     state.CPU_storage.mip_info["total_length"] = mip_range;
     state.CPU_storage.mip_info["arr"] = new Array(mip_range).fill(0);
     state.CPU_storage["mip_atlas_info"] = new Array(mip_range).fill([]);
+    state.CPU_storage["quad_atlas_info"] = new Array(mip_range).fill([]);
 
 
     /**
      *  暂时在这里生成随机的场景信息
-     * */ 
-    const flow_info = gen_sphere_instance_pos(50, numInstances);
+     * */
+    // const flow_info = gen_sphere_instance_pos(50, numInstances); // main-view-3D
+    const z_dist = 25+1;
+    const horizontal_range = 80;
+    const vertical_range = 45;
+    const horizontal_cnt = 32;
+    const vertical_cnt = 21;
+    const flow_info = gen_rect_instance_pos(z_dist, horizontal_range, vertical_range, horizontal_cnt, vertical_cnt); // main-view-quad
     state.CPU_storage.vertices_arr["instance"] = flow_info.flow_arr;
+    state.CPU_storage.instance_info["numInstances"] = horizontal_cnt * vertical_cnt;
 
     /**
      *  生成 quad 信息（这个的确是写死的）
-     * */ 
+     * */
     const quadArr = [
         // X    Y    U   V 
         -1.0, -1.0, 0.0, 0.0,
@@ -59,14 +73,14 @@ function parse_dataset_info(state) {
 
     /**
      *  生成 cone vertex 信息
-     * */ 
+     * */
     const prim_camera = state.camera.prim_camera;
     const cone_vertices = gen_cone_vertex_from_camera(prim_camera);
     state.CPU_storage.vertices_arr["cone"] = cone_vertices;
 
     /**
      *  生成 cone index 信息
-     * */ 
+     * */
     const default_idx_data_arr = [
         // // near rect
         // 0, 1, 2,
@@ -89,7 +103,7 @@ function parse_dataset_info(state) {
         5, 2, 6,
     ];
     state.CPU_storage.indices_arr["cone"] = default_idx_data_arr;
-    
+
 }
 
 

@@ -1,11 +1,10 @@
 
 import { mat4, vec3, vec4 } from "wgpu-matrix"
-import {
-    updateSubCamera,
-    defocusCamera,
-    focusCamera,
-    focusOnRandomPic,
-} from "./xx_set_camera";
+
+
+import { update_sub_Camera } from "../utils/set_camera";
+
+
 
 /**
  *  Dragging
@@ -48,7 +47,7 @@ function mouseMovingCallback(state, device, event, gui) {
 
     // console.log("camera = ", state.camera.sub_camera["viewDir"]);
 
-    updateSubCamera(state, device);
+    update_sub_Camera(state, device);
 }
 
 /**
@@ -75,7 +74,7 @@ function mouseWheelCallback(state, device, deltaY, gui) {
         -state.sub_canvas.mouse_info["wheel_speed"] * deltaY
     );
 
-    updateSubCamera(state, device);
+    update_sub_Camera(state, device);
 }
 
 /**
