@@ -218,6 +218,38 @@ function BindGroup_creation_quad(state, device) {
     });
 
     state.main_view_flow_quad.BindGroups["mip_instance_arr"] = compute_instance_MipLevel_BindGroup;
+
+
+
+    /**
+     *  Cursor Ray View Dir and LookFrom
+     * */
+    const cursor_ray_BindGroup = device.createBindGroup({
+        layout: state.main_view_flow_quad.Layouts["cursor_ray"],
+        entries: [
+            {
+                binding: 0,
+                resource: {
+                    buffer: state.GPU_memory.UBOs["ray_from"],
+                }
+            },
+            {
+                binding: 1,
+                resource: {
+                    buffer: state.GPU_memory.UBOs["ray_dir"],
+                }
+            },
+            {
+                binding: 2,
+                resource: {
+                    buffer: state.GPU_memory.SBOs["nearest_hit_dist"],
+                }
+            }
+        ]
+    });
+
+    state.main_view_flow_quad.BindGroups["cursor_ray"] = cursor_ray_BindGroup;
+
 }
 
 

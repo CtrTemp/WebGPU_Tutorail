@@ -1,9 +1,13 @@
 
 import {
     render_main_view_quad,
-    compute_miplevel_pass_quad
+    compute_miplevel_pass_quad,
+    compute_cursor_hitpoint,
 } from "./quad_pack_view/21_GPU_Pass";
 import { update_prim_Camera } from "./utils/set_camera";
+
+import { fill_nearest_dist_SBO_init } from "./main_view/04_manage_SBO";
+
 
 /**
  *  Stage04：启动渲染循环
@@ -25,6 +29,12 @@ function renderLoop_quad(state, device) {
     // }, 25);
 
 
+    /**
+     *  计算更新当前光标落在哪个图片上
+     * */ 
+    fill_nearest_dist_SBO_init(state, device);
+
+    compute_cursor_hitpoint(state, device);
 
 
 
@@ -73,9 +83,9 @@ function renderLoop_quad(state, device) {
      *  reset flags for next time trigger
      * */ 
 
-    state.main_view_flow_quad.fence["COMPUTE_MIP_SUBMIT"] = false;
-    state.main_view_flow_quad.fence["BITMAP_RECEIVED"] = false;
-    state.main_view_flow_quad.fence["BITMAP_READY"] = false;
+    // state.main_view_flow_quad.fence["COMPUTE_MIP_SUBMIT"] = false;
+    // state.main_view_flow_quad.fence["BITMAP_RECEIVED"] = false;
+    // state.main_view_flow_quad.fence["BITMAP_READY"] = false;
     state.main_view_flow_quad.fence["RENDER_READY"] = false;
 
 
@@ -87,16 +97,16 @@ function renderLoop_quad(state, device) {
     update_prim_Camera(state, device);
 
 
-    /**
-     *  Calculate and Update MipLevel
-     * */
-    compute_miplevel_pass_quad(state, device);
+    // /**
+    //  *  Calculate and Update MipLevel
+    //  * */
+    // compute_miplevel_pass_quad(state, device);
 
     
 
-    // setTimeout(() => {
-    //     state.main_view_flow_quad.fence["RENDER_READY"] = true;
-    // }, 25);
+    setTimeout(() => {
+        state.main_view_flow_quad.fence["RENDER_READY"] = true;
+    }, 25);
 }
 
 

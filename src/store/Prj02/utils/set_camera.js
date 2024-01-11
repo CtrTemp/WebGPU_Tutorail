@@ -82,8 +82,8 @@ function init_prim_Camera(state) {
 
     // 相机移动敏感度
     state.main_canvas.mouse_info["drag_speed"] = 0.005;
-    state.main_canvas.mouse_info["wheel_speed"] = 0.005;
-    state.main_canvas.keyboard_info["speed"] = 0.25;
+    state.main_canvas.mouse_info["wheel_speed"] = 0.05;
+    state.main_canvas.keyboard_info["speed"] = 1.25;
 
     /**
      *  GUI para 
@@ -98,6 +98,9 @@ function init_prim_Camera(state) {
     gui.add(state.camera.prim_camera.dir, "dir_y", -1.0, 1.0, 0.01);
     gui.add(state.camera.prim_camera.dir, "dir_z", -1.0, 1.0, 0.01);
 
+
+
+    console.log("camera = ", camera);
 }
 
 

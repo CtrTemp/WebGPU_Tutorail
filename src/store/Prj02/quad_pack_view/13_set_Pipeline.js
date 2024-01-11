@@ -1,5 +1,6 @@
 import { vertex_shader, fragment_shader } from '../../../assets/Shaders/Prj02/quad_view/shader';
 import { update_mip_compute } from '../../../assets/Shaders/Prj02/quad_view/update_mip';
+import { update_select_compute } from '../../../assets/Shaders/Prj02/compute_hitpoint';
 
 function Pipeline_creation_quad(state, device) {
 
@@ -110,6 +111,30 @@ function Pipeline_creation_quad(state, device) {
         },
     });
     state.main_view_flow_quad.Pipelines["update_miplevel"] = MipLevelUpdatePipeline;
+
+
+    /**
+     *  compute and update cursor ray hitpoint test
+     * */ 
+    const compute_hitpoint_Pipeline_Layout = device.createPipelineLayout({
+        bindGroupLayouts: [
+            state.main_view_flow_quad.Layouts["mip_instance_arr"],  // group0
+            state.main_view_flow_quad.Layouts["cursor_ray"],        // group1
+            state.main_view_flow_quad.Layouts["mvp_pack"],          // group0
+        ]
+    });
+    state.main_view_flow_quad.Pipeline_Layouts["compute_hitpoint"] = compute_hitpoint_Pipeline_Layout;
+
+    const compute_hitpoint_Pipeline = device.createComputePipeline({
+        layout: compute_hitpoint_Pipeline_Layout,
+        compute: {
+            module: device.createShaderModule({
+                code: update_select_compute,
+            }),
+            entryPoint: 'simulate',
+        },
+    });
+    state.main_view_flow_quad.Pipelines["compute_hitpoint"] = compute_hitpoint_Pipeline;
 
 }
 

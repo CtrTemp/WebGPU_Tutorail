@@ -105,7 +105,7 @@ fn fs_main(in : FragIutput) -> @location(0) vec4<f32> {
   var target_uv = vec2(in.quad_uv.x*in.uv_size.x, in.quad_uv.y*in.uv_size.y);
   target_uv = target_uv+in.uv_offset;
 
-  var void_color = vec4(0.0, 0.0, 0.0, 0.0);
+  var void_color = vec4(1.0, 1.0, 0.0, 1.0);
   var mip0_color = textureSample(myTexture_mip0, mySampler, target_uv);
   var mip1_color = textureSample(myTexture_mip1, mySampler, target_uv);
   var mip2_color = textureSample(myTexture_mip2, mySampler, target_uv);

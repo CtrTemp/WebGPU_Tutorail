@@ -46,14 +46,16 @@ function parse_dataset_info(state) {
      *  暂时在这里生成随机的场景信息
      * */
     // const flow_info = gen_sphere_instance_pos(50, numInstances); // main-view-3D
-    const z_dist = 25+1;
-    const horizontal_range = 80;
-    const vertical_range = 45;
+    const z_dist = 31 + 1;
+    const horizontal_range = 100;
+    const vertical_range = 200;
     const horizontal_cnt = 32;
-    const vertical_cnt = 21;
+    const vertical_cnt = 50;
     const flow_info = gen_rect_instance_pos(z_dist, horizontal_range, vertical_range, horizontal_cnt, vertical_cnt); // main-view-quad
     state.CPU_storage.vertices_arr["instance"] = flow_info.flow_arr;
     state.CPU_storage.instance_info["numInstances"] = horizontal_cnt * vertical_cnt;
+
+    state.CPU_storage.storage_arr["mip"] = new Float32Array(horizontal_cnt * vertical_cnt).fill(0);
 
     /**
      *  生成 quad 信息（这个的确是写死的）

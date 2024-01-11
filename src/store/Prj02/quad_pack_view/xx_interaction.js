@@ -1,15 +1,9 @@
 
 import { mat4, vec3, vec4 } from "wgpu-matrix"
-import {
-    updateMainCamera,
-    defocusCamera,
-    focusCamera,
-    focusOnRandomPic,
-} from "./xx_set_camera";
 
-import {
-    updateSubCamera
-} from "../sub_view/xx_set_camera";
+import { update_sub_Camera, update_prim_Camera } from "../utils/set_camera";
+
+import { update_and_fill_Trace_Ray_UBO } from "../main_view/03_manage_UBO";
 
 /**
  *  Dragging
@@ -60,7 +54,7 @@ function mouseMovingCallback(state, device, event) {
 
     state.camera.prim_camera["up"] = new_up_dir;
 
-    updateMainCamera(state, device);
+    update_prim_Camera(state, device);
 }
 
 /**
@@ -83,35 +77,49 @@ function mouseWheelCallback(state, device, deltaY) {
     let camera = state.camera.prim_camera;
     camera["lookFrom"] = vec3.addScaled(
         camera["lookFrom"],
-        camera["viewDir"],
+        camera["up"],
         -state.main_canvas.mouse_info["wheel_speed"] * deltaY
     );
 
-    updateMainCamera(state, device);
+    update_prim_Camera(state, device);
 }
 
 /**
  *  Mouse
  * */
-function canvasMouseInteraction(state, device) {
+function canvasMouseInteraction_quad(state, device) {
 
     let canvas = state.main_canvas.canvas;
     // let camera = state.camera.prim_camera;
     const gui = state.GUI["prim"];
 
+    /**
+     *  更新 trace ray UBO
+     * */
+
     canvas.addEventListener("mousemove", (event) => {
-        // 这里的一个优点在于可以直接获取鼠标的移动距离信息
-        // console.log("event = ", event.movementX);
-        mouseMovingCallback(state, device, event);
+
+        update_and_fill_Trace_Ray_UBO(state, device, event);
     })
 
+    /**
+     *  我们暂时屏蔽掉 Drag 交互
+     * */
 
-    canvas.addEventListener("mousedown", (event) => {
-        mouseClickCallback(state, "down");
-    })
-    canvas.addEventListener("mouseup", (event) => {
-        mouseClickCallback(state, "up");
-    })
+    // canvas.addEventListener("mousemove", (event) => {
+    //     // 这里的一个优点在于可以直接获取鼠标的移动距离信息
+    //     // console.log("event = ", event.movementX);
+    //     mouseMovingCallback(state, device, event);
+    // })
+
+
+
+    // canvas.addEventListener("mousedown", (event) => {
+    //     mouseClickCallback(state, "down");
+    // })
+    // canvas.addEventListener("mouseup", (event) => {
+    //     mouseClickCallback(state, "up");
+    // })
 
     canvas.addEventListener("mousewheel", (event) => {
         mouseWheelCallback(state, device, event.deltaY);
@@ -125,7 +133,7 @@ function canvasMouseInteraction(state, device) {
  *  Key Down
  * */
 function leftMovingCallback(state, device) {
-    
+
     const gui = state.GUI["prim"];
 
     if (state.main_canvas.keyboard_info.active == true) {
@@ -136,7 +144,7 @@ function leftMovingCallback(state, device) {
             leftDir,
             state.main_canvas.keyboard_info["speed"]
         );
-        updateMainCamera(state, device);
+        update_prim_Camera(state, device);
     }
     else {
         let camera = state.camera.sub_camera;
@@ -146,7 +154,7 @@ function leftMovingCallback(state, device) {
             leftDir,
             state.sub_canvas.keyboard_info["speed"]
         );
-        updateSubCamera(state, device, gui);
+        update_sub_Camera(state, device, gui);
     }
 
 }
@@ -160,7 +168,7 @@ function rightMovingCallback(state, device, gui) {
             leftDir,
             state.main_canvas.keyboard_info["speed"]
         );
-        updateMainCamera(state, device);
+        update_prim_Camera(state, device);
     }
     else {
         let camera = state.camera.sub_camera;
@@ -170,7 +178,7 @@ function rightMovingCallback(state, device, gui) {
             leftDir,
             state.sub_canvas.keyboard_info["speed"]
         );
-        updateSubCamera(state, device, gui);
+        update_sub_Camera(state, device, gui);
     }
 }
 
@@ -182,7 +190,7 @@ function frontMovingCallback(state, device, gui) {
             camera["viewDir"],
             state.main_canvas.keyboard_info["speed"]
         );
-        updateMainCamera(state, device);
+        update_prim_Camera(state, device);
     }
     else {
         let camera = state.camera.sub_camera;
@@ -191,7 +199,7 @@ function frontMovingCallback(state, device, gui) {
             camera["viewDir"],
             state.sub_canvas.keyboard_info["speed"]
         );
-        updateSubCamera(state, device, gui);
+        update_sub_Camera(state, device, gui);
     }
 
 }
@@ -204,7 +212,7 @@ function backMovingCallback(state, device, gui) {
             camera["viewDir"],
             -state.main_canvas.keyboard_info["speed"]
         );
-        updateMainCamera(state, device);
+        update_prim_Camera(state, device);
     }
     else {
         let camera = state.camera.sub_camera;
@@ -213,7 +221,7 @@ function backMovingCallback(state, device, gui) {
             camera["viewDir"],
             -state.sub_canvas.keyboard_info["speed"]
         );
-        updateSubCamera(state, device, gui);
+        update_sub_Camera(state, device, gui);
     }
 
 }
@@ -226,7 +234,7 @@ function upMovingCallback(state, device, gui) {
             camera["up"],
             state.main_canvas.keyboard_info["speed"]
         );
-        updateMainCamera(state, device);
+        update_prim_Camera(state, device);
     }
     else {
         let camera = state.camera.sub_camera;
@@ -235,7 +243,7 @@ function upMovingCallback(state, device, gui) {
             camera["up"],
             state.sub_canvas.keyboard_info["speed"]
         );
-        updateSubCamera(state, device, gui);
+        update_sub_Camera(state, device, gui);
     }
 
 }
@@ -248,7 +256,7 @@ function downMovingCallback(state, device, gui) {
             camera["up"],
             -state.main_canvas.keyboard_info["speed"]
         );
-        updateMainCamera(state, device);
+        update_prim_Camera(state, device);
     }
     else {
         let camera = state.camera.sub_camera;
@@ -257,7 +265,7 @@ function downMovingCallback(state, device, gui) {
             camera["up"],
             -state.sub_canvas.keyboard_info["speed"]
         );
-        updateSubCamera(state, device, gui);
+        update_sub_Camera(state, device, gui);
     }
 
 }
@@ -299,7 +307,7 @@ function exchangeKeyboardActive(state) {
 /**
  *  Keyboard
  * */
-function canvasKeyboardInteraction(state, device, gui) {
+function canvasKeyboardInteraction_quad(state, device, gui) {
 
     let camera = state.camera.prim_camera;
 
@@ -365,4 +373,4 @@ function canvasKeyboardInteraction(state, device, gui) {
 
 
 
-export { canvasMouseInteraction, canvasKeyboardInteraction }
+export { canvasMouseInteraction_quad, canvasKeyboardInteraction_quad }

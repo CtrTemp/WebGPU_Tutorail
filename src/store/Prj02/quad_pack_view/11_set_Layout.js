@@ -6,19 +6,19 @@ function Layout_creation_quad(state, device) {
     const MVP_UBO_Layout = device.createBindGroupLayout({
         entries: [{
             binding: 0,
-            visibility: GPUShaderStage.VERTEX,
+            visibility: GPUShaderStage.VERTEX | GPUShaderStage.COMPUTE,
             buffer: {
                 type: "uniform"
             }
         }, {
             binding: 1,
-            visibility: GPUShaderStage.VERTEX,
+            visibility: GPUShaderStage.VERTEX | GPUShaderStage.COMPUTE,
             buffer: {
                 type: "uniform"
             }
         }, {
             binding: 2,
-            visibility: GPUShaderStage.VERTEX,
+            visibility: GPUShaderStage.VERTEX | GPUShaderStage.COMPUTE,
             buffer: {
                 type: "uniform"
             }
@@ -237,6 +237,34 @@ function Layout_creation_quad(state, device) {
         }]
     });
     state.main_view_flow_quad.Layouts["mip_instance_arr"] = mipArr_instanceArr_UBO_Layout;
+
+
+
+    /**
+     *  Cursor Ray View Dir and LookFrom
+     * */ 
+    const Cursor_Ray_UBO_Layout = device.createBindGroupLayout({
+        entries: [{
+            binding: 0,
+            visibility: GPUShaderStage.COMPUTE,
+            buffer: {
+                type: "uniform"
+            }
+        }, {
+            binding: 1,
+            visibility: GPUShaderStage.COMPUTE,
+            buffer: {
+                type: "uniform"
+            }
+        },{
+            binding: 2,
+            visibility: GPUShaderStage.COMPUTE,
+            buffer: {
+                type: "storage"
+            }
+        }]
+    });
+    state.main_view_flow_quad.Layouts["cursor_ray"] = Cursor_Ray_UBO_Layout;
 
 }
 

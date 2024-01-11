@@ -31,7 +31,7 @@ import {
     manage_VBO_Layout
 } from "./main_view/02_manage_VBO"
 import { UBO_creation, fill_MVP_UBO } from "./main_view/03_manage_UBO"
-import { SBO_creation } from "./main_view/04_manage_SBO";
+import { SBO_creation, fill_nearest_dist_SBO_init } from "./main_view/04_manage_SBO";
 import { Layout_creation } from "./main_view/11_set_Layout";
 import { BindGroup_creation } from "./main_view/12_set_BindGroup";
 import { Pipeline_creation } from "./main_view/13_set_Pipeline";
@@ -75,6 +75,12 @@ import {
 } from "./quad_pack_view/21_GPU_Pass";
 
 import { renderLoop_quad } from "./renderLool_quad_view";
+
+
+import {
+    canvasKeyboardInteraction_quad,
+    canvasMouseInteraction_quad
+} from "./quad_pack_view/xx_interaction";
 
 
 /**
@@ -475,13 +481,13 @@ export default {
 
             console.log("【Main】Compute mipLevel submit Done~");
 
-            
+
             /**
              *  Register Interaction Events
              * */
             // Main-Canvas
-            canvasMouseInteraction(state, device);
-            canvasKeyboardInteraction(state, device);
+            canvasMouseInteraction_quad(state, device);
+            canvasKeyboardInteraction_quad(state, device);
             console.log("【Main】Interaction register for Main Canvas Done~");
         },
 
@@ -605,7 +611,7 @@ export default {
          *  Sub View Debug Render Loop
          * */
         sub_canvas_renderLoop(state, device) {
-            renderLoop_sub(state, device);
+            // renderLoop_sub(state, device);
         },
 
 
