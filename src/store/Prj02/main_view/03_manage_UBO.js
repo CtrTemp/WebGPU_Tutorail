@@ -1,4 +1,5 @@
 
+import { _ } from "core-js";
 import { mat4, vec3, vec4 } from "wgpu-matrix"
 
 function UBO_creation(state, device) {
@@ -84,6 +85,18 @@ function UBO_creation(state, device) {
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     });
     state.GPU_memory.UBOs["ray_dir"] = Trace_Ray_CursorDir_UBO_Buffer;
+
+    /**
+     *  Interaction Related UBO
+     * */
+    const interaction_info_size =
+        1 * 4 + // z-plane depth for fish-eye lens 
+        0;
+    const Interaction_UBO = device.createBuffer({
+        size: interaction_info_size,
+        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    });
+    state.GPU_memory.UBOs["interaction"] = Interaction_UBO;
 
 }
 
@@ -179,12 +192,12 @@ function update_and_fill_Trace_Ray_UBO(state, device, event) {
     const half_screen_width = half_screen_height * camera.aspect;
     // console.log(half_screen_height, half_screen_width);
 
-    const middle_point = vec3.mulScalar(camera.viewDir, camera.z_near);
+    const middle_point = vec3.add(camera.lookFrom, vec3.mulScalar(camera.viewDir, camera.z_near));
 
     // console.log(middle_point);
 
-    const lookAt_X = middle_point[0] + half_screen_width * right_dir[0] * x_para;
-    const lookAt_Y = middle_point[1] + half_screen_height * up_dir[1] * y_para;
+    const lookAt_X = middle_point[0] + 2 * half_screen_width * right_dir[0] * x_para;
+    const lookAt_Y = middle_point[1] + 2 * half_screen_height * up_dir[1] * y_para;
     const lookAt_Z = middle_point[2];
 
 
@@ -199,18 +212,31 @@ function update_and_fill_Trace_Ray_UBO(state, device, event) {
 
 
     const Trace_Ray_CursorDir_UBO_Buffer = state.GPU_memory.UBOs["ray_dir"];
-    const cursorDir_Arr = new Float32Array([
+
+    const cursorDir_Arr = vec4.normalize(vec4.fromValues(
         lookAt_X - camera.lookFrom[0],
         lookAt_Y - camera.lookFrom[1],
         lookAt_Z - camera.lookFrom[2],
-        1.0,
-    ]);
+        1.0));
+
+    // console.log("cursorDir_Arr = ", cursorDir_Arr);
     device.queue.writeBuffer(Trace_Ray_CursorDir_UBO_Buffer, 0, cursorDir_Arr);
 
+}
+
+
+function fill_Interaction_UBO(state, device) {
+    const Interaction_UBO = state.GPU_memory.UBOs["interaction"];
+    const writeBuffer = new Float32Array([
+        state.CPU_storage.interaction_info["z_plane_depth"]
+    ]);
+
+    device.queue.writeBuffer(Interaction_UBO, 0, writeBuffer);
 }
 
 export {
     UBO_creation,
     fill_MVP_UBO,
+    fill_Interaction_UBO,
     update_and_fill_Trace_Ray_UBO,
 }

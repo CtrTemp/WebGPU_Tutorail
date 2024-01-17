@@ -15,23 +15,25 @@ function parse_dataset_info(state) {
 
 
     const ret_json_pack = state.CPU_storage.server_raw_info["dataset_info_pack"];
+
+    console.log("ret_json_pack = ", ret_json_pack);
     /**
      *  后续使用读取到的信息进行填充，现阶段先写死
      * */
-    const numInstances = 100;
     const instanceInfoByteSize =
         4 * 4 + // pos
-        4 * 4 + // color
+        4 * 4 + // pos_offset
         1 * 4 + // life time
         1 * 4 + // idx for instanced texture
         2 * 4 + // uv offset
         2 * 4 + // uv scale
         2 * 4 + // quad scale
-        // 1 * 4 + // miplevel
-        // 3 * 4 + // padding （注意，padding补全是非常有必要的！）
+        2 * 4 + // default uv offset    
+        2 * 4 + // default uv scale
+        2 * 4 + // default quad scale 
+        2 * 4 + // padding  （注意，padding补全是非常有必要的！）
         0;
 
-    state.CPU_storage.instance_info["numInstances"] = numInstances;
     state.CPU_storage.instance_info["instanceInfoByteSize"] = instanceInfoByteSize;
 
 
@@ -46,12 +48,22 @@ function parse_dataset_info(state) {
      *  暂时在这里生成随机的场景信息
      * */
     // const flow_info = gen_sphere_instance_pos(50, numInstances); // main-view-3D
-    const z_dist = 31 + 1;
-    const horizontal_range = 100;
-    const vertical_range = 200;
-    const horizontal_cnt = 32;
-    const vertical_cnt = 50;
-    const flow_info = gen_rect_instance_pos(z_dist, horizontal_range, vertical_range, horizontal_cnt, vertical_cnt); // main-view-quad
+    const z_dist = 85;
+    const horizontal_range = 300;
+    const vertical_range = 300;
+    const horizontal_cnt = 100;
+    const vertical_cnt = 100;
+    // const z_dist = 25;
+    // const horizontal_range = 75;
+    // const vertical_range = 35;
+    // const horizontal_cnt = 25;
+    // const vertical_cnt = 12;
+    state.CPU_storage.interaction_info["z_plane_depth"] = z_dist;
+    const flow_info = gen_rect_instance_pos(
+        z_dist,
+        horizontal_range, vertical_range,
+        horizontal_cnt, vertical_cnt,
+        ret_json_pack.description_json); // main-view-quad
     state.CPU_storage.vertices_arr["instance"] = flow_info.flow_arr;
     state.CPU_storage.instance_info["numInstances"] = horizontal_cnt * vertical_cnt;
 

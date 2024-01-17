@@ -30,7 +30,11 @@ import {
     fill_Quad_VBO,
     manage_VBO_Layout
 } from "./main_view/02_manage_VBO"
-import { UBO_creation, fill_MVP_UBO } from "./main_view/03_manage_UBO"
+import {
+    UBO_creation,
+    fill_MVP_UBO,
+    fill_Interaction_UBO
+} from "./main_view/03_manage_UBO"
 import { SBO_creation, fill_nearest_dist_SBO_init } from "./main_view/04_manage_SBO";
 import { Layout_creation } from "./main_view/11_set_Layout";
 import { BindGroup_creation } from "./main_view/12_set_BindGroup";
@@ -56,7 +60,8 @@ import {
  * */
 import {
     quadTexture_creation,
-    fill_Quad_Texture
+    fill_Quad_Texture,
+    fill_Large_Quad_Texture,
 } from "./quad_pack_view/01_manage_Texture";
 
 import {
@@ -135,6 +140,27 @@ export default {
         //     context.state.main_view_flow_3d.fence["BITMAP_READY"] = true;
         //     // console.log("bitmaps = ", context.state.CPU_storage.instancedBitMap);
         // },
+
+        async construct_large_imgBitMap(context, ret_json_pack) {
+            console.log("json pack = ", ret_json_pack);
+            const img_url_arr = ret_json_pack.largeBitMaps;
+
+
+            for (let i = 0; i < img_url_arr.length; i++) {
+
+                let file = img_url_arr[i];
+                let url = "data:image/png;base64," + file;
+
+                const blob = dataURL2Blob(url);
+
+                const img_bitMap = await createImageBitmap(blob);
+
+                context.state.CPU_storage.largeBitMap.push(img_bitMap);
+            }
+
+            console.log("【Quad】Large BitMaps construct Done~ ");
+            context.state.main_view_flow_quad.fence["DATASET_INFO_PARSE_DONE"] = true;
+        },
 
         async construct_mip_imgBitMap(context) {
             // console.log("json pack received = ", ret_json_pack);
@@ -474,12 +500,12 @@ export default {
             fill_quad_Instance_Pos_VBO(state, device);
 
 
-            /**
-             *  Compute MipLevel on GPU
-             * */
-            compute_miplevel_pass_quad(state, device);
+            // /**
+            //  *  Compute MipLevel on GPU
+            //  * */
+            // compute_miplevel_pass_quad(state, device);
 
-            console.log("【Main】Compute mipLevel submit Done~");
+            // console.log("【Main】Compute mipLevel submit Done~");
 
 
             /**
@@ -491,18 +517,22 @@ export default {
             console.log("【Main】Interaction register for Main Canvas Done~");
         },
 
-        main_quad_flow_bitmap_ready_ready(state, device) {
+        main_quad_flow_dataset_info_parse_done(state, device) {
 
             /**
              *  Fill Texture Memory on GPU
              * */
-            fill_Quad_Texture(state, device);
-
+            fill_Large_Quad_Texture(state, device);
 
             /**
-             *  Fill Atlas Info of VBO
+             *  Fill Interaction Info UBO
              * */
-            fill_quad_Atlas_Info_VBO(state, device);
+            fill_Interaction_UBO(state, device);
+
+            // /**
+            //  *  Fill Atlas Info of VBO
+            //  * */
+            // fill_quad_Atlas_Info_VBO(state, device);
 
             /**
              *  Fill quad VBOs
@@ -636,7 +666,8 @@ export default {
                 Textures: {
                     instance: [],
                     mip_instance: [],
-                    quad_instance: []
+                    quad_instance: [],
+                    large_quad_prefetch:[] // 32*32贴片块组成的预取数据纹理，预设一共有6张
                 },
             },
             CPU_storage: {
@@ -653,6 +684,7 @@ export default {
                 instancedBitMap: [],
                 mipBitMap: [],
                 quadBitMap: [],
+                largeBitMap: [], // 32*32 预计算的大纹理
 
                 atlas_info: {
                     size: [],       // 用于记录大纹理的长宽尺寸
@@ -670,6 +702,7 @@ export default {
 
                 instance_info: {}, // 描述instance数量等数据集信息，后端读取文件获得
                 additional_info: {},
+                interaction_info: {}, // 描述交互相关的 info
             },
             main_view_flow_3d: {
                 fence: {
@@ -702,6 +735,7 @@ export default {
 
                 fence: {
                     DATASET_INFO_READY: { val: false },
+                    DATASET_INFO_PARSE_DONE: { val: false },
                     COMPUTE_MIP_SUBMIT: { val: false },
                     BITMAP_RECEIVED: { val: false },
                     BITMAP_READY: { val: false },

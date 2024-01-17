@@ -20,7 +20,10 @@ struct Instance {
     
     uv_offset   : vec2<f32>,
     tex_aspect  : vec2<f32>,
-    uv_size     : vec2<f32>
+    uv_size     : vec2<f32>,
+    uv_offset_d     : vec2<f32>,    // default_uv_offset
+    tex_aspect_d    : vec2<f32>,    // default_uv_scale
+    uv_size_d       : vec2<f32>,    // default_quad_scale
 }
   
   
@@ -87,7 +90,7 @@ fn simulate(@builtin(global_invocation_id) global_invocation_id : vec3<u32>) {
      *  更新mips
      * */ 
     // mip_arr[idx] = mip_val;
-    mip_arr[idx] = 6.0;
+    mip_arr[idx] = 7.0;
 }
 
 

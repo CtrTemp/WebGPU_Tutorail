@@ -6,7 +6,9 @@ import {
 } from "./quad_pack_view/21_GPU_Pass";
 import { update_prim_Camera } from "./utils/set_camera";
 
-import { fill_nearest_dist_SBO_init } from "./main_view/04_manage_SBO";
+import {
+    fill_nearest_dist_SBO_init,
+} from "./main_view/04_manage_SBO";
 
 
 /**
@@ -31,10 +33,13 @@ function renderLoop_quad(state, device) {
 
     /**
      *  计算更新当前光标落在哪个图片上
-     * */ 
+     * */
     fill_nearest_dist_SBO_init(state, device);
 
     compute_cursor_hitpoint(state, device);
+
+
+
 
 
 
@@ -77,11 +82,11 @@ function renderLoop_quad(state, device) {
 
 
 
-    
-    
+
+
     /**
      *  reset flags for next time trigger
-     * */ 
+     * */
 
     // state.main_view_flow_quad.fence["COMPUTE_MIP_SUBMIT"] = false;
     // state.main_view_flow_quad.fence["BITMAP_RECEIVED"] = false;
@@ -102,7 +107,7 @@ function renderLoop_quad(state, device) {
     //  * */
     // compute_miplevel_pass_quad(state, device);
 
-    
+
 
     setTimeout(() => {
         state.main_view_flow_quad.fence["RENDER_READY"] = true;

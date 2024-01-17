@@ -5,6 +5,9 @@ import { update_sub_Camera, update_prim_Camera } from "../utils/set_camera";
 
 import { update_and_fill_Trace_Ray_UBO } from "../main_view/03_manage_UBO";
 
+
+import { update_mip_data_SBO } from "../main_view/04_manage_SBO";
+
 /**
  *  Dragging
  * */
@@ -100,6 +103,11 @@ function canvasMouseInteraction_quad(state, device) {
     canvas.addEventListener("mousemove", (event) => {
 
         update_and_fill_Trace_Ray_UBO(state, device, event);
+
+        // /**
+        //  *  这里我们用串行算法使用CPU计算，验证一下
+        //  * */
+        // update_mip_data_SBO(state, device, event);
     })
 
     /**

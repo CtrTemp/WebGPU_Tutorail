@@ -67,7 +67,7 @@ function Layout_creation_quad(state, device) {
                     type: "filtering"
                 }
             },
-            // quad texture Mip0
+            // large quad texture idx0
             {
                 binding: 1,
                 visibility: GPUShaderStage.FRAGMENT,
@@ -75,7 +75,7 @@ function Layout_creation_quad(state, device) {
                     sampleType: 'float'
                 }
             },
-            // quad texture Mip1
+            // large quad texture idx1
             {
                 binding: 2,
                 visibility: GPUShaderStage.FRAGMENT,
@@ -83,7 +83,7 @@ function Layout_creation_quad(state, device) {
                     sampleType: 'float'
                 }
             },
-            // quad texture Mip2
+            // large quad texture idx2
             {
                 binding: 3,
                 visibility: GPUShaderStage.FRAGMENT,
@@ -91,7 +91,7 @@ function Layout_creation_quad(state, device) {
                     sampleType: 'float'
                 }
             },
-            // quad texture Mip3
+            // large quad texture idx3
             {
                 binding: 4,
                 visibility: GPUShaderStage.FRAGMENT,
@@ -99,7 +99,7 @@ function Layout_creation_quad(state, device) {
                     sampleType: 'float'
                 }
             },
-            // quad texture Mip4
+            // large quad texture idx4
             {
                 binding: 5,
                 visibility: GPUShaderStage.FRAGMENT,
@@ -107,70 +107,14 @@ function Layout_creation_quad(state, device) {
                     sampleType: 'float'
                 }
             },
-            // quad texture Mip5
+            // large quad texture idx5
             {
                 binding: 6,
                 visibility: GPUShaderStage.FRAGMENT,
                 texture: {
                     sampleType: 'float'
                 }
-            },
-            // quad texture Mip6
-            {
-                binding: 7,
-                visibility: GPUShaderStage.FRAGMENT,
-                texture: {
-                    sampleType: 'float'
-                }
-            },
-            // quad texture Mip7
-            {
-                binding: 8,
-                visibility: GPUShaderStage.FRAGMENT,
-                texture: {
-                    sampleType: 'float'
-                }
-            },
-            // quad texture Mip8
-            {
-                binding: 9,
-                visibility: GPUShaderStage.FRAGMENT,
-                texture: {
-                    sampleType: 'float'
-                }
-            },
-            // quad texture Mip9
-            {
-                binding: 10,
-                visibility: GPUShaderStage.FRAGMENT,
-                texture: {
-                    sampleType: 'float'
-                }
-            },
-            // quad texture Mip10
-            {
-                binding: 11,
-                visibility: GPUShaderStage.FRAGMENT,
-                texture: {
-                    sampleType: 'float'
-                }
-            },
-            // quad texture Mip11
-            {
-                binding: 12,
-                visibility: GPUShaderStage.FRAGMENT,
-                texture: {
-                    sampleType: 'float'
-                }
-            },
-            // quad texture Mip12
-            {
-                binding: 13,
-                visibility: GPUShaderStage.FRAGMENT,
-                texture: {
-                    sampleType: 'float'
-                }
-            },
+            }
         ]
     });
     state.main_view_flow_quad.Layouts["sample"] = Sample_UBO_Layout;
@@ -265,6 +209,22 @@ function Layout_creation_quad(state, device) {
         }]
     });
     state.main_view_flow_quad.Layouts["cursor_ray"] = Cursor_Ray_UBO_Layout;
+
+
+    /**
+     *  Interaction UBO Layout
+     * */ 
+    const Interaction_UBO_Layout = device.createBindGroupLayout({
+        entries: [{
+            binding: 0,
+            visibility: GPUShaderStage.COMPUTE,
+            buffer: {
+                type: "uniform"
+            }
+        }]
+    });
+    state.main_view_flow_quad.Layouts["interaction"] = Interaction_UBO_Layout;
+
 
 }
 

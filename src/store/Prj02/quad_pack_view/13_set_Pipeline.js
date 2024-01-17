@@ -10,7 +10,7 @@ function Pipeline_creation_quad(state, device) {
 
     const particle_Render_Pipeline_Layout = device.createPipelineLayout({
         bindGroupLayouts: [
-            state.main_view_flow_quad.Layouts["mvp_pack"],           // group0
+            state.main_view_flow_quad.Layouts["mvp_pack"],      // group0
             state.main_view_flow_quad.Layouts["sample"],        // group1
             state.main_view_flow_quad.Layouts["mip_vertex"]     // group2
         ]
@@ -120,7 +120,8 @@ function Pipeline_creation_quad(state, device) {
         bindGroupLayouts: [
             state.main_view_flow_quad.Layouts["mip_instance_arr"],  // group0
             state.main_view_flow_quad.Layouts["cursor_ray"],        // group1
-            state.main_view_flow_quad.Layouts["mvp_pack"],          // group0
+            state.main_view_flow_quad.Layouts["mvp_pack"],          // group2
+            state.main_view_flow_quad.Layouts["interaction"],       // group3
         ]
     });
     state.main_view_flow_quad.Pipeline_Layouts["compute_hitpoint"] = compute_hitpoint_Pipeline_Layout;

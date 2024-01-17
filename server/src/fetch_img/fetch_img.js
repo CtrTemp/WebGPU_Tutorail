@@ -1,6 +1,5 @@
 const fs = require("fs")
 const Blob = require("buffer");
-
 /**
  *  读取特定的图片文件
  * */
@@ -193,4 +192,91 @@ async function read_quad_instance(json_pack) {
 
 
 
-module.exports = { read_instanced_texture, read_mip_instance, read_quad_instance }
+
+
+function read_large_texture(root_dir, ret_arr) {
+
+
+    let ret_promise = new Promise((resolve, reject) => {
+
+        fs.readdir(root_dir, (err, files) => {
+            if (err) {
+                console.log("read data err = ", err);
+            }
+            else {
+                // console.log("files = ", files);
+                for (let i = 0; i < files.length; i++) {
+
+                    const path = root_dir + files[i];
+                    const file = fs.readFileSync(path);
+
+                    ret_arr.push(file.toString("base64"));
+
+                    // console.log(url_arr);
+                }
+
+                resolve([]);
+
+            }
+
+        });
+
+    });
+
+    // console.log("return idx = ", idx);
+
+    return ret_promise;
+}
+
+
+function read_description_json(json_path) {
+    let ret_promise = new Promise((resolve, reject) => {
+
+        const file = fs.readFileSync(json_path);
+
+        const obj = JSON.parse(file)
+
+        resolve(obj);
+
+    });
+
+    return ret_promise;
+}
+
+
+async function read_big_pre_fetch_img(json_pack) {
+
+    const large_quad_root_dir = "../../../data_set/large/"
+    const description_json_path = "../../../data_set/large_quad.json"
+
+    let ret_arr = [];
+
+    let ret_promise = new Promise((resolve, reject) => {
+        read_large_texture(large_quad_root_dir, ret_arr).then(() => {
+            // console.log("ret_arr = ", ret_arr);
+            // ret_arr.reverse();
+            read_description_json(description_json_path).then(description_json => {
+
+                const ret_back_large_info_pack = {
+                    cmd: "large_texture_pack",
+                    largeBitMaps: ret_arr,
+                    description_json: description_json
+                };
+                resolve(ret_back_large_info_pack);
+            })
+
+
+        });
+    });
+
+    return ret_promise;
+}
+
+
+
+module.exports = {
+    read_instanced_texture,
+    read_mip_instance,
+    read_quad_instance,
+    read_big_pre_fetch_img
+}

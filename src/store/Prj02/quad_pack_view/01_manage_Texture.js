@@ -49,17 +49,38 @@ function quadTexture_creation(state, device) {
     // state.GPU_memory.Textures["quad_instance"].push(quadInstanceTexture);
 
 
-    
+
     /**
      *  Instance Texture (big texture) creation
      * */
 
+
+    // // 2024/01/17 弃用
+    // /**
+    //  *  遍历每一个 MipLevel
+    //  * */
+    // const mip_range = state.CPU_storage.mip_info["total_length"];
+    // for (let i = 0; i < mip_range; i++) {
+    //     // 为每一个MipLevel创建一张大纹理
+    //     const global_texture_size = Math.pow(2, 13);  // 8192 * 8192
+    //     state.CPU_storage.atlas_info["size"].push([global_texture_size, global_texture_size]);
+    //     const instanceTexture = device.createTexture({
+    //         dimension: '2d',
+    //         size: [global_texture_size, global_texture_size, 1],
+    //         format: 'rgba8unorm',
+    //         usage:
+    //             GPUTextureUsage.TEXTURE_BINDING |
+    //             GPUTextureUsage.COPY_DST |
+    //             GPUTextureUsage.RENDER_ATTACHMENT,
+    //     });
+
+    //     state.GPU_memory.Textures["quad_instance"].push(instanceTexture);
+    // }
+
     /**
-     *  遍历每一个 MipLevel
+     *  2024/01/17 创建大型预取纹理，一共6张
      * */
-    const mip_range = state.CPU_storage.mip_info["total_length"];
-    for (let i = 0; i < mip_range; i++) {
-        // 为每一个MipLevel创建一张大纹理
+    for (let i = 0; i < 6; i++) {
         const global_texture_size = Math.pow(2, 13);  // 8192 * 8192
         state.CPU_storage.atlas_info["size"].push([global_texture_size, global_texture_size]);
         const instanceTexture = device.createTexture({
@@ -72,8 +93,15 @@ function quadTexture_creation(state, device) {
                 GPUTextureUsage.RENDER_ATTACHMENT,
         });
 
-        state.GPU_memory.Textures["quad_instance"].push(instanceTexture);
+        state.GPU_memory.Textures["large_quad_prefetch"].push(instanceTexture);
     }
+
+    /**
+     *  创建运行时预取纹理，一共6张
+     * */
+
+
+
 }
 
 
@@ -81,7 +109,7 @@ function fill_Quad_Texture(state, device) {
 
     const quadBitMap = state.CPU_storage["quadBitMap"];
 
-    
+
     state.CPU_storage["quad_atlas_info"].fill([]); // 清空原有图片集信息
 
 
@@ -147,8 +175,7 @@ function fill_Quad_Texture(state, device) {
 
             offset += img_width * img_height;
             width_offset += img_width;
-            if(width_offset >= global_texture_size)
-            {   
+            if (width_offset >= global_texture_size) {
                 height_offset += img_height;
                 width_offset = 0;
             }
@@ -163,7 +190,28 @@ function fill_Quad_Texture(state, device) {
 }
 
 
+/**
+ *  晚餐返回后进行纹理内存填充
+ * */
+function fill_Large_Quad_Texture(state, device) {
+    const global_texture_size = state.CPU_storage.atlas_info["size"][0][0];
+    const largeBitMaps = state.CPU_storage.largeBitMap;
+    // console.log("largeBitMaps = ", largeBitMaps);
+
+    // 直接填充
+    for (let i = 0; i < largeBitMaps.length; i++) {
+        const BitMap = largeBitMaps[i];
+        const Texture = state.GPU_memory.Textures["large_quad_prefetch"][i];
+        device.queue.copyExternalImageToTexture(
+            { source: BitMap }, // src
+            { texture: Texture }, // dst （flipY 好像没啥卵用）
+            [global_texture_size, global_texture_size] // size
+        );
+    }
+}
+
 export {
     quadTexture_creation,
     fill_Quad_Texture,
+    fill_Large_Quad_Texture,
 }

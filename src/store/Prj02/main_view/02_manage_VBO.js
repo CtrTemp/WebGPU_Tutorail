@@ -38,7 +38,7 @@ function VBO_creation(state, device) {
 function fill_Instance_Pos_VBO(state, device) {
     let instanceArr = state.CPU_storage.vertices_arr["instance"];
     const instancesBuffer = state.GPU_memory.VBOs["instances"];
-    // console.log("instance_arr = ", instance_arr);
+    // console.log("instance_arr = ", instanceArr);
     const writeBufferArr = new Float32Array(instanceArr);
     device.queue.writeBuffer(instancesBuffer, 0, writeBufferArr);
 }
@@ -123,6 +123,24 @@ function manage_VBO_Layout(state) {
                 offset: 14 * 4,
                 format: 'float32x2'
             },
+            {
+                // default uv offset
+                shaderLocation: 7,
+                offset: 16 * 4,
+                format: 'float32x2'
+            },
+            {
+                // default uv scale
+                shaderLocation: 8,
+                offset: 18 * 4,
+                format: 'float32x2'
+            },
+            {
+                // default quad scale
+                shaderLocation: 9,
+                offset: 20 * 4,
+                format: 'float32x2'
+            },
         ]
     };
     state.CPU_storage.VBO_Layouts["instances"] = instance_VBO_Layout;
@@ -134,13 +152,13 @@ function manage_VBO_Layout(state) {
         attributes: [
             {
                 // vertex position
-                shaderLocation: 7,
+                shaderLocation: 10,
                 offset: 0,
                 format: 'float32x2',
             },
             {
                 // vertex uv
-                shaderLocation: 8,
+                shaderLocation: 11,
                 offset: 2 * 4,
                 format: 'float32x2',
             },

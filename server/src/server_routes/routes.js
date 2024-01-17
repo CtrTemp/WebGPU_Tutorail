@@ -4,7 +4,8 @@
 const {
     read_instanced_texture,
     read_mip_instance,
-    read_quad_instance
+    read_quad_instance,
+    read_big_pre_fetch_img,
 } = require("../fetch_img/fetch_img")
 
 
@@ -20,6 +21,9 @@ const service_distribution = function (socket, json_pack) {
                     pack: []
                 };
                 resolve(test_void_ret_info);
+                break;
+            case "sys_startup_prefetch":            // 系统启动时候首次取的数据
+                resolve(read_big_pre_fetch_img());
                 break;
             case "fetch_instanced_texture":
                 // read_instanced_texture();

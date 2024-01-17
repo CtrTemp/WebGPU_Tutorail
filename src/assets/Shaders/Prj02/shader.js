@@ -11,20 +11,22 @@ const vertex_shader = /* wgsl */`
 
 struct VertexInput {
   @location(0) position     : vec4<f32>,  // particle position
-  @location(1) color        : vec4<f32>,  // particle color
+  @location(1) pos_offset   : vec4<f32>,  // pos_offset
   @location(2) lifetime     : f32,        // particle life time
   @location(3) idx          : f32,        // idx for instanced texture
   @location(4) uv_offset    : vec2<f32>,
   @location(5) tex_aspect   : vec2<f32>,
   @location(6) uv_size      : vec2<f32>,
-  // @location(7) miplevel     : f32,        // miplevel
-  @location(7) quad_pos     : vec2<f32>,  // -1..+1
-  @location(8) quad_uv      : vec2<f32>,  // 0..+1
+  @location(7) uv_offset_d  : vec2<f32>,  // default_uv_offset
+  @location(8) tex_aspect_d : vec2<f32>,  // default_uv_scale
+  @location(9) uv_size_d    : vec2<f32>,  // default_quad_scale
+  @location(10) quad_pos    : vec2<f32>,  // -1..+1
+  @location(11) quad_uv     : vec2<f32>,  // 0..+1
 }
 
 struct VertexOutput {
   @builtin(position) position : vec4<f32>, // mvp 变换后的粒子空间坐标
-  @location(0) color          : vec4<f32>, // 不变，原本的粒子颜色直接输出
+  @location(0) pos_offset     : vec4<f32>, // 不变，pos_offset
   @location(1) quad_pos       : vec2<f32>, // -1..+1 不变，原样输出
   @location(2) quad_uv        : vec2<f32>, // 0..+1 不变，原样输出
   @location(3) idx            : f32,       // 不变，原样输出
@@ -48,7 +50,7 @@ fn vs_main(
   // var position = in.position.xyz + quad_pos * (-in.position.z+0.5)*0.05; // 随着z值更改quad大小
   var out : VertexOutput;
   out.position = mvp * vec4<f32>(position, 1.0);
-  out.color = in.color;
+  out.pos_offset = in.pos_offset;
   out.quad_pos = in.quad_pos;
   out.quad_uv = vec2f(in.quad_uv.x, 1.0-in.quad_uv.y); // 上下翻转，左右不翻转
   out.idx = in.idx;

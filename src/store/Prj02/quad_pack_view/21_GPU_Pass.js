@@ -37,6 +37,7 @@ function compute_cursor_hitpoint(state, device)
     pass.setBindGroup(0, state.main_view_flow_quad.BindGroups["mip_instance_arr"]); // group0
     pass.setBindGroup(1, state.main_view_flow_quad.BindGroups["cursor_ray"]);       // group1
     pass.setBindGroup(2, state.main_view_flow_quad.BindGroups["mvp_pack"]);         // group2
+    pass.setBindGroup(3, state.main_view_flow_quad.BindGroups["interaction"]);      // group3
     pass.dispatchWorkgroups(Math.ceil(state.CPU_storage.instance_info["numInstances"] / 64));
     pass.end();
 

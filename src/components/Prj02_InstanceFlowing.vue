@@ -60,15 +60,22 @@ onMounted(() => {
      * */
     store.commit("pic_browser/init_camera", device);
 
-    /**
-     *  fetch data set description info once
-     * */
-    const temp_json_cmd = {
-        cmd: "void",
+    // /**
+    //  *  fetch data set description info once
+    //  * */
+    // const temp_json_cmd = {
+    //     cmd: "void",
+    //     pack: []
+    // }
+    // ws.send(JSON.stringify(temp_json_cmd));
+
+
+    const fetch_large_texture_cmd = {
+        cmd: "sys_startup_prefetch",
         pack: []
     }
-    ws.send(JSON.stringify(temp_json_cmd));
 
+    ws.send(JSON.stringify(fetch_large_texture_cmd));
 })
 
 
@@ -184,6 +191,20 @@ watch(() => {
     }
 }, { deep: true });
 
+
+
+/**
+ *  Sys Startup Info Parse Done
+ * */
+
+watch(() => {
+    return store.state.pic_browser.main_view_flow_quad.fence["DATASET_INFO_PARSE_DONE"];
+}, (flag) => {
+    if (flag == true) {
+        // console.log("start up info parse done");
+        store.commit("pic_browser/main_quad_flow_dataset_info_parse_done", device);
+    }
+}, { deep: true })
 
 
 

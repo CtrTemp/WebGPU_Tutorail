@@ -74,70 +74,35 @@ function BindGroup_creation_quad(state, device) {
                 binding: 0,
                 resource: state.CPU_storage.additional_info["sampler"]
             },
-            // quad texture Mip0
+            // large quad texture idx0
             {
                 binding: 1,
-                resource: state.GPU_memory.Textures["quad_instance"][0].createView()
+                resource: state.GPU_memory.Textures["large_quad_prefetch"][0].createView()
             },
-            // quad texture Mip1
+            // large quad texture idx1
             {
                 binding: 2,
-                resource: state.GPU_memory.Textures["quad_instance"][1].createView()
+                resource: state.GPU_memory.Textures["large_quad_prefetch"][1].createView()
             },
-            // quad texture Mip2
+            // large quad texture idx2
             {
                 binding: 3,
-                resource: state.GPU_memory.Textures["quad_instance"][2].createView()
+                resource: state.GPU_memory.Textures["large_quad_prefetch"][2].createView()
             },
-            // quad texture Mip3
+            // large quad texture idx3
             {
                 binding: 4,
-                resource: state.GPU_memory.Textures["quad_instance"][3].createView()
+                resource: state.GPU_memory.Textures["large_quad_prefetch"][3].createView()
             },
-            // quad texture Mip4
+            // large quad texture idx4
             {
                 binding: 5,
-                resource: state.GPU_memory.Textures["quad_instance"][4].createView()
+                resource: state.GPU_memory.Textures["large_quad_prefetch"][4].createView()
             },
-            // quad texture Mip5
+            // large quad texture idx5
             {
                 binding: 6,
-                resource: state.GPU_memory.Textures["quad_instance"][5].createView()
-            },
-            // quad texture Mip6
-            {
-                binding: 7,
-                resource: state.GPU_memory.Textures["quad_instance"][6].createView()
-            },
-            // quad texture Mip7
-            {
-                binding: 8,
-                resource: state.GPU_memory.Textures["quad_instance"][7].createView()
-            },
-            // quad texture Mip8
-            {
-                binding: 9,
-                resource: state.GPU_memory.Textures["quad_instance"][8].createView()
-            },
-            // quad texture Mip9
-            {
-                binding: 10,
-                resource: state.GPU_memory.Textures["quad_instance"][9].createView()
-            },
-            // quad texture Mip10
-            {
-                binding: 11,
-                resource: state.GPU_memory.Textures["quad_instance"][10].createView()
-            },
-            // quad texture Mip11
-            {
-                binding: 12,
-                resource: state.GPU_memory.Textures["quad_instance"][11].createView()
-            },
-            // quad texture Mip12
-            {
-                binding: 13,
-                resource: state.GPU_memory.Textures["quad_instance"][12].createView()
+                resource: state.GPU_memory.Textures["large_quad_prefetch"][5].createView()
             },
         ]
     });
@@ -249,6 +214,26 @@ function BindGroup_creation_quad(state, device) {
     });
 
     state.main_view_flow_quad.BindGroups["cursor_ray"] = cursor_ray_BindGroup;
+
+
+    /**
+     *  Interaction BindGroup
+     * */ 
+    
+    const interaction_BindGroup = device.createBindGroup({
+        layout: state.main_view_flow_quad.Layouts["interaction"],
+        entries: [
+            {
+                binding: 0,
+                resource: {
+                    buffer: state.GPU_memory.UBOs["interaction"],
+                }
+            }
+        ]
+    });
+
+    state.main_view_flow_quad.BindGroups["interaction"] = interaction_BindGroup;
+
 
 }
 

@@ -26,15 +26,17 @@ struct SimulationParams {
 
 // 要注意这里后面两项不能加入，instance要的只有particle的信息，quad信息不要
 struct Particle {
-  position    : vec4<f32>,
-  color       : vec4<f32>,
-  lifetime    : f32,        // 所剩余的显示时间，也是整个position数组的长度，也间接代表了粒子的不透明度
-  idx         : f32,
+  position        : vec4<f32>,
+  color           : vec4<f32>,
+  lifetime        : f32,        // 所剩余的显示时间，也是整个position数组的长度，也间接代表了粒子的不透明度
+  idx             : f32,
   
-  uv_offset   : vec2<f32>,
-  tex_aspect  : vec2<f32>,
-  uv_size     : vec2<f32>,
-  selected    : f32,        // selected in cone range
+  uv_offset       : vec2<f32>,
+  tex_aspect      : vec2<f32>,
+  uv_size         : vec2<f32>,
+  uv_offset_d     : vec2<f32>,   // default_uv_offset
+  tex_aspect_d    : vec2<f32>,   // default_uv_scale
+  uv_size_d       : vec2<f32>,   // default_quad_scale
   // quad_pos     : vec2<f32>,  // -1..+1
   // quad_uv      : vec2<f32>,  // 0..+1
 }
