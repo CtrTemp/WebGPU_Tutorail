@@ -1,19 +1,24 @@
 import { mat4, vec3, vec4 } from "wgpu-matrix"
 import { fill_MVP_UBO } from "../main_view/03_manage_UBO";
 import { fill_MVP_UBO_sub } from "../sub_view/03_manage_UBO";
-
+import { pitch_yaw_updater_prim_cam } from "../quad_pack_view/xx_interaction";
 
 // GUI
 import * as dat from "dat.gui"
 
 
-
+// 也可用作复位一个相机
 function init_prim_Camera(state) {
 
 
     // 创建 GUI
-    const gui = new dat.GUI();
-    state.GUI["prim"] = gui;
+    let gui = state.GUI["prim"];
+    let reset_flag = true;
+    if (gui == undefined) {
+        reset_flag = false;
+        gui = new dat.GUI();
+        state.GUI["prim"] = gui;
+    }
 
     let camera = state.camera.prim_camera;
 
@@ -48,11 +53,21 @@ function init_prim_Camera(state) {
     camera["viewDir"] = viewDir;    // 单位向量
     camera["up"] = up;              // 相机相对向上向量
     // 为了监测相机坐标，单独设置一个结构体
-    camera["pos"] = {
-        x: lookFrom.at(0),
-        y: lookFrom.at(1),
-        z: lookFrom.at(2),
+    if(reset_flag)
+    {
+        camera["pos"].x = lookFrom.at(0);
+        camera["pos"].y = lookFrom.at(1);
+        camera["pos"].z = lookFrom.at(2);
     }
+    else
+    {
+        camera["pos"] = {
+            x: lookFrom.at(0),
+            y: lookFrom.at(1),
+            z: lookFrom.at(2),
+        }
+    }
+    
     camera["dir"] = {
         dir_x: viewDir.at(0),
         dir_y: viewDir.at(1),
@@ -71,9 +86,9 @@ function init_prim_Camera(state) {
     state.main_canvas.mouse_info["lastY"] = 0;
 
     // 解算得到的相机方位角
-    camera["yaw"] = Math.PI / 2;
+    camera["yaw"] = Math.PI / 2;    // 绕 y 轴转角
     // camera["yaw"] = 0.0;
-    camera["pitch"] = 0.0;
+    camera["pitch"] = 0.0;          // 绕 x 轴转角
 
     // defineReactive(state.camera.prim_camera, "yaw", Math.PI / 2);
     // defineReactive(state.camera.prim_camera, "pitch", 0.0);
@@ -85,10 +100,14 @@ function init_prim_Camera(state) {
     state.main_canvas.mouse_info["wheel_speed"] = 0.05;
     state.main_canvas.keyboard_info["speed"] = 1.25;
 
+    if (reset_flag) {
+        return;
+    }
+
     /**
      *  GUI para 
      * */
-    const range = 50;
+    const range = 1800;
     gui.add(state.camera.prim_camera, 'pitch', -2 * Math.PI, 2 * Math.PI, 0.01);
     gui.add(state.camera.prim_camera, 'yaw', -2 * Math.PI, 2 * Math.PI, 0.01);
     gui.add(state.camera.prim_camera.pos, "x", -range, range, 0.01);
@@ -99,6 +118,31 @@ function init_prim_Camera(state) {
     gui.add(state.camera.prim_camera.dir, "dir_z", -1.0, 1.0, 0.01);
 
 
+
+    /**
+     *  实现双向控制 pitch yaw
+     * */
+    gui.__controllers[0].onChange(() => {
+        pitch_yaw_updater_prim_cam(state);
+    })
+
+    gui.__controllers[1].onChange(() => {
+        pitch_yaw_updater_prim_cam(state);
+    })
+
+
+    /**
+     *  实现双向控制 xyz
+     * */
+    gui.__controllers[2].onChange(() => {
+        state.camera.prim_camera.lookFrom[0] = state.camera.prim_camera.pos["x"];
+    })
+    gui.__controllers[3].onChange(() => {
+        state.camera.prim_camera.lookFrom[1] = state.camera.prim_camera.pos["y"];
+    })
+    gui.__controllers[4].onChange(() => {
+        state.camera.prim_camera.lookFrom[2] = state.camera.prim_camera.pos["z"];
+    })
 
     console.log("camera = ", camera);
 }
@@ -182,7 +226,7 @@ function init_sub_Camera(state) {
      * model属于空间中物体
      * */
     // const model = mat4.identity();
-    
+
 
     const viewProjectionMatrix = mat4.multiply(projection, view);
 
@@ -230,8 +274,8 @@ function init_sub_Camera(state) {
      *  GUI para 
      * */
     const range = 50;
-    gui.add(state.camera.sub_camera, 'pitch', -2 * Math.PI, 2 * Math.PI, 0.01);
-    gui.add(state.camera.sub_camera, 'yaw', -2 * Math.PI, 2 * Math.PI, 0.01);
+    gui.add(state.camera.sub_camera, 'pitch', -1 * Math.PI, 1 * Math.PI, 0.01);
+    gui.add(state.camera.sub_camera, 'yaw', -1 * Math.PI, 1 * Math.PI, 0.01);
     gui.add(state.camera.sub_camera.pos, "x", -range, range, 0.01);
     gui.add(state.camera.sub_camera.pos, "y", -range, range, 0.01);
     gui.add(state.camera.sub_camera.pos, "z", -range, range, 0.01);

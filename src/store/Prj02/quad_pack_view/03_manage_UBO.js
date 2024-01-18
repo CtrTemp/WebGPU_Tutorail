@@ -68,10 +68,10 @@
 // }
 
 function fill_MVP_UBO_quad(state, device) {
-    
+
     /**
      *  View Matrix
-     * */ 
+     * */
     const viewMatrix = state.camera.prim_camera["view"];
     device.queue.writeBuffer(
         state.GPU_memory.UBOs["view"],
@@ -81,10 +81,10 @@ function fill_MVP_UBO_quad(state, device) {
         viewMatrix.byteLength
     );
 
-    
+
     /**
      *  Projection Matrix
-     * */ 
+     * */
     const projectionMatrix = state.camera.prim_camera["projection"];
     device.queue.writeBuffer(
         state.GPU_memory.UBOs["projection"],
@@ -94,10 +94,10 @@ function fill_MVP_UBO_quad(state, device) {
         projectionMatrix.byteLength
     );
 
-    
+
     /**
      *  View-Projection Matrix
-     * */ 
+     * */
     const viewProjectionMatrix = state.camera.prim_camera["matrix"];
     device.queue.writeBuffer(
         state.GPU_memory.UBOs["mvp"],
@@ -109,7 +109,7 @@ function fill_MVP_UBO_quad(state, device) {
 
     /**
      *  Right Up Vector
-     * */ 
+     * */
     device.queue.writeBuffer(
         state.GPU_memory.UBOs["right"],
         0,
@@ -128,4 +128,11 @@ function fill_MVP_UBO_quad(state, device) {
 }
 
 
-export { fill_MVP_UBO_quad }
+function update_simulation_UBO_quad(state, device) {
+    const simu_control_UBO = state.GPU_memory.UBOs["simu_control"];
+    // console.log(Object.values(state.main_canvas.simu_info));
+    const write_buffer = new Float32Array(Object.values(state.main_canvas.simu_info));
+    device.queue.writeBuffer(simu_control_UBO, 0, write_buffer);
+}
+
+export { fill_MVP_UBO_quad, update_simulation_UBO_quad }

@@ -1,6 +1,6 @@
 <template>
     <div class="root-container-main">
-        <canvas class="sub-canvas" width="512" height="512"></canvas>
+        <!-- <canvas class="sub-canvas" width="512" height="512"></canvas> -->
         <canvas class="main-canvas" width="512" height="512"></canvas>
     </div>
 </template>
@@ -37,7 +37,7 @@ onMounted(() => {
     main_canvas.height = window_height;
 
     store.state.pic_browser.main_canvas.canvas = main_canvas;
-    store.state.pic_browser.sub_canvas.canvas = sub_canvas;
+    // store.state.pic_browser.sub_canvas.canvas = sub_canvas;
 
     const device = store.state.device;
 
@@ -77,6 +77,21 @@ onMounted(() => {
 
     ws.send(JSON.stringify(fetch_large_texture_cmd));
 })
+
+
+
+
+/*** ################# Global Watch Camera ################# ***/
+
+
+ 
+// watch(() => {
+//     return store.state.pic_browser.camera["prim_camera"];
+// }, () => {
+//     console.log("camera moving~");
+// }, { deep: true });
+
+
 
 
 /*** ################# Main View 3d Flow Control Watcher Group ################# ***/

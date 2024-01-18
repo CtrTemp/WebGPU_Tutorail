@@ -23,8 +23,10 @@ function parse_dataset_info(state) {
     const instanceInfoByteSize =
         4 * 4 + // pos
         4 * 4 + // pos_offset
-        1 * 4 + // life time
-        1 * 4 + // idx for instanced texture
+        4 * 4 + // Layout1 pos
+        4 * 4 + // Layout2 pos
+        1 * 4 + // life time（弃用保留）
+        1 * 4 + // idx for instanced texture（弃用保留）
         2 * 4 + // uv offset
         2 * 4 + // uv scale
         2 * 4 + // quad scale
@@ -48,16 +50,28 @@ function parse_dataset_info(state) {
      *  暂时在这里生成随机的场景信息
      * */
     // const flow_info = gen_sphere_instance_pos(50, numInstances); // main-view-3D
-    const z_dist = 85;
-    const horizontal_range = 300;
-    const vertical_range = 300;
-    const horizontal_cnt = 100;
-    const vertical_cnt = 100;
-    // const z_dist = 25;
+    /**
+     *  总数据集部分 instance 部分小数据集图片（10293）
+     * */ 
+    // const z_dist = 85;
+    // const horizontal_range = 300;
+    // const vertical_range = 300;
+    // const horizontal_cnt = 100;
+    // const vertical_cnt = 100;
+    // const z_dist = 65;
     // const horizontal_range = 75;
     // const vertical_range = 35;
     // const horizontal_cnt = 25;
     // const vertical_cnt = 12;
+
+    /**
+     *  基本上是总数据集全部的instance（300000），基本上全部的小数据集图片
+     * */ 
+    const z_dist = 85;
+    const horizontal_range = 2400;
+    const vertical_range = 1050;
+    const horizontal_cnt = 800;
+    const vertical_cnt = 350;
     state.CPU_storage.interaction_info["z_plane_depth"] = z_dist;
     const flow_info = gen_rect_instance_pos(
         z_dist,

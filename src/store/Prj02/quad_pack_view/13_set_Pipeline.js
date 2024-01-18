@@ -1,6 +1,7 @@
 import { vertex_shader, fragment_shader } from '../../../assets/Shaders/Prj02/quad_view/shader';
 import { update_mip_compute } from '../../../assets/Shaders/Prj02/quad_view/update_mip';
 import { update_select_compute } from '../../../assets/Shaders/Prj02/compute_hitpoint';
+import { compute_move_path } from '../../../assets/Shaders/Prj02/compute'
 
 function Pipeline_creation_quad(state, device) {
 
@@ -38,20 +39,20 @@ function Pipeline_creation_quad(state, device) {
             targets: [
                 {
                     format: state.main_canvas["canvasFormat"],
-                    // // 這一步是設置 半透明度 必須的要素（取消设置，得到默认遮挡）
-                    // // 如果使用半透明，则将以下 depthStencil 中 depthWriteEnabled 字段设为 false
-                    // blend: {
-                    //     color: {
-                    //         srcFactor: 'src-alpha',
-                    //         dstFactor: 'one',
-                    //         operation: 'add',
-                    //     },
-                    //     alpha: {
-                    //         srcFactor: 'zero',
-                    //         dstFactor: 'one',
-                    //         operation: 'add',
-                    //     },
-                    // },
+                    // 這一步是設置 半透明度 必須的要素（取消设置，得到默认遮挡）
+                    // 如果使用半透明，则将以下 depthStencil 中 depthWriteEnabled 字段设为 false
+                    blend: {
+                        color: {
+                            srcFactor: 'src-alpha',
+                            dstFactor: 'one',
+                            operation: 'add',
+                        },
+                        alpha: {
+                            srcFactor: 'zero',
+                            dstFactor: 'one',
+                            operation: 'add',
+                        },
+                    },
                 }
             ]
         },
@@ -61,7 +62,7 @@ function Pipeline_creation_quad(state, device) {
         },
         depthStencil: {
             // 如果使能以上的半透明，则将以下的 depthWriteEnabled 字段改为 false
-            depthWriteEnabled: true,
+            depthWriteEnabled: false,
             depthCompare: 'less',
             format: 'depth24plus',
         },
@@ -88,11 +89,11 @@ function Pipeline_creation_quad(state, device) {
     state.main_view_flow_quad.passDescriptors["render_instances"] = renderPassDescriptor;
 
 
-    
+
 
     /**
      *  compute instance mip level
-     * */ 
+     * */
     const MipLevel_Compute_Pipeline_Layout = device.createPipelineLayout({
         bindGroupLayouts: [
             state.main_view_flow_quad.Layouts["mip_instance_arr"],  // group0
@@ -115,7 +116,7 @@ function Pipeline_creation_quad(state, device) {
 
     /**
      *  compute and update cursor ray hitpoint test
-     * */ 
+     * */
     const compute_hitpoint_Pipeline_Layout = device.createPipelineLayout({
         bindGroupLayouts: [
             state.main_view_flow_quad.Layouts["mip_instance_arr"],  // group0
@@ -137,6 +138,28 @@ function Pipeline_creation_quad(state, device) {
     });
     state.main_view_flow_quad.Pipelines["compute_hitpoint"] = compute_hitpoint_Pipeline;
 
+
+    /**
+     *  compute exchange instance layout
+     * */
+
+    const compute_instance_move_path_Pipeline_Layout = device.createPipelineLayout({
+        bindGroupLayouts: [
+            state.main_view_flow_quad.Layouts["compute_move_path"],       // group0
+        ]
+    });
+    state.main_view_flow_quad.Pipeline_Layouts["compute_hitpoint"] = compute_instance_move_path_Pipeline_Layout;
+
+    const compute_instance_move_path_Pipeline = device.createComputePipeline({
+        layout: compute_instance_move_path_Pipeline_Layout,
+        compute: {
+            module: device.createShaderModule({
+                code: compute_move_path,
+            }),
+            entryPoint: 'simulate',
+        },
+    });
+    state.main_view_flow_quad.Pipelines["compute_move_path"] = compute_instance_move_path_Pipeline;
 }
 
 

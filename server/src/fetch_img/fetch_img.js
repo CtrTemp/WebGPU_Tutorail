@@ -1,5 +1,10 @@
 const fs = require("fs")
-const Blob = require("buffer");
+
+const {
+    read_description_json
+} = require("./fetch_json")
+
+
 /**
  *  读取特定的图片文件
  * */
@@ -229,19 +234,6 @@ function read_large_texture(root_dir, ret_arr) {
 }
 
 
-function read_description_json(json_path) {
-    let ret_promise = new Promise((resolve, reject) => {
-
-        const file = fs.readFileSync(json_path);
-
-        const obj = JSON.parse(file)
-
-        resolve(obj);
-
-    });
-
-    return ret_promise;
-}
 
 
 async function read_big_pre_fetch_img(json_pack) {
@@ -251,22 +243,31 @@ async function read_big_pre_fetch_img(json_pack) {
 
     let ret_arr = [];
 
+    const description_json = await read_description_json(description_json_path);
+    await read_large_texture(large_quad_root_dir, ret_arr)
+    console.log("mark");
+
     let ret_promise = new Promise((resolve, reject) => {
-        read_large_texture(large_quad_root_dir, ret_arr).then(() => {
-            // console.log("ret_arr = ", ret_arr);
-            // ret_arr.reverse();
-            read_description_json(description_json_path).then(description_json => {
+        // read_large_texture(large_quad_root_dir, ret_arr).then(() => {
+        //     // console.log("ret_arr = ", ret_arr);
+        //     // ret_arr.reverse();
+        //     read_description_json(description_json_path).then(description_json => {
+        //         console.log("read done");
+        //         const ret_back_large_info_pack = {
+        //             cmd: "large_texture_pack",
+        //             largeBitMaps: ret_arr,
+        //             description_json: description_json
+        //         };
+        //         resolve(ret_back_large_info_pack);
+        //     })
+        // });
 
-                const ret_back_large_info_pack = {
-                    cmd: "large_texture_pack",
-                    largeBitMaps: ret_arr,
-                    description_json: description_json
-                };
-                resolve(ret_back_large_info_pack);
-            })
-
-
-        });
+        const ret_back_large_info_pack = {
+            cmd: "large_texture_pack",
+            largeBitMaps: ret_arr,
+            description_json: description_json
+        };
+        resolve(ret_back_large_info_pack);
     });
 
     return ret_promise;

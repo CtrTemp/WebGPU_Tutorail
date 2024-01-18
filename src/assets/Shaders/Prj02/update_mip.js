@@ -13,14 +13,16 @@ var update_mip_compute = /* wgsl */`
 
 // 要注意这里后面两项不能加入，instance要的只有particle的信息，quad信息不要
 struct Instance {
-    position    : vec4<f32>,
-    pos_offset  : vec4<f32>,
-    lifetime    : f32,        // 所剩余的显示时间，也是整个position数组的长度，也间接代表了粒子的不透明度
-    idx         : f32,
+    position        : vec4<f32>,
+    pos_offset      : vec4<f32>,
+    layout1_pos     : vec4<f32>,
+    layout2_pos     : vec4<f32>,
+    lifetime        : f32,          // 弃用保留
+    idx             : f32,
     
-    uv_offset   : vec2<f32>,
-    tex_aspect  : vec2<f32>,
-    uv_size     : vec2<f32>,
+    uv_offset       : vec2<f32>,
+    tex_aspect      : vec2<f32>,
+    uv_size         : vec2<f32>,
     uv_offset_d     : vec2<f32>,    // default_uv_offset
     tex_aspect_d    : vec2<f32>,    // default_uv_scale
     uv_size_d       : vec2<f32>,    // default_quad_scale

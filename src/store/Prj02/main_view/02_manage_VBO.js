@@ -88,57 +88,69 @@ function manage_VBO_Layout(state) {
                 format: 'float32x4',
             },
             {
-                // color
+                // pos offset (for interaction)
                 shaderLocation: 1,
                 offset: 4 * 4,
                 format: 'float32x4'
             },
             {
-                // lifetime
+                // Layout1 pos
                 shaderLocation: 2,
-                offset: 8 * 4,
+                offset: 8*4,
+                format: 'float32x4',
+            },
+            {
+                // Layout2 pos
+                shaderLocation: 3,
+                offset: 12*4,
+                format: 'float32x4',
+            },
+            {
+                // lifetime
+                shaderLocation: 4,
+                offset: 16 * 4,
                 format: 'float32'
             },
             {
                 // idx for instanced texture
-                shaderLocation: 3,
-                offset: 9 * 4,
+                shaderLocation: 5,
+                offset: 17 * 4,
                 format: 'float32'
             },
             {
                 // uv offset
-                shaderLocation: 4,
-                offset: 10 * 4,
-                format: 'float32x2'
-            },
-            {
-                // uv scale
-                shaderLocation: 5,
-                offset: 12 * 4,
-                format: 'float32x2'
-            },
-            {
-                // quad scale
                 shaderLocation: 6,
-                offset: 14 * 4,
-                format: 'float32x2'
-            },
-            {
-                // default uv offset
-                shaderLocation: 7,
-                offset: 16 * 4,
-                format: 'float32x2'
-            },
-            {
-                // default uv scale
-                shaderLocation: 8,
                 offset: 18 * 4,
                 format: 'float32x2'
             },
             {
-                // default quad scale
-                shaderLocation: 9,
+                // uv scale
+                shaderLocation: 7,
                 offset: 20 * 4,
+                format: 'float32x2'
+            },
+            {
+                // quad scale
+                shaderLocation: 8,
+                offset: 22 * 4,
+                format: 'float32x2'
+            },
+            {
+                // default uv offset
+                shaderLocation: 9,
+                offset: 24 * 4,
+                format: 'float32x2'
+            },
+            {
+                // default uv scale
+                shaderLocation: 10,
+                offset: 26 * 4,
+                format: 'float32x2'
+            },
+            {
+                // default quad scale
+                shaderLocation: 11,
+                offset: 28 * 4,
                 format: 'float32x2'
             },
         ]
@@ -152,13 +164,13 @@ function manage_VBO_Layout(state) {
         attributes: [
             {
                 // vertex position
-                shaderLocation: 10,
+                shaderLocation: 12,
                 offset: 0,
                 format: 'float32x2',
             },
             {
                 // vertex uv
-                shaderLocation: 11,
+                shaderLocation: 13,
                 offset: 2 * 4,
                 format: 'float32x2',
             },

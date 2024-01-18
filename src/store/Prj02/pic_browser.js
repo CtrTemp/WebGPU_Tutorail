@@ -302,7 +302,7 @@ export default {
          * */
         init_device(state, { canvas, device }) {
             init_device_main(state, { canvas: canvas.main_canvas, device });
-            init_device_sub(state, { canvas: canvas.sub_canvas, device });
+            // init_device_sub(state, { canvas: canvas.sub_canvas, device });
         },
 
         /**
@@ -310,7 +310,7 @@ export default {
          * */
         init_camera(state, device) {
             init_prim_Camera(state, device);
-            init_sub_Camera(state, device);
+            // init_sub_Camera(state, device);
             // console.log("main camera = ", state.camera.prim_camera);
         },
 
@@ -667,7 +667,7 @@ export default {
                     instance: [],
                     mip_instance: [],
                     quad_instance: [],
-                    large_quad_prefetch:[] // 32*32贴片块组成的预取数据纹理，预设一共有6张
+                    large_quad_prefetch: [] // 32*32贴片块组成的预取数据纹理，预设一共有6张
                 },
             },
             CPU_storage: {
@@ -761,9 +761,10 @@ export default {
                 mouse_info: {},
                 keyboard_info: {},
                 simu_info: {
-                    simu_pause: 0.0,
-                    simu_time: 0.0,
-                    simu_speed: 0.0,
+                    layout_flag: 1.0,
+                    simu_speed: 1.0,
+                    simu_pause: 0.0,    // 初始为允许状态
+                    padding: 0.0,
                 },
             },
             sub_canvas: {

@@ -13,14 +13,16 @@ var update_select_compute = /* wgsl */`
 
 // 要注意这里后面两项不能加入，instance要的只有particle的信息，quad信息不要
 struct Instance {
-    position    : vec4<f32>,
-    pos_offset  : vec4<f32>,
-    lifetime    : f32,        // 所剩余的显示时间，也是整个position数组的长度，也间接代表了粒子的不透明度
-    idx         : f32,
+    position        : vec4<f32>,
+    pos_offset      : vec4<f32>,
+    layout1_pos     : vec4<f32>,
+    layout2_pos     : vec4<f32>,
+    lifetime        : f32,          // 弃用保留
+    idx             : f32,          // 弃用保留
     
-    uv_offset   : vec2<f32>,
-    tex_aspect  : vec2<f32>,
-    uv_size     : vec2<f32>,
+    uv_offset       : vec2<f32>,
+    tex_aspect      : vec2<f32>,
+    uv_size         : vec2<f32>,
     uv_offset_d     : vec2<f32>,    // default_uv_offset
     tex_aspect_d    : vec2<f32>,    // default_uv_scale
     uv_size_d       : vec2<f32>,    // default_quad_scale
@@ -72,7 +74,7 @@ fn compute_hitPoint(pos : vec3f) -> vec3f
 
 fn check_hit(hitPoint : vec3f, pos : vec3f, aspect : vec2f) -> bool
 {
-
+    return false;
     // var range_t = 1.0 * up * aspect.y + pos;
     // var range_b = -1.0 * up * aspect.y + pos;
     // var range_l = 1.0 * right * aspect.x + pos;
@@ -84,13 +86,13 @@ fn check_hit(hitPoint : vec3f, pos : vec3f, aspect : vec2f) -> bool
     // }
     // return true;
 
-    var pos_ori = vec3f(pos.xy, interaction.z_plane_depth); // 使用原平面位置进行判断
-    if(distance(hitPoint, pos_ori)<10)
-    {
-        return true;
-    }
+    // var pos_ori = vec3f(pos.xy, interaction.z_plane_depth); // 使用原平面位置进行判断
+    // if(distance(hitPoint, pos_ori)<10)
+    // {
+    //     return true;
+    // }
 
-    return false;
+    // return false;
 }
 
 

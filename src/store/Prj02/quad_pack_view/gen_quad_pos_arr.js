@@ -6,6 +6,8 @@ function gen_rect_instance_pos(
     raw_info_pack
 ) {
 
+    console.log(raw_info_pack.length);
+
     let ret_arr = [];
 
     const horizontal_step = horizontal_range / horizontal_cnt;
@@ -27,6 +29,11 @@ function gen_rect_instance_pos(
             let pos_y = (0.5 + i) * vertical_step + vertical_offset;
             let pos_z = z_plane_dist;
 
+            let l2_i = raw_info_pack[global_cnt]["layout2"][1]
+            let l2_j = raw_info_pack[global_cnt]["layout2"][0]
+            let l2_x = (0.5 + l2_j) * horizontal_step + horizontal_offset;
+            let l2_y = (0.5 + l2_i) * vertical_step + vertical_offset;
+            let l2_z = z_plane_dist;
 
             let time = Math.asin(pos_z / Math.sqrt(pos_x * pos_x + pos_z * pos_z)); // rotating
             if (Math.random() > 0.5) {
@@ -35,33 +42,24 @@ function gen_rect_instance_pos(
 
             /**
              *  减少使用 contact 数据量越大的时候耗时明显变多！！!
-             * */ 
-            Array.prototype.push.apply(ret_arr, [pos_x, pos_y, pos_z, 1.0]);
-            Array.prototype.push.apply(ret_arr, [0, 0, 0, 0]);
-            Array.prototype.push.apply(ret_arr, [time, 1.0]);
-            Array.prototype.push.apply(ret_arr, default_uv_offset_arr);
-            Array.prototype.push.apply(ret_arr, [1.0, 1.0]);
-            Array.prototype.push.apply(ret_arr, default_uv_size_arr);
-            Array.prototype.push.apply(ret_arr, default_uv_offset_arr);
-            Array.prototype.push.apply(ret_arr, [1.0, 1.0]);
-            Array.prototype.push.apply(ret_arr, default_uv_size_arr);
-            Array.prototype.push.apply(ret_arr, [0.0, 0.0]);
+             * */
+            Array.prototype.push.apply(ret_arr, [pos_x, pos_y, pos_z, 1.0]);    // pos
+            Array.prototype.push.apply(ret_arr, [0, 0, 0, 0]);                  // pos_offset
+            Array.prototype.push.apply(ret_arr, [pos_x, pos_y, pos_z, 1.0]);    // Layout1 pos
+            Array.prototype.push.apply(ret_arr, [l2_x, l2_y, l2_z, 1.0]);       // Layout2 pos
+            Array.prototype.push.apply(ret_arr, [time, 1.0]);                   // liftime + idx
+            // Array.prototype.push.apply(ret_arr, [0, 0]);                     // uv-offset padding
+            // Array.prototype.push.apply(ret_arr, [0, 0]);                     // uv-scale padding
+            // Array.prototype.push.apply(ret_arr, [0, 0]);                     // quad-scale padding
+            Array.prototype.push.apply(ret_arr, default_uv_offset_arr);         // default_uv_offset
+            Array.prototype.push.apply(ret_arr, [1.0, 1.0]);                    // default_uv_scale
+            Array.prototype.push.apply(ret_arr, default_uv_size_arr);           // default_uv_size
+            Array.prototype.push.apply(ret_arr, default_uv_offset_arr);         // default_uv_offset
+            Array.prototype.push.apply(ret_arr, [1.0, 1.0]);                    // default_uv_scale
+            Array.prototype.push.apply(ret_arr, default_uv_size_arr);           // default_uv_size
+            Array.prototype.push.apply(ret_arr, [0.0, 0.0]);                    // pure padding
 
 
-
-            // ret_arr = ret_arr.concat([pos_x, pos_y, pos_z, 1.0]);   // pos
-            // ret_arr = ret_arr.concat([0, 0, 0, 0]);                 // pos_offset
-            // ret_arr = ret_arr.concat([time, 1.0]);                  // liftime + idx
-            // // ret_arr = ret_arr.concat([0, 0]);                       // uv-offset padding
-            // // ret_arr = ret_arr.concat([0, 0]);                       // uv-scale padding
-            // // ret_arr = ret_arr.concat([0, 0]);                       // quad-scale padding
-            // ret_arr = ret_arr.concat(default_uv_offset_arr);        // default_uv_offset
-            // ret_arr = ret_arr.concat([1.0, 1.0]);                   // default_uv_scale
-            // ret_arr = ret_arr.concat(default_uv_size_arr);          // default_uv_size
-            // ret_arr = ret_arr.concat(default_uv_offset_arr);        // default_uv_offset
-            // ret_arr = ret_arr.concat([1.0, 1.0]);                   // default_uv_scale
-            // ret_arr = ret_arr.concat(default_uv_size_arr);          // default_uv_size
-            // ret_arr = ret_arr.concat([0, 0]);                       // pure padding
         }
     }
 

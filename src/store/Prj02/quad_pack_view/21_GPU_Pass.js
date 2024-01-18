@@ -123,11 +123,26 @@ function render_main_view_quad(state, device, renderPassDescriptor) {
 }
 
 
+function compute_instance_move_pass(state, device)
+{
+    // Encode Pass 填充
+    const encoder = device.createCommandEncoder();
+    const pass = encoder.beginComputePass();
+    pass.setPipeline(state.main_view_flow_quad.Pipelines["compute_move_path"]);
+    pass.setBindGroup(0, state.main_view_flow_quad.BindGroups["compute_move_path"]); // group0
+    pass.dispatchWorkgroups(Math.ceil(state.CPU_storage.instance_info["numInstances"] / 64));
+    pass.end();
+
+    // 队列提交
+    device.queue.submit([encoder.finish()]);
+}
+
 
 export {
     compute_miplevel_pass_quad,
     compute_cursor_hitpoint,
     read_back_miplevel_pass_quad,
     render_main_view_quad,
+    compute_instance_move_pass,
 }
 

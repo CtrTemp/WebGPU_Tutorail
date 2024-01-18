@@ -3,6 +3,7 @@ import {
     render_main_view_quad,
     compute_miplevel_pass_quad,
     compute_cursor_hitpoint,
+    compute_instance_move_pass,
 } from "./quad_pack_view/21_GPU_Pass";
 import { update_prim_Camera } from "./utils/set_camera";
 
@@ -10,6 +11,7 @@ import {
     fill_nearest_dist_SBO_init,
 } from "./main_view/04_manage_SBO";
 
+import { update_simulation_UBO_quad } from "./quad_pack_view/03_manage_UBO";
 
 /**
  *  Stage04：启动渲染循环
@@ -38,8 +40,16 @@ function renderLoop_quad(state, device) {
 
     compute_cursor_hitpoint(state, device);
 
+    /**
+     *  更新当前simulation_control的参数，并导入GPU
+     * */ 
 
+    update_simulation_UBO_quad(state, device);
 
+    /**
+     *  执行一次 move 操作
+     * */ 
+    compute_instance_move_pass(state, device);
 
 
 

@@ -110,32 +110,6 @@ function BindGroup_creation_quad(state, device) {
 
 
     /**
-     *  update instance pos compute stage
-     * */
-    const simu_particles_BindGroup = device.createBindGroup({
-        layout: state.main_view_flow_quad.Layouts["compute"],
-        entries: [
-            {
-                binding: 0,
-                resource: {
-                    buffer: state.GPU_memory.UBOs["compute"]
-                }
-            },
-            {
-                binding: 1,
-                resource: {
-                    buffer: state.GPU_memory.VBOs["instances"],
-                    offset: 0,
-                    size: state.CPU_storage.instance_info["numInstances"] * state.CPU_storage.instance_info["instanceInfoByteSize"]
-                }
-            }
-        ]
-    });
-
-    state.main_view_flow_quad.BindGroups["compute"] = simu_particles_BindGroup;
-
-
-    /**
      *  View and Projection Matrix UBO for update MipLevel compute shader
      * */
     const VP_UBO_BindGroup = device.createBindGroup({
@@ -235,6 +209,31 @@ function BindGroup_creation_quad(state, device) {
     state.main_view_flow_quad.BindGroups["interaction"] = interaction_BindGroup;
 
 
+    
+    /**
+     *  update instance pos compute
+     * */
+    const compute_move_path_BindGroup = device.createBindGroup({
+        layout: state.main_view_flow_quad.Layouts["compute_move_path"],
+        entries: [
+            {
+                binding: 0,
+                resource: {
+                    buffer: state.GPU_memory.UBOs["simu_control"]
+                }
+            },
+            {
+                binding: 1,
+                resource: {
+                    buffer: state.GPU_memory.VBOs["instances"],
+                    offset: 0,
+                    size: state.CPU_storage.instance_info["numInstances"] * state.CPU_storage.instance_info["instanceInfoByteSize"]
+                }
+            }
+        ]
+    });
+
+    state.main_view_flow_quad.BindGroups["compute_move_path"] = compute_move_path_BindGroup;
 }
 
 

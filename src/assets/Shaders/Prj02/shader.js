@@ -10,18 +10,21 @@ const vertex_shader = /* wgsl */`
 
 
 struct VertexInput {
-  @location(0) position     : vec4<f32>,  // particle position
-  @location(1) pos_offset   : vec4<f32>,  // pos_offset
-  @location(2) lifetime     : f32,        // particle life time
-  @location(3) idx          : f32,        // idx for instanced texture
-  @location(4) uv_offset    : vec2<f32>,
-  @location(5) tex_aspect   : vec2<f32>,
-  @location(6) uv_size      : vec2<f32>,
-  @location(7) uv_offset_d  : vec2<f32>,  // default_uv_offset
-  @location(8) tex_aspect_d : vec2<f32>,  // default_uv_scale
-  @location(9) uv_size_d    : vec2<f32>,  // default_quad_scale
-  @location(10) quad_pos    : vec2<f32>,  // -1..+1
-  @location(11) quad_uv     : vec2<f32>,  // 0..+1
+  @location(0) position       : vec4<f32>,  // particle position
+  @location(1) pos_offset     : vec4<f32>,  // pos_offset
+  @location(2) layout1_pos    : vec4<f32>,  // layout1 pos
+  @location(3) layout2_pos    : vec4<f32>,  // layout2 pos
+
+  @location(4) lifetime       : f32,        // 弃用保留
+  @location(5) idx            : f32,        // 弃用保留
+  @location(6) uv_offset      : vec2<f32>,
+  @location(7) tex_aspect     : vec2<f32>,
+  @location(8) uv_size        : vec2<f32>,
+  @location(9) uv_offset_d    : vec2<f32>,  // default_uv_offset
+  @location(10) tex_aspect_d  : vec2<f32>,  // default_uv_scale
+  @location(11) uv_size_d     : vec2<f32>,  // default_quad_scale
+  @location(12) quad_pos      : vec2<f32>,  // -1..+1
+  @location(13) quad_uv       : vec2<f32>,  // 0..+1
 }
 
 struct VertexOutput {

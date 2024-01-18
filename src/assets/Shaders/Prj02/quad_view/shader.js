@@ -10,18 +10,21 @@ const vertex_shader = /* wgsl */`
 
 
 struct VertexInput {
-  @location(0) position     : vec4<f32>,  // particle position
-  @location(1) pos_offset   : vec4<f32>,  // pos_offset
-  @location(2) lifetime     : f32,        // particle life time
-  @location(3) idx          : f32,        // idx for instanced texture
-  @location(4) uv_offset    : vec2<f32>,
-  @location(5) tex_aspect   : vec2<f32>,
-  @location(6) uv_size      : vec2<f32>,
-  @location(7) uv_offset_d  : vec2<f32>,  // default_uv_offset
-  @location(8) tex_aspect_d : vec2<f32>,  // default_uv_scale
-  @location(9) uv_size_d    : vec2<f32>,  // default_quad_scale
-  @location(10) quad_pos    : vec2<f32>,  // -1..+1
-  @location(11) quad_uv     : vec2<f32>,  // 0..+1
+  @location(0) position       : vec4<f32>,  // particle position
+  @location(1) pos_offset     : vec4<f32>,  // pos_offset
+  @location(2) layout1_pos    : vec4<f32>,  // layout1 pos
+  @location(3) layout2_pos    : vec4<f32>,  // layout2 pos
+
+  @location(4) lifetime       : f32,        // 弃用保留
+  @location(5) idx            : f32,        // 弃用保留
+  @location(6) uv_offset      : vec2<f32>,
+  @location(7) tex_aspect     : vec2<f32>,
+  @location(8) uv_size        : vec2<f32>,
+  @location(9) uv_offset_d    : vec2<f32>,  // default_uv_offset
+  @location(10) tex_aspect_d  : vec2<f32>,  // default_uv_scale
+  @location(11) uv_size_d     : vec2<f32>,  // default_quad_scale
+  @location(12) quad_pos      : vec2<f32>,  // -1..+1
+  @location(13) quad_uv       : vec2<f32>,  // 0..+1
 }
 
 struct VertexOutput {
@@ -107,10 +110,10 @@ fn fs_main(in : FragIutput) -> @location(0) vec4<f32> {
   var target_uv = vec2(in.quad_uv.x*in.uv_size_d.x, in.quad_uv.y*in.uv_size_d.y);
   target_uv = target_uv+in.uv_offset_d;
 
-  var void_color = vec4(1.0, 1.0, 0.0, 1.0);
+  var void_color = vec4(1.0, 1.0, 0.0, 0.2);
   // var mip0_color = textureSample(myTexture_mip0, mySampler, target_uv);
   
-  var color = textureSample(largeQuad1, mySampler, target_uv);
+  var color = select(void_color, textureSample(largeQuad1, mySampler, target_uv), in.uv_offset_d.x>0);
   // color = select(color, mip1_color, in.miplevel>=1.0);
   // color = select(color, mip2_color, in.miplevel>=2.0);
   // color = select(color, mip3_color, in.miplevel>=3.0);

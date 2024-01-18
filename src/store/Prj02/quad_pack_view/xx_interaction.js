@@ -1,12 +1,43 @@
 
 import { mat4, vec3, vec4 } from "wgpu-matrix"
 
-import { update_sub_Camera, update_prim_Camera } from "../utils/set_camera";
+import { init_prim_Camera, update_sub_Camera, update_prim_Camera } from "../utils/set_camera";
 
 import { update_and_fill_Trace_Ray_UBO } from "../main_view/03_manage_UBO";
 
 
 import { update_mip_data_SBO } from "../main_view/04_manage_SBO";
+
+
+/**
+ *  通过欧拉角的偏移，去反向计算方向向量并更新
+ * */
+function pitch_yaw_updater_prim_cam(state) {
+    if (state.camera.prim_camera["pitch"] > Math.PI * 0.99) {
+        state.camera.prim_camera["pitch"] = Math.PI * 0.99
+    }
+    if (state.camera.prim_camera["pitch"] < -Math.PI * 0.99) {
+        state.camera.prim_camera["pitch"] = -Math.PI * 0.99
+    }
+
+    let new_view_dir = vec3.fromValues(
+        Math.cos(state.camera.prim_camera["yaw"]) * Math.cos(state.camera.prim_camera["pitch"]),
+        Math.sin(state.camera.prim_camera["pitch"]),
+        Math.sin(state.camera.prim_camera["yaw"]) * Math.cos(state.camera.prim_camera["pitch"])
+    );
+
+    state.camera.prim_camera["viewDir"] = new_view_dir;
+
+
+    /**
+     *  这里应该进一步更新up方向才对！
+     * */
+    // 首先得到 right 方向
+    const new_right_dir = vec3.normalize(vec3.cross(new_view_dir, vec3.fromValues(0.0, 1.0, 0.0)));
+    const new_up_dir = vec3.normalize(vec3.cross(new_right_dir, new_view_dir));
+
+    state.camera.prim_camera["up"] = new_up_dir;
+}
 
 /**
  *  Dragging
@@ -32,30 +63,7 @@ function mouseMovingCallback(state, device, event) {
     state.camera.prim_camera["yaw"] += xoffset;
     state.camera.prim_camera["pitch"] -= yoffset;
 
-    if (state.camera.prim_camera["pitch"] > Math.PI * 0.99) {
-        state.camera.prim_camera["pitch"] = Math.PI * 0.99
-    }
-    if (state.camera.prim_camera["pitch"] < -Math.PI * 0.99) {
-        state.camera.prim_camera["pitch"] = -Math.PI * 0.99
-    }
-
-    let new_view_dir = vec3.fromValues(
-        Math.cos(state.camera.prim_camera["yaw"]) * Math.cos(state.camera.prim_camera["pitch"]),
-        Math.sin(state.camera.prim_camera["pitch"]),
-        Math.sin(state.camera.prim_camera["yaw"]) * Math.cos(state.camera.prim_camera["pitch"])
-    );
-
-    state.camera.prim_camera["viewDir"] = new_view_dir;
-
-
-    /**
-     *  这里应该进一步更新up方向才对！
-     * */
-    // 首先得到 right 方向
-    const new_right_dir = vec3.normalize(vec3.cross(new_view_dir, vec3.fromValues(0.0, 1.0, 0.0)));
-    const new_up_dir = vec3.normalize(vec3.cross(new_right_dir, new_view_dir));
-
-    state.camera.prim_camera["up"] = new_up_dir;
+    pitch_yaw_updater_prim_cam(state);
 
     update_prim_Camera(state, device);
 }
@@ -278,27 +286,13 @@ function downMovingCallback(state, device, gui) {
 
 }
 
-function pauseBrowseAnimation(state, device) {
-    state.main_canvas.simu_info["simu_pause"] = !state.main_canvas.simu_info["simu_pause"];
-
-    device.queue.writeBuffer(
-        state.main_canvas.UBOs["compute"],
-        0,
-        new Float32Array([
-            state.main_canvas.simu_info["simu_speed"],
-            0.0,
-            0.0,
-            0.0, // padding
-            Math.random() * 100,
-            Math.random() * 100, // seed.xy
-            1 + Math.random(),
-            1 + Math.random(), // seed.zw
-            state.main_canvas.particle_info["lifetime"],
-            state.main_canvas.simu_info["simu_pause"], // pause = false
-            0.0, // paddings 
-            0.0
-        ])
-    );
+function pauseAnimation(state) {
+    if (state.main_canvas.simu_info.simu_pause == 1.0) {
+        state.main_canvas.simu_info.simu_pause = 0.0;
+    }
+    else {
+        state.main_canvas.simu_info.simu_pause = 1.0;
+    }
 }
 
 function exchangeKeyboardActive(state) {
@@ -357,9 +351,22 @@ function canvasKeyboardInteraction_quad(state, device, gui) {
             //     focusOnRandomPic(state, device, gui, flow_info);
             //     break;
             // // pause
-            // case "P".charCodeAt(0):
-            //     pauseBrowseAnimation(state, device)
-            //     break;
+            case "P".charCodeAt(0):
+                pauseAnimation(state);
+                break;
+            case "L".charCodeAt(0): // 相机复位
+                init_prim_Camera(state);
+                break;
+
+            case "M".charCodeAt(0): // 切换布局
+                if (state.main_canvas.simu_info.layout_flag == 1.0) {
+                    state.main_canvas.simu_info.layout_flag = 2.0;
+                }
+                else {
+                    state.main_canvas.simu_info.layout_flag = 1.0;
+                }
+                break;
+
             case "B".charCodeAt(0):
                 exchangeKeyboardActive(state)
                 break;
@@ -381,4 +388,8 @@ function canvasKeyboardInteraction_quad(state, device, gui) {
 
 
 
-export { canvasMouseInteraction_quad, canvasKeyboardInteraction_quad }
+export {
+    canvasMouseInteraction_quad,
+    canvasKeyboardInteraction_quad,
+    pitch_yaw_updater_prim_cam,
+}

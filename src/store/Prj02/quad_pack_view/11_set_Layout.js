@@ -2,7 +2,7 @@ function Layout_creation_quad(state, device) {
 
     /**
      *  MVP matrix UBO
-     * */ 
+     * */
     const MVP_UBO_Layout = device.createBindGroupLayout({
         entries: [{
             binding: 0,
@@ -29,7 +29,7 @@ function Layout_creation_quad(state, device) {
 
     /**
      *  Mip Info SBO
-     * */ 
+     * */
     // read-only-storage for vertex shader stage
     const MIP_SBO_Layout_Vertex = device.createBindGroupLayout({
         entries: [{
@@ -56,7 +56,7 @@ function Layout_creation_quad(state, device) {
 
     /**
      *  Sampler and Texture
-     * */ 
+     * */
     const Sample_UBO_Layout = device.createBindGroupLayout({
         entries: [
             // sampler
@@ -119,7 +119,11 @@ function Layout_creation_quad(state, device) {
     });
     state.main_view_flow_quad.Layouts["sample"] = Sample_UBO_Layout;
 
-    const compute_UBO_Layout = device.createBindGroupLayout({
+
+    /**
+     *  Instance Moving Simulation
+     * */ 
+    const compute_instance_move_path_UBO_Layout = device.createBindGroupLayout({
         entries: [
             {
                 binding: 0,
@@ -137,13 +141,13 @@ function Layout_creation_quad(state, device) {
             }
         ]
     });
-    state.main_view_flow_quad.Layouts["compute"] = compute_UBO_Layout;
+    state.main_view_flow_quad.Layouts["compute_move_path"] = compute_instance_move_path_UBO_Layout;
 
 
     /**
      *  View and Projection Matrix UBO for update MipLevel compute shader
-     * */ 
-    
+     * */
+
     const VP_UBO_Layout = device.createBindGroupLayout({
         entries: [{
             binding: 0,
@@ -164,7 +168,7 @@ function Layout_creation_quad(state, device) {
 
     /**
      *  View and Projection Matrix UBO for update MipLevel compute shader
-     * */ 
+     * */
     const mipArr_instanceArr_UBO_Layout = device.createBindGroupLayout({
         entries: [{
             binding: 0,
@@ -186,7 +190,7 @@ function Layout_creation_quad(state, device) {
 
     /**
      *  Cursor Ray View Dir and LookFrom
-     * */ 
+     * */
     const Cursor_Ray_UBO_Layout = device.createBindGroupLayout({
         entries: [{
             binding: 0,
@@ -200,7 +204,7 @@ function Layout_creation_quad(state, device) {
             buffer: {
                 type: "uniform"
             }
-        },{
+        }, {
             binding: 2,
             visibility: GPUShaderStage.COMPUTE,
             buffer: {
@@ -213,7 +217,7 @@ function Layout_creation_quad(state, device) {
 
     /**
      *  Interaction UBO Layout
-     * */ 
+     * */
     const Interaction_UBO_Layout = device.createBindGroupLayout({
         entries: [{
             binding: 0,
