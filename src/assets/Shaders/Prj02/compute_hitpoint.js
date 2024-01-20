@@ -18,8 +18,8 @@ struct Instance {
     layout1_pos     : vec4<f32>,
     layout2_pos     : vec4<f32>,
     layout3_pos     : vec4<f32>,
-    lifetime        : f32,          // 弃用保留
-    idx             : f32,          // 弃用保留
+    layout_flag     : f32,    
+    quad_idx        : f32,
     
     uv_offset       : vec2<f32>,
     tex_aspect      : vec2<f32>,

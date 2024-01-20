@@ -50,6 +50,9 @@ function gen_rect_instance_pos(
             //     time += Math.PI;
             // }
 
+            const default_layout = 1;
+            const quad_idx = item["large_quad_idx"];
+
             /**
              *  减少使用 contact 数据量越大的时候耗时明显变多！！!
              * */
@@ -58,7 +61,7 @@ function gen_rect_instance_pos(
             Array.prototype.push.apply(ret_arr, [pos_x, pos_y, pos_z, 1.0]);    // Layout1 pos
             Array.prototype.push.apply(ret_arr, [l2_x, l2_y, l2_z, 1.0]);       // Layout2 pos
             Array.prototype.push.apply(ret_arr, [l3_x, l3_y, l3_z, 1.0]);       // Layout3 pos
-            Array.prototype.push.apply(ret_arr, [1.0, 1.0]);                    // layout_flag + idx
+            Array.prototype.push.apply(ret_arr, [default_layout, quad_idx]);    // layout_flag + quad_idx
             // Array.prototype.push.apply(ret_arr, [0, 0]);                     // uv-offset padding
             // Array.prototype.push.apply(ret_arr, [0, 0]);                     // uv-scale padding
             // Array.prototype.push.apply(ret_arr, [0, 0]);                     // quad-scale padding

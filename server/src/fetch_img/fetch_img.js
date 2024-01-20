@@ -240,7 +240,8 @@ async function read_big_pre_fetch_img(json_pack) {
 
     const large_quad_root_dir = "../../../data_set/large/"
     // const description_json_path = "../../../data_set/large_quad.json"
-    const description_json_path = "../../../data_set/large_quad_dict.json"
+    // const description_json_path = "../../../data_set/large_quad_dict.json"
+    const description_json_path = "../../../data_set/large_quad_dict-300k.json"
     
     let ret_arr = [];
 

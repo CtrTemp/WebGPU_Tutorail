@@ -27,7 +27,7 @@ function parse_dataset_info(state) {
         4 * 4 + // Layout2 pos
         4 * 4 + // Layout3 pos
         1 * 4 + // Layout-flag
-        1 * 4 + // idx for instanced texture（弃用保留）
+        1 * 4 + // large-quad-idx
         2 * 4 + // uv offset
         2 * 4 + // uv scale
         2 * 4 + // quad scale

@@ -17,7 +17,7 @@ struct VertexInput {
   @location(4) layout3_pos    : vec4<f32>,  // layout2 pos
 
   @location(5) layout_flag    : f32,        // layout flag
-  @location(6) idx            : f32,        // 弃用保留
+  @location(6) quad_idx       : f32,        // large-quad-idx
   @location(7) uv_offset      : vec2<f32>,
   @location(8) tex_aspect     : vec2<f32>,
   @location(9) uv_size        : vec2<f32>,
@@ -33,7 +33,7 @@ struct VertexOutput {
   @location(0) pos_offset     : vec4<f32>, // 不变，pos_offset
   @location(1) quad_pos       : vec2<f32>, // -1..+1 不变，原样输出
   @location(2) quad_uv        : vec2<f32>, // 0..+1 不变，原样输出
-  @location(3) idx            : f32,       // 不变，原样输出
+  @location(3) quad_idx       : f32,       // 不变，原样输出
   @location(4) uv_offset      : vec2<f32>, // 不变，原样输出
   @location(5) uv_size        : vec2<f32>, // 不变，原样输出
   @location(6) uv_offset_d    : vec2<f32>, // 不变，原样输出
@@ -60,7 +60,7 @@ fn vs_main(
   out.pos_offset = in.pos_offset;
   out.quad_pos = in.quad_pos;
   out.quad_uv = vec2f(in.quad_uv.x, 1.0-in.quad_uv.y); // 上下翻转，左右不翻转
-  out.idx = in.idx;
+  out.quad_idx = in.quad_idx;
   out.uv_offset = in.uv_offset;
   out.uv_size = in.uv_size;
   out.uv_offset_d = in.uv_offset_d;
@@ -81,7 +81,7 @@ const fragment_shader = /* wgsl */`
 
 
 @group(1) @binding(0) var mySampler: sampler;
-@group(1) @binding(1) var largeQuad1 : texture_2d<f32>;
+@group(1) @binding(1) var largeQuad1: texture_2d<f32>;
 @group(1) @binding(2) var largeQuad2: texture_2d<f32>;
 @group(1) @binding(3) var largeQuad3: texture_2d<f32>;
 @group(1) @binding(4) var largeQuad4: texture_2d<f32>;
@@ -94,7 +94,7 @@ struct FragIutput {
   @location(0) pos_offset     : vec4<f32>,
   @location(1) quad_pos       : vec2<f32>, // -1..+1 不变，原样输出
   @location(2) quad_uv        : vec2<f32>, // 0..+1 不变，原样输出
-  @location(3) idx            : f32,       // 不变，原样输出
+  @location(3) quad_idx       : f32,       // 不变，原样输出
   @location(4) uv_offset      : vec2<f32>, // 不变，原样输出
   @location(5) uv_size        : vec2<f32>, // 不变，原样输出
   @location(6) uv_offset_d    : vec2<f32>, // 不变，原样输出
@@ -124,6 +124,12 @@ fn fs_main(in : FragIutput) -> @location(0) vec4<f32> {
   var void_color = in.pos_offset;
   
   var color = select(void_color, textureSample(largeQuad1, mySampler, target_uv), in.uv_offset_d.x>0);
+  color = select(color, textureSample(largeQuad2, mySampler, target_uv), in.quad_idx>1);
+  color = select(color, textureSample(largeQuad3, mySampler, target_uv), in.quad_idx>2);
+  color = select(color, textureSample(largeQuad4, mySampler, target_uv), in.quad_idx>3);
+  color = select(color, textureSample(largeQuad5, mySampler, target_uv), in.quad_idx>4);
+  color = select(color, textureSample(largeQuad6, mySampler, target_uv), in.quad_idx>5);
+
   // color = select(color, mip1_color, in.miplevel>=1.0);
   // color = select(color, mip2_color, in.miplevel>=2.0);
   // color = select(color, mip3_color, in.miplevel>=3.0);

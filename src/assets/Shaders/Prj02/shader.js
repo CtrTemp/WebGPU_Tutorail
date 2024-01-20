@@ -16,8 +16,8 @@ struct VertexInput {
   @location(3) layout2_pos    : vec4<f32>,  // layout2 pos
   @location(4) layout2_pos    : vec4<f32>,  // layout2 pos
 
-  @location(5) layout_flag    : f32,        
-  @location(6) idx            : f32,        // 弃用保留
+  @location(5) layout_flag    : f32,        // layout flag
+  @location(6) quad_idx       : f32,        // large-quad-idx
   @location(7) uv_offset      : vec2<f32>,
   @location(8) tex_aspect     : vec2<f32>,
   @location(9) uv_size        : vec2<f32>,
