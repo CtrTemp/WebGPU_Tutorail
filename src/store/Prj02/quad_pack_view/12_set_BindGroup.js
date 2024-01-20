@@ -219,7 +219,7 @@ function BindGroup_creation_quad(state, device) {
             {
                 binding: 0,
                 resource: {
-                    buffer: state.GPU_memory.UBOs["simu_control"]
+                    buffer: state.GPU_memory.SBOs["simu_control"]
                 }
             },
             {

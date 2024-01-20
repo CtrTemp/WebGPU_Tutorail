@@ -6,7 +6,6 @@ function gen_rect_instance_pos(
     raw_info_pack
 ) {
 
-    console.log(raw_info_pack.length);
 
     let ret_arr = [];
 
@@ -16,29 +15,40 @@ function gen_rect_instance_pos(
     const horizontal_offset = -horizontal_range / 2;
     const vertical_offset = -vertical_range / 2;
 
+
+    const keys = Object.keys(raw_info_pack)
+    console.log(keys.length);
+
+    const scale_para_3d = 10;
+
     for (let i = 0; i < vertical_cnt; i++) {
         for (let j = 0; j < horizontal_cnt; j++) {
 
             const global_cnt = i * horizontal_cnt + j;
+            const item = raw_info_pack[keys[global_cnt]];
 
-            const default_uv_offset_arr = raw_info_pack[global_cnt]["default_atlas_info"]["uv_offset"];
-            const default_uv_size_arr = raw_info_pack[global_cnt]["default_atlas_info"]["uv_size"];
+            const default_uv_offset_arr = item["default_atlas_info"]["uv_offset"];
+            const default_uv_size_arr = item["default_atlas_info"]["uv_size"];
 
 
             let pos_x = (0.5 + j) * horizontal_step + horizontal_offset;
             let pos_y = (0.5 + i) * vertical_step + vertical_offset;
             let pos_z = z_plane_dist;
 
-            let l2_i = raw_info_pack[global_cnt]["layout2"][1]
-            let l2_j = raw_info_pack[global_cnt]["layout2"][0]
+            let l2_i = item["layout2"][1]
+            let l2_j = item["layout2"][0]
             let l2_x = (0.5 + l2_j) * horizontal_step + horizontal_offset;
             let l2_y = (0.5 + l2_i) * vertical_step + vertical_offset;
             let l2_z = z_plane_dist;
 
-            let time = Math.asin(pos_z / Math.sqrt(pos_x * pos_x + pos_z * pos_z)); // rotating
-            if (Math.random() > 0.5) {
-                time += Math.PI;
-            }
+            let l3_x = item["layout3"][0] * scale_para_3d;
+            let l3_y = item["layout3"][1] * scale_para_3d;
+            let l3_z = item["layout3"][2] * scale_para_3d;
+
+            // let time = Math.asin(pos_z / Math.sqrt(pos_x * pos_x + pos_z * pos_z)); // rotating
+            // if (Math.random() > 0.5) {
+            //     time += Math.PI;
+            // }
 
             /**
              *  减少使用 contact 数据量越大的时候耗时明显变多！！!
@@ -47,7 +57,8 @@ function gen_rect_instance_pos(
             Array.prototype.push.apply(ret_arr, [0, 0, 0, 0]);                  // pos_offset
             Array.prototype.push.apply(ret_arr, [pos_x, pos_y, pos_z, 1.0]);    // Layout1 pos
             Array.prototype.push.apply(ret_arr, [l2_x, l2_y, l2_z, 1.0]);       // Layout2 pos
-            Array.prototype.push.apply(ret_arr, [time, 1.0]);                   // liftime + idx
+            Array.prototype.push.apply(ret_arr, [l3_x, l3_y, l3_z, 1.0]);       // Layout3 pos
+            Array.prototype.push.apply(ret_arr, [1.0, 1.0]);                    // layout_flag + idx
             // Array.prototype.push.apply(ret_arr, [0, 0]);                     // uv-offset padding
             // Array.prototype.push.apply(ret_arr, [0, 0]);                     // uv-scale padding
             // Array.prototype.push.apply(ret_arr, [0, 0]);                     // quad-scale padding

@@ -98,22 +98,6 @@ function UBO_creation(state, device) {
     });
     state.GPU_memory.UBOs["interaction"] = Interaction_UBO;
 
-
-    /**
-     *  Instance Moving Simulation Related UBO
-     * */
-    const simulation_info_size =
-        1 * 4 + // layout exchange flag
-        1 * 4 + // base simu-speed
-        1 * 4 + // pause flag
-        1 * 4 + // padding
-        0;
-    const Simulation_Control_UBO = device.createBuffer({
-        size: simulation_info_size,
-        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-    });
-    state.GPU_memory.UBOs["simu_control"] = Simulation_Control_UBO;
-
 }
 
 function fill_MVP_UBO(state, device) {

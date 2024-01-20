@@ -25,7 +25,8 @@ function parse_dataset_info(state) {
         4 * 4 + // pos_offset
         4 * 4 + // Layout1 pos
         4 * 4 + // Layout2 pos
-        1 * 4 + // life time（弃用保留）
+        4 * 4 + // Layout3 pos
+        1 * 4 + // Layout-flag
         1 * 4 + // idx for instanced texture（弃用保留）
         2 * 4 + // uv offset
         2 * 4 + // uv scale
@@ -71,7 +72,7 @@ function parse_dataset_info(state) {
     const horizontal_range = 2400;
     const vertical_range = 1050;
     const horizontal_cnt = 800;
-    const vertical_cnt = 350;
+    const vertical_cnt = 380;
     state.CPU_storage.interaction_info["z_plane_depth"] = z_dist;
     const flow_info = gen_rect_instance_pos(
         z_dist,

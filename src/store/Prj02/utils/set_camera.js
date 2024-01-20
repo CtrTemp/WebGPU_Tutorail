@@ -26,7 +26,7 @@ function init_prim_Camera(state) {
     const fov = Math.PI / 2;//90°
     const aspect = state.main_canvas.canvas.width / state.main_canvas.canvas.height;
     // const aspect = 1920 / 1080;
-    const z_far = 1000.0;
+    const z_far = 5000.0;
     const z_near = 1.0;
     camera["z_near"] = z_near;
     camera["z_far"] = z_far;
@@ -35,7 +35,7 @@ function init_prim_Camera(state) {
 
 
     // const lookFrom = vec3.fromValues(-50.0, 0.0, 0.0);
-    const lookFrom = vec3.fromValues(0.0, 0.0, 0.0);
+    const lookFrom = vec3.fromValues(0.0, 0.0, -150.0);
     const viewDir = vec3.fromValues(0.0, 0.0, 1.0);
     const lookAt = vec3.add(lookFrom, viewDir);
     const up = vec3.fromValues(0.0, 1.0, 0.0);

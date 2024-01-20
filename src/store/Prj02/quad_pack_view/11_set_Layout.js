@@ -129,7 +129,7 @@ function Layout_creation_quad(state, device) {
                 binding: 0,
                 visibility: GPUShaderStage.COMPUTE,
                 buffer: {
-                    type: "uniform"
+                    type: "storage"
                 }
             },
             {

@@ -14,17 +14,18 @@ struct VertexInput {
   @location(1) pos_offset     : vec4<f32>,  // pos_offset
   @location(2) layout1_pos    : vec4<f32>,  // layout1 pos
   @location(3) layout2_pos    : vec4<f32>,  // layout2 pos
+  @location(4) layout3_pos    : vec4<f32>,  // layout2 pos
 
-  @location(4) lifetime       : f32,        // 弃用保留
-  @location(5) idx            : f32,        // 弃用保留
-  @location(6) uv_offset      : vec2<f32>,
-  @location(7) tex_aspect     : vec2<f32>,
-  @location(8) uv_size        : vec2<f32>,
-  @location(9) uv_offset_d    : vec2<f32>,  // default_uv_offset
-  @location(10) tex_aspect_d  : vec2<f32>,  // default_uv_scale
-  @location(11) uv_size_d     : vec2<f32>,  // default_quad_scale
-  @location(12) quad_pos      : vec2<f32>,  // -1..+1
-  @location(13) quad_uv       : vec2<f32>,  // 0..+1
+  @location(5) layout_flag    : f32,        // layout flag
+  @location(6) idx            : f32,        // 弃用保留
+  @location(7) uv_offset      : vec2<f32>,
+  @location(8) tex_aspect     : vec2<f32>,
+  @location(9) uv_size        : vec2<f32>,
+  @location(10) uv_offset_d    : vec2<f32>,  // default_uv_offset
+  @location(11) tex_aspect_d  : vec2<f32>,  // default_uv_scale
+  @location(12) uv_size_d     : vec2<f32>,  // default_quad_scale
+  @location(13) quad_pos      : vec2<f32>,  // -1..+1
+  @location(14) quad_uv       : vec2<f32>,  // 0..+1
 }
 
 struct VertexOutput {
@@ -38,6 +39,7 @@ struct VertexOutput {
   @location(6) uv_offset_d    : vec2<f32>, // 不变，原样输出
   @location(7) uv_size_d      : vec2<f32>, // 不变，原样输出
   @location(8) miplevel       : f32,
+  @location(9) layout_flag    : f32,
 }
 
 @vertex
@@ -63,6 +65,7 @@ fn vs_main(
   out.uv_size = in.uv_size;
   out.uv_offset_d = in.uv_offset_d;
   out.uv_size_d = in.uv_size_d;
+  out.layout_flag = in.layout_flag;
 
   // out.miplevel = in.miplevel;
   out.miplevel = mip[instance_index];  // 通过内置变量来得到miplevel的索引
@@ -88,7 +91,7 @@ const fragment_shader = /* wgsl */`
 
 struct FragIutput {
   @builtin(position) position : vec4<f32>,
-  @location(0) color          : vec4<f32>,
+  @location(0) pos_offset     : vec4<f32>,
   @location(1) quad_pos       : vec2<f32>, // -1..+1 不变，原样输出
   @location(2) quad_uv        : vec2<f32>, // 0..+1 不变，原样输出
   @location(3) idx            : f32,       // 不变，原样输出
@@ -97,6 +100,7 @@ struct FragIutput {
   @location(6) uv_offset_d    : vec2<f32>, // 不变，原样输出
   @location(7) uv_size_d      : vec2<f32>, // 不变，原样输出
   @location(8) miplevel       : f32,
+  @location(9) layout_flag    : f32,
 }
 
 
@@ -110,8 +114,14 @@ fn fs_main(in : FragIutput) -> @location(0) vec4<f32> {
   var target_uv = vec2(in.quad_uv.x*in.uv_size_d.x, in.quad_uv.y*in.uv_size_d.y);
   target_uv = target_uv+in.uv_offset_d;
 
-  var void_color = vec4(1.0, 1.0, 0.0, 0.2);
-  // var mip0_color = textureSample(myTexture_mip0, mySampler, target_uv);
+  // var void_color_y = vec4(1.0, 1.0, 0.0, 0.2);
+  // var void_color_g = vec4(0.0, 1.0, 0.0, 0.2);
+  // var void_color_b = vec4(0.0, 0.0, 1.0, 0.2);
+  // // var mip0_color = textureSample(myTexture_mip0, mySampler, target_uv);
+  // var void_color = select(void_color_y, void_color_g, in.layout_flag>=2.0);
+  // void_color = select(void_color, void_color_b, in.layout_flag>=3.0);
+
+  var void_color = in.pos_offset;
   
   var color = select(void_color, textureSample(largeQuad1, mySampler, target_uv), in.uv_offset_d.x>0);
   // color = select(color, mip1_color, in.miplevel>=1.0);

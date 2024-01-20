@@ -74,6 +74,7 @@ import { Pipeline_creation_quad } from "./quad_pack_view/13_set_Pipeline";
 
 import { fill_MVP_UBO_quad } from "./quad_pack_view/03_manage_UBO";
 
+
 import {
     compute_miplevel_pass_quad,
     read_back_miplevel_pass_quad,
@@ -761,10 +762,10 @@ export default {
                 mouse_info: {},
                 keyboard_info: {},
                 simu_info: {
-                    layout_flag: 1.0,
+                    cur_layout: 1.0,
+                    last_layout: 1.0,
                     simu_speed: 1.0,
                     simu_pause: 0.0,    // 初始为允许状态
-                    padding: 0.0,
                 },
             },
             sub_canvas: {

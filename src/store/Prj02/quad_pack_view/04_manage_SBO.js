@@ -29,6 +29,12 @@ function SBO_creation(state, device) {
 
 
 
+function update_simulation_SBO_quad(state, device) {
+    const simu_control_UBO = state.GPU_memory.SBOs["simu_control"];
+    // console.log(Object.values(state.main_canvas.simu_info));
+    const write_buffer = new Float32Array(Object.values(state.main_canvas.simu_info));
+    device.queue.writeBuffer(simu_control_UBO, 0, write_buffer);
+}
 
 
 
@@ -37,4 +43,4 @@ function SBO_creation(state, device) {
 
 
 
-export { SBO_creation }
+export { SBO_creation, update_simulation_SBO_quad }

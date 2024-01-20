@@ -11,8 +11,8 @@ import {
     fill_nearest_dist_SBO_init,
 } from "./main_view/04_manage_SBO";
 
-import { update_simulation_UBO_quad } from "./quad_pack_view/03_manage_UBO";
 
+import { update_simulation_SBO_quad } from "./quad_pack_view/04_manage_SBO";
 /**
  *  Stage04：启动渲染循环
  * */
@@ -44,7 +44,7 @@ function renderLoop_quad(state, device) {
      *  更新当前simulation_control的参数，并导入GPU
      * */ 
 
-    update_simulation_UBO_quad(state, device);
+    update_simulation_SBO_quad(state, device);
 
     /**
      *  执行一次 move 操作

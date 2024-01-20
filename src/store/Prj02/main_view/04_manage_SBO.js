@@ -42,6 +42,22 @@ function SBO_creation(state, device) {
     state.GPU_memory.SBOs["nearest_hit_dist"] = Nearest_Hit_Distance_SBO;
 
 
+    
+    /**
+     *  Instance Moving Simulation Related SBO
+     * */
+    const simulation_info_size =
+        1 * 4 + // current layout
+        1 * 4 + // last layout
+        1 * 4 + // base simu-speed
+        1 * 4 + // pause flag
+        0;
+    const Simulation_Control_SBO = device.createBuffer({
+        size: simulation_info_size,
+        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+    });
+    state.GPU_memory.SBOs["simu_control"] = Simulation_Control_SBO;
+
 }
 
 

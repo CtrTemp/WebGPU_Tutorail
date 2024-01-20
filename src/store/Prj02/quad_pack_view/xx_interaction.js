@@ -295,6 +295,21 @@ function pauseAnimation(state) {
     }
 }
 
+
+function toLayout1(state) {
+    state.main_canvas.simu_info.cur_layout = 1.0;
+}
+
+
+function toLayout2(state) {
+    state.main_canvas.simu_info.cur_layout = 2.0;
+}
+
+
+function toLayout3(state) {
+    state.main_canvas.simu_info.cur_layout = 3.0;
+}
+
 function exchangeKeyboardActive(state) {
     if (state.main_canvas.keyboard_info.active == true) {
         state.main_canvas.keyboard_info.active = false;
@@ -358,13 +373,15 @@ function canvasKeyboardInteraction_quad(state, device, gui) {
                 init_prim_Camera(state);
                 break;
 
-            case "M".charCodeAt(0): // 切换布局
-                if (state.main_canvas.simu_info.layout_flag == 1.0) {
-                    state.main_canvas.simu_info.layout_flag = 2.0;
-                }
-                else {
-                    state.main_canvas.simu_info.layout_flag = 1.0;
-                }
+            case "Z".charCodeAt(0): // 切换布局 --> layout1
+                console.log(state.main_canvas.simu_info.cur_layout)
+                toLayout1(state); 
+                break;
+            case "X".charCodeAt(0): // 切换布局 --> layout2 
+                toLayout2(state); 
+                break;
+            case "C".charCodeAt(0): // 切换布局 --> layout3 
+                toLayout3(state); 
                 break;
 
             case "B".charCodeAt(0):
