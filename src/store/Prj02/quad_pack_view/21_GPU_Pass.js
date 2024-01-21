@@ -26,10 +26,9 @@ function compute_miplevel_pass_quad(state, device) {
 
 /**
  *  调用 compute shader 计算当前光标打击点
- * */ 
+ * */
 
-function compute_cursor_hitpoint(state, device)
-{
+function compute_cursor_hitpoint(state, device) {
     // Encode Pass 填充
     const encoder = device.createCommandEncoder();
     const pass = encoder.beginComputePass();
@@ -91,7 +90,7 @@ async function read_back_miplevel_pass_quad(state, device) {
     //  *  全部填充，反向写GPU内存
     //  * */ 
     // state.CPU_storage.storage_arr["mip"].fill(5.0); // 手动定义，取出所有图片一次性全部导入内存
-    
+
     // device.queue.writeBuffer(
     //     state.GPU_memory.SBOs["mip"],
     //     0,
@@ -109,8 +108,45 @@ async function read_back_miplevel_pass_quad(state, device) {
  * */
 function render_main_view_quad(state, device, renderPassDescriptor) {
     const encoder = device.createCommandEncoder();
+
     const pass = encoder.beginRenderPass(renderPassDescriptor);
+
+    
+    pass.setPipeline(state.main_view_flow_quad.Pipelines["render_quad_frame"]);
+    pass.setBindGroup(0, state.main_view_flow_quad.BindGroups["mvp_pack"]);
+    pass.setBindGroup(1, state.main_view_flow_quad.BindGroups["sample"]);
+    pass.setBindGroup(2, state.main_view_flow_quad.BindGroups["mip_vertex"]);
+    pass.setVertexBuffer(0, state.GPU_memory.VBOs["instances"]);
+    pass.setVertexBuffer(1, state.GPU_memory.VBOs["quad"]);
+    pass.draw(6, state.CPU_storage.instance_info["numInstances"], 0, 0);
+
+    
     pass.setPipeline(state.main_view_flow_quad.Pipelines["render_instances"]);
+    pass.setBindGroup(0, state.main_view_flow_quad.BindGroups["mvp_pack"]);
+    pass.setBindGroup(1, state.main_view_flow_quad.BindGroups["sample"]);
+    pass.setBindGroup(2, state.main_view_flow_quad.BindGroups["mip_vertex"]);
+    pass.setVertexBuffer(0, state.GPU_memory.VBOs["instances"]);
+    pass.setVertexBuffer(1, state.GPU_memory.VBOs["quad"]);
+    pass.draw(6, state.CPU_storage.instance_info["numInstances"], 0, 0);
+
+    
+
+
+    pass.end();
+
+    device.queue.submit([encoder.finish()]);
+}
+
+/**
+ *  render the quad's frame
+ * */
+function render_quad_frame(state, device, renderPassDescriptor) {
+
+    const encoder = device.createCommandEncoder();
+
+
+    const pass = encoder.beginRenderPass(renderPassDescriptor);
+    pass.setPipeline(state.main_view_flow_quad.Pipelines["render_quad_frame"]);
     pass.setBindGroup(0, state.main_view_flow_quad.BindGroups["mvp_pack"]);
     pass.setBindGroup(1, state.main_view_flow_quad.BindGroups["sample"]);
     pass.setBindGroup(2, state.main_view_flow_quad.BindGroups["mip_vertex"]);
@@ -119,12 +155,13 @@ function render_main_view_quad(state, device, renderPassDescriptor) {
     pass.draw(6, state.CPU_storage.instance_info["numInstances"], 0, 0);
     pass.end();
 
+
     device.queue.submit([encoder.finish()]);
 }
 
 
-function compute_instance_move_pass(state, device)
-{
+
+function compute_instance_move_pass(state, device) {
     // Encode Pass 填充
     const encoder = device.createCommandEncoder();
     const pass = encoder.beginComputePass();
@@ -143,6 +180,7 @@ export {
     compute_cursor_hitpoint,
     read_back_miplevel_pass_quad,
     render_main_view_quad,
+    render_quad_frame,
     compute_instance_move_pass,
 }
 

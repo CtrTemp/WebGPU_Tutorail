@@ -1,6 +1,7 @@
 
 import {
     render_main_view_quad,
+    render_quad_frame,
     compute_miplevel_pass_quad,
     compute_cursor_hitpoint,
     compute_instance_move_pass,
@@ -88,6 +89,7 @@ function renderLoop_quad(state, device) {
     /**
      *  submit a pass to CMD queue as a render call
      * */
+    // render_quad_frame(state, device, renderPassDescriptor);
     render_main_view_quad(state, device, renderPassDescriptor);
 
 

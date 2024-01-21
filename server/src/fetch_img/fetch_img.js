@@ -238,16 +238,21 @@ function read_large_texture(root_dir, ret_arr) {
 
 async function read_big_pre_fetch_img(json_pack) {
 
-    const large_quad_root_dir = "../../../data_set/large/"
+    // const large_quad_root_dir = "../../../data_set/large/"
+    const large_quad_root_dir = "../../../data_set/large_16_16/"
+
+
+
     // const description_json_path = "../../../data_set/large_quad.json"
     // const description_json_path = "../../../data_set/large_quad_dict.json"
-    const description_json_path = "../../../data_set/large_quad_dict-300k.json"
+    // const description_json_path = "../../../data_set/large_quad_dict-300k.json"
+    const description_json_path = "../../../data_set/large_quad_dict_16.json"
     
     let ret_arr = [];
 
     const description_json = await read_description_json(description_json_path);
     await read_large_texture(large_quad_root_dir, ret_arr)
-    console.log("mark");
+    console.log("mark texture read in");
 
     let ret_promise = new Promise((resolve, reject) => {
         // read_large_texture(large_quad_root_dir, ret_arr).then(() => {

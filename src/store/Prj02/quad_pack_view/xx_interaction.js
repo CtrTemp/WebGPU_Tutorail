@@ -56,14 +56,35 @@ function mouseMovingCallback(state, device, event) {
     let xoffset = event.movementX;
     let yoffset = event.movementY;
 
-    xoffset *= state.main_canvas.mouse_info["drag_speed"];
-    yoffset *= state.main_canvas.mouse_info["drag_speed"];
 
-    // 这里的改变没有触发GUI的更新
-    state.camera.prim_camera["yaw"] += xoffset;
-    state.camera.prim_camera["pitch"] -= yoffset;
+    if (state.main_canvas.mouse_info.drag_func == 0) {
+        /**
+         *  平移交互动作
+         * */
+        const view_dir = state.camera.prim_camera["viewDir"];
+        const right_dir = vec3.normalize(vec3.cross(view_dir, vec3.fromValues(0.0, 1.0, 0.0)));
+        const up_dir = vec3.normalize(vec3.cross(right_dir, view_dir));
 
-    pitch_yaw_updater_prim_cam(state);
+
+        xoffset *= state.main_canvas.mouse_info["drag_speed"];
+        yoffset *= state.main_canvas.mouse_info["drag_speed"];
+        state.camera.prim_camera.lookFrom = vec3.add(state.camera.prim_camera.lookFrom, vec3.mulScalar(right_dir, -xoffset));
+        state.camera.prim_camera.lookFrom = vec3.add(state.camera.prim_camera.lookFrom, vec3.mulScalar(up_dir, yoffset));
+
+    }
+    else if (state.main_canvas.mouse_info.drag_func == 1) {
+        /**
+         *  Dragball 交互动作
+         * */
+        xoffset *= state.main_canvas.mouse_info["dragball_speed"];
+        yoffset *= state.main_canvas.mouse_info["dragball_speed"];
+        state.camera.prim_camera["yaw"] += xoffset;
+        state.camera.prim_camera["pitch"] -= yoffset;
+
+        pitch_yaw_updater_prim_cam(state);
+    }
+
+
 
     update_prim_Camera(state, device);
 }
@@ -88,7 +109,7 @@ function mouseWheelCallback(state, device, deltaY) {
     let camera = state.camera.prim_camera;
     camera["lookFrom"] = vec3.addScaled(
         camera["lookFrom"],
-        camera["up"],
+        camera["viewDir"],
         -state.main_canvas.mouse_info["wheel_speed"] * deltaY
     );
 
@@ -122,20 +143,20 @@ function canvasMouseInteraction_quad(state, device) {
      *  我们暂时屏蔽掉 Drag 交互
      * */
 
-    // canvas.addEventListener("mousemove", (event) => {
-    //     // 这里的一个优点在于可以直接获取鼠标的移动距离信息
-    //     // console.log("event = ", event.movementX);
-    //     mouseMovingCallback(state, device, event);
-    // })
+    canvas.addEventListener("mousemove", (event) => {
+        // 这里的一个优点在于可以直接获取鼠标的移动距离信息
+        // console.log("event = ", event.movementX);
+        mouseMovingCallback(state, device, event);
+    })
 
 
 
-    // canvas.addEventListener("mousedown", (event) => {
-    //     mouseClickCallback(state, "down");
-    // })
-    // canvas.addEventListener("mouseup", (event) => {
-    //     mouseClickCallback(state, "up");
-    // })
+    canvas.addEventListener("mousedown", (event) => {
+        mouseClickCallback(state, "down");
+    })
+    canvas.addEventListener("mouseup", (event) => {
+        mouseClickCallback(state, "up");
+    })
 
     canvas.addEventListener("mousewheel", (event) => {
         mouseWheelCallback(state, device, event.deltaY);
@@ -321,6 +342,15 @@ function exchangeKeyboardActive(state) {
     }
 }
 
+function exchangeDragControlFunc(state) {
+    if (state.main_canvas.mouse_info["drag_func"] == 0) {
+        state.main_canvas.mouse_info["drag_func"] = 1;
+    }
+    else {
+        state.main_canvas.mouse_info["drag_func"] = 0;
+    }
+}
+
 /**
  *  Keyboard
  * */
@@ -375,17 +405,18 @@ function canvasKeyboardInteraction_quad(state, device, gui) {
 
             case "Z".charCodeAt(0): // 切换布局 --> layout1
                 console.log(state.main_canvas.simu_info.cur_layout)
-                toLayout1(state); 
+                toLayout1(state);
                 break;
             case "X".charCodeAt(0): // 切换布局 --> layout2 
-                toLayout2(state); 
+                toLayout2(state);
                 break;
             case "C".charCodeAt(0): // 切换布局 --> layout3 
-                toLayout3(state); 
+                toLayout3(state);
                 break;
 
             case "B".charCodeAt(0):
-                exchangeKeyboardActive(state)
+                // exchangeKeyboardActive(state);
+                exchangeDragControlFunc(state);
                 break;
 
             default:

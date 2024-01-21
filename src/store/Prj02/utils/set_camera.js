@@ -80,10 +80,10 @@ function init_prim_Camera(state) {
     camera["projection"] = projection;
 
     // 其他附加参数
-    state.main_canvas.mouse_info["dragging"] = false;     // 当前鼠标是否正在拖动的标志
-    state.main_canvas.mouse_info["firstMouse"] = false;   // 是否首次点击鼠标
-    state.main_canvas.mouse_info["lastX"] = 0;
-    state.main_canvas.mouse_info["lastY"] = 0;
+    // state.main_canvas.mouse_info["dragging"] = false;     // 当前鼠标是否正在拖动的标志
+    // state.main_canvas.mouse_info["firstMouse"] = false;   // 是否首次点击鼠标
+    // state.main_canvas.mouse_info["lastX"] = 0;
+    // state.main_canvas.mouse_info["lastY"] = 0;
 
     // 解算得到的相机方位角
     camera["yaw"] = Math.PI / 2;    // 绕 y 轴转角
@@ -95,10 +95,10 @@ function init_prim_Camera(state) {
     // 如果没有滚转角更新，则可以不考虑相机up方向的更新，也不会影响解算right方向
     // camera["roll"] = 0.0; // 不需要 roll
 
-    // 相机移动敏感度
-    state.main_canvas.mouse_info["drag_speed"] = 0.005;
-    state.main_canvas.mouse_info["wheel_speed"] = 0.05;
-    state.main_canvas.keyboard_info["speed"] = 1.25;
+    // // 相机移动敏感度（在定义时初始化）
+    // state.main_canvas.mouse_info["drag_speed"] = 0.005;
+    // state.main_canvas.mouse_info["wheel_speed"] = 0.05;
+    // state.main_canvas.keyboard_info["speed"] = 1.25;
 
     if (reset_flag) {
         return;
@@ -116,6 +116,11 @@ function init_prim_Camera(state) {
     gui.add(state.camera.prim_camera.dir, "dir_x", -1.0, 1.0, 0.01);
     gui.add(state.camera.prim_camera.dir, "dir_y", -1.0, 1.0, 0.01);
     gui.add(state.camera.prim_camera.dir, "dir_z", -1.0, 1.0, 0.01);
+
+    gui.add(state.main_canvas.mouse_info, "wheel_speed", 0.0, 0.2, 0.001);
+    gui.add(state.main_canvas.mouse_info, "dragball_speed", 0.0, 0.02, 0.001);
+    gui.add(state.main_canvas.mouse_info, "drag_speed", 0.0, 1, 0.001);
+    gui.add(state.main_canvas.keyboard_info, "speed", 0.0, 10, 0.1);
 
 
 

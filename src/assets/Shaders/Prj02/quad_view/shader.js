@@ -71,6 +71,42 @@ fn vs_main(
   out.miplevel = mip[instance_index];  // 通过内置变量来得到miplevel的索引
   return out;
 }
+
+
+@vertex
+fn vs_main_quad_frame(
+  @builtin(instance_index) instance_index : u32, 
+  in : VertexInput
+  ) -> VertexOutput {
+
+  var pos_temp = in.quad_pos;
+  pos_temp.x = pos_temp.x*in.tex_aspect.x;
+  pos_temp.y = pos_temp.y*in.tex_aspect.y;
+  var quad_pos = mat2x3<f32>(right, up) * pos_temp;
+  
+  // 扩大quad大小，使其变为其外围的一圈
+  var position = in.position.xyz + in.pos_offset.xyz + quad_pos * 1.05; 
+  // var position = in.position.xyz + quad_pos * (-in.position.z+0.5)*0.05; // 随着z值更改quad大小
+  var out : VertexOutput;
+  out.position = mvp * vec4<f32>(position, 1.0);
+  out.position.z += 0.01; // z 轴后移，防止 z-fighting
+
+  out.pos_offset = in.pos_offset;
+  out.quad_pos = in.quad_pos;
+  out.quad_uv = vec2f(in.quad_uv.x, 1.0-in.quad_uv.y); // 上下翻转，左右不翻转
+  out.quad_idx = in.quad_idx;
+  out.uv_offset = in.uv_offset;
+  out.uv_size = in.uv_size;
+  out.uv_offset_d = in.uv_offset_d;
+  out.uv_size_d = in.uv_size_d;
+  out.layout_flag = in.layout_flag;
+
+  // out.miplevel = in.miplevel;
+  out.miplevel = mip[instance_index];  // 通过内置变量来得到miplevel的索引
+  return out;
+}
+
+
 `
 
 
@@ -152,8 +188,22 @@ fn fs_main(in : FragIutput) -> @location(0) vec4<f32> {
   // color = textureSample(myTexture_mip7, mySampler, in.quad_uv);
 
   // return vec4(in.miplevel);
+  color.w = 1.0; // 完全不透明
   return color;
 }
+
+
+
+
+@fragment
+fn fs_main_quad_frame(in : FragIutput) -> @location(0) vec4<f32> {
+
+  var frame_color = vec4(0.0, 0.0, 0.0, 1.0);
+
+  return frame_color;
+}
+
+
 `
 
 

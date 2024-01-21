@@ -70,6 +70,62 @@ function Pipeline_creation_quad(state, device) {
     state.main_view_flow_quad.Pipelines["render_instances"] = render_instances_pipeline;
 
 
+
+    /* ######################## Render Quad Frame Pipeline ######################## */
+
+    const render_quad_frame_pipeline = device.createRenderPipeline({
+        layout: particle_Render_Pipeline_Layout,
+        vertex: {
+            module: device.createShaderModule({
+                code: vertex_shader
+            }),
+            entryPoint: "vs_main_quad_frame",
+            buffers: [
+                state.CPU_storage.VBO_Layouts["instances"],
+                state.CPU_storage.VBO_Layouts["quad"]
+            ]
+        },
+        fragment: {
+            module: device.createShaderModule({
+                code: fragment_shader
+            }),
+            entryPoint: "fs_main_quad_frame",
+            targets: [
+                {
+                    format: state.main_canvas["canvasFormat"],
+                    // // 這一步是設置 半透明度 必須的要素（取消设置，得到默认遮挡）
+                    // // 如果使用半透明，则将以下 depthStencil 中 depthWriteEnabled 字段设为 false
+                    // blend: {
+                    //     color: {
+                    //         srcFactor: 'src-alpha',
+                    //         dstFactor: 'one',
+                    //         operation: 'add',
+                    //     },
+                    //     alpha: {
+                    //         srcFactor: 'zero',
+                    //         dstFactor: 'one',
+                    //         operation: 'add',
+                    //     },
+                    // },
+                }
+            ]
+        },
+        primitive: {
+            topology: "triangle-list",
+            cullMode: "back"
+        },
+        depthStencil: {
+            // 如果使能以上的半透明，则将以下的 depthWriteEnabled 字段改为 false
+            depthWriteEnabled: true,
+            depthCompare: 'less',
+            format: 'depth24plus',
+        },
+    });
+    state.main_view_flow_quad.Pipelines["render_quad_frame"] = render_quad_frame_pipeline;
+
+
+
+
     const renderPassDescriptor = {
         colorAttachments: [
             {

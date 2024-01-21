@@ -759,8 +759,20 @@ export default {
                 simulationParams: {}, // 仿真运行参数
 
                 prim_camera: {},
-                mouse_info: {},
-                keyboard_info: {},
+                mouse_info: {
+                    dragging: false,
+                    drag_func: 0, // 0: 平移 1: dragBall
+                    firstMouse: false,
+                    lastX: 0,   // 弃用保留
+                    lastY: 0,   // 弃用保留
+                    wheel_speed: 0.05,
+                    dragball_speed: 0.005,
+                    drag_speed: 1.0,
+
+                },
+                keyboard_info: {
+                    speed: 1.0
+                },
                 simu_info: {
                     cur_layout: 1.0,
                     last_layout: 1.0,
