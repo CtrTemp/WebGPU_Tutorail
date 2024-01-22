@@ -16,16 +16,13 @@ function gen_rect_instance_pos(
     const vertical_offset = -vertical_range / 2;
 
 
-    const keys = Object.keys(raw_info_pack)
-    console.log(keys.length);
-
     const scale_para_3d = 10;
 
     for (let i = 0; i < vertical_cnt; i++) {
         for (let j = 0; j < horizontal_cnt; j++) {
 
             const global_cnt = i * horizontal_cnt + j;
-            const item = raw_info_pack[keys[global_cnt]];
+            const item = raw_info_pack[global_cnt];
 
             const default_uv_offset_arr = item["default_atlas_info"]["uv_offset"];
             const default_uv_size_arr = item["default_atlas_info"]["uv_size"];
@@ -56,22 +53,16 @@ function gen_rect_instance_pos(
             /**
              *  减少使用 contact 数据量越大的时候耗时明显变多！！!
              * */
-            Array.prototype.push.apply(ret_arr, [pos_x, pos_y, pos_z, 1.0]);    // pos
+            Array.prototype.push.apply(ret_arr, [global_cnt, 0, 0, 0]);         // idx + padding 
+            Array.prototype.push.apply(ret_arr, [pos_x, pos_y, pos_z, 1.0]);    // default pos
+            Array.prototype.push.apply(ret_arr, [l2_x, l2_y, l2_z, 1.0]);       // layout 2d pos
+            Array.prototype.push.apply(ret_arr, [l3_x, l3_y, l3_z, 1.0]);       // layout 3d pos
             Array.prototype.push.apply(ret_arr, [0, 0, 0, 0]);                  // pos_offset
-            Array.prototype.push.apply(ret_arr, [pos_x, pos_y, pos_z, 1.0]);    // Layout1 pos
-            Array.prototype.push.apply(ret_arr, [l2_x, l2_y, l2_z, 1.0]);       // Layout2 pos
-            Array.prototype.push.apply(ret_arr, [l3_x, l3_y, l3_z, 1.0]);       // Layout3 pos
-            Array.prototype.push.apply(ret_arr, [default_layout, quad_idx]);    // layout_flag + quad_idx
-            // Array.prototype.push.apply(ret_arr, [0, 0]);                     // uv-offset padding
-            // Array.prototype.push.apply(ret_arr, [0, 0]);                     // uv-scale padding
-            // Array.prototype.push.apply(ret_arr, [0, 0]);                     // quad-scale padding
+            Array.prototype.push.apply(ret_arr, [pos_x, pos_y, pos_z, 1.0]);    // Default Layout
+            Array.prototype.push.apply(ret_arr, [default_layout, quad_idx]);    // layout_flag + quad_idx、
             Array.prototype.push.apply(ret_arr, default_uv_offset_arr);         // default_uv_offset
             Array.prototype.push.apply(ret_arr, [1.0, 1.0]);                    // default_uv_scale
             Array.prototype.push.apply(ret_arr, default_uv_size_arr);           // default_uv_size
-            Array.prototype.push.apply(ret_arr, default_uv_offset_arr);         // default_uv_offset
-            Array.prototype.push.apply(ret_arr, [1.0, 1.0]);                    // default_uv_scale
-            Array.prototype.push.apply(ret_arr, default_uv_size_arr);           // default_uv_size
-            Array.prototype.push.apply(ret_arr, [0.0, 0.0]);                    // pure padding
 
 
         }

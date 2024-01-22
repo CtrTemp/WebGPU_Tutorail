@@ -192,8 +192,8 @@ function BindGroup_creation_quad(state, device) {
 
     /**
      *  Interaction BindGroup
-     * */ 
-    
+     * */
+
     const interaction_BindGroup = device.createBindGroup({
         layout: state.main_view_flow_quad.Layouts["interaction"],
         entries: [
@@ -209,7 +209,7 @@ function BindGroup_creation_quad(state, device) {
     state.main_view_flow_quad.BindGroups["interaction"] = interaction_BindGroup;
 
 
-    
+
     /**
      *  update instance pos compute
      * */
@@ -234,6 +234,74 @@ function BindGroup_creation_quad(state, device) {
     });
 
     state.main_view_flow_quad.BindGroups["compute_move_path"] = compute_move_path_BindGroup;
+
+
+    // /**
+    //  *  Layout-2d BindGroup
+    //  * */
+    // const Layout_2d_BindGroup = device.createBindGroup({
+    //     layout: state.main_view_flow_quad.Layouts["layout_2d"],
+    //     entries: [
+    //         {
+    //             binding: 0,
+    //             resource: {
+    //                 buffer: state.GPU_memory.SBOs["layout_2d"],
+    //             }
+    //         }
+    //     ]
+    // });
+
+    // state.main_view_flow_quad.BindGroups["layout_2d"] = Layout_2d_BindGroup;
+
+
+
+    // /**
+    //  *  Layout-3d BindGroup
+    //  * */
+    // const Layout_3d_BindGroup = device.createBindGroup({
+    //     layout: state.main_view_flow_quad.Layouts["layout_3d"],
+    //     entries: [
+    //         {
+    //             binding: 0,
+    //             resource: {
+    //                 buffer: state.GPU_memory.SBOs["layout_3d"],
+    //             }
+    //         }
+    //     ]
+    // });
+
+    // state.main_view_flow_quad.BindGroups["layout_3d"] = Layout_3d_BindGroup;
+
+
+    /**
+     *  Current uv BindGroup
+     * */
+    const Curren_uv_BindGroup = device.createBindGroup({
+        layout: state.main_view_flow_quad.Layouts["current_uv"],
+        entries: [
+            {
+                binding: 0,
+                resource: {
+                    buffer: state.GPU_memory.SBOs["uv_offset"],
+                }
+            },
+            {
+                binding: 1,
+                resource: {
+                    buffer: state.GPU_memory.SBOs["uv_aspect"],
+                }
+            },
+            {
+                binding: 2,
+                resource: {
+                    buffer: state.GPU_memory.SBOs["uv_size"],
+                }
+            },
+        ]
+    });
+
+    state.main_view_flow_quad.BindGroups["current_uv"] = Curren_uv_BindGroup;
+
 }
 
 

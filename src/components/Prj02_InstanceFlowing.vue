@@ -198,15 +198,6 @@ watch(() => {
 }, { deep: true });
 
 
-watch(() => {
-    return store.state.pic_browser.main_view_flow_quad.fence["COMPUTE_MIP_SUBMIT"];
-}, (flag) => {
-    if (flag == true) {
-        store.dispatch("pic_browser/readBackMipLevel_and_FetchQuadPicSetFromServer", device);
-    }
-}, { deep: true });
-
-
 
 /**
  *  Sys Startup Info Parse Done
@@ -221,6 +212,31 @@ watch(() => {
     }
 }, { deep: true })
 
+
+/**
+ *  RENDER Ready
+ * */
+ watch(() => {
+    return store.state.pic_browser.main_view_flow_quad.fence["RENDER_READY"];
+}, (flag) => {
+    if (flag == true) {
+        store.commit("pic_browser/main_canvas_quad_renderLoop", device);
+    }
+}, { deep: true });
+
+
+
+
+/**
+ *  Compute MipLevel Pass Submit
+ * */ 
+watch(() => {
+    return store.state.pic_browser.main_view_flow_quad.fence["COMPUTE_MIP_SUBMIT"];
+}, (flag) => {
+    if (flag == true) {
+        store.dispatch("pic_browser/readBackMipLevel_and_FetchQuadPicSetFromServer", device);
+    }
+}, { deep: true });
 
 
 /**
@@ -243,23 +259,11 @@ watch(() => {
     return store.state.pic_browser.main_view_flow_quad.fence["BITMAP_READY"];
 }, (flag) => {
     if (flag == true) {
-        // console.log("quad bit map ready");
-        store.commit("pic_browser/main_quad_flow_bitmap_ready_ready", device);
+        console.log("quad bit map ready");
+        store.commit("pic_browser/main_flow_fetch_bitmap_ready", device);
     }
 }, { deep: true });
 
-
-
-/**
- *  RENDER Ready
- * */
-watch(() => {
-    return store.state.pic_browser.main_view_flow_quad.fence["RENDER_READY"];
-}, (flag) => {
-    if (flag == true) {
-        store.commit("pic_browser/main_canvas_quad_renderLoop", device);
-    }
-}, { deep: true });
 
 
 </script>

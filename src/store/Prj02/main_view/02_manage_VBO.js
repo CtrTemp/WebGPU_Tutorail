@@ -74,7 +74,7 @@ function fill_Atlas_Info_VBO(state, device) {
 
 /**
  *  VBO Layout Creation 
- * */ 
+ * */
 function manage_VBO_Layout(state) {
 
     const instance_VBO_Layout = {
@@ -82,83 +82,71 @@ function manage_VBO_Layout(state) {
         stepMode: "instance", // 这个设置的含义是什么
         attributes: [
             {
-                // position
+                // idx
                 shaderLocation: 0,
-                offset: 0,
+                offset: 0 * 4,
+                format: 'float32',
+            },
+            {
+                // position
+                shaderLocation: 1,
+                offset: 4 * 4,
                 format: 'float32x4',
             },
             {
                 // pos offset (for interaction)
-                shaderLocation: 1,
-                offset: 4 * 4,
+                shaderLocation: 2,
+                offset: 8 * 4,
                 format: 'float32x4'
             },
             {
-                // Layout1 pos
-                shaderLocation: 2,
-                offset: 8*4,
-                format: 'float32x4',
-            },
-            {
-                // Layout2 pos
+                // Default Layout pos
                 shaderLocation: 3,
-                offset: 12*4,
+                offset: 12 * 4,
                 format: 'float32x4',
             },
             {
-                // Layout3 pos
+                // Layout 2d similarity
                 shaderLocation: 4,
-                offset: 16*4,
+                offset: 16 * 4,
+                format: 'float32x4',
+            },
+            {
+                // Layout 3d similarity
+                shaderLocation: 5,
+                offset: 20 * 4,
                 format: 'float32x4',
             },
             {
                 // Layout-flag
-                shaderLocation: 5,
-                offset: 20 * 4,
+                shaderLocation: 6,
+                offset: 24 * 4,
                 format: 'float32'
             },
             {
                 // idx for instanced texture
-                shaderLocation: 6,
-                offset: 21 * 4,
+                shaderLocation: 7,
+                offset: 25 * 4,
                 format: 'float32'
             },
             {
-                // uv offset
-                shaderLocation: 7,
-                offset: 22 * 4,
-                format: 'float32x2'
-            },
-            {
-                // uv scale
+                // Default uv offset
                 shaderLocation: 8,
-                offset: 24 * 4,
-                format: 'float32x2'
-            },
-            {
-                // quad scale
-                shaderLocation: 9,
                 offset: 26 * 4,
                 format: 'float32x2'
             },
             {
-                // default uv offset
-                shaderLocation: 10,
+                // Default uv scale
+                shaderLocation: 9,
                 offset: 28 * 4,
                 format: 'float32x2'
             },
             {
-                // default uv scale
-                shaderLocation: 11,
+                // Default quad scale
+                shaderLocation: 10,
                 offset: 30 * 4,
                 format: 'float32x2'
-            },
-            {
-                // default quad scale
-                shaderLocation: 12,
-                offset: 32 * 4,
-                format: 'float32x2'
-            },
+            }
         ]
     };
     state.CPU_storage.VBO_Layouts["instances"] = instance_VBO_Layout;
@@ -170,13 +158,13 @@ function manage_VBO_Layout(state) {
         attributes: [
             {
                 // vertex position
-                shaderLocation: 13,
+                shaderLocation: 11,
                 offset: 0,
                 format: 'float32x2',
             },
             {
                 // vertex uv
-                shaderLocation: 14,
+                shaderLocation: 12,
                 offset: 2 * 4,
                 format: 'float32x2',
             },

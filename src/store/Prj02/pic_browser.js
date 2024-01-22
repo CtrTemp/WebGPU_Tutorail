@@ -16,6 +16,8 @@ import {
 } from "./utils/set_camera";
 
 
+import { free_storage } from "./utils/storage_free";
+
 /**
  *  Main-View Related
  * */
@@ -35,7 +37,11 @@ import {
     fill_MVP_UBO,
     fill_Interaction_UBO
 } from "./main_view/03_manage_UBO"
-import { SBO_creation, fill_nearest_dist_SBO_init } from "./main_view/04_manage_SBO";
+import {
+    SBO_creation,
+    fill_nearest_dist_SBO_init,
+    fill_layout2d_layout3d_SBO,
+} from "./main_view/04_manage_SBO";
 import { Layout_creation } from "./main_view/11_set_Layout";
 import { BindGroup_creation } from "./main_view/12_set_BindGroup";
 import { Pipeline_creation } from "./main_view/13_set_Pipeline";
@@ -80,7 +86,7 @@ import {
     read_back_miplevel_pass_quad,
 } from "./quad_pack_view/21_GPU_Pass";
 
-import { renderLoop_quad } from "./renderLool_quad_view";
+import { renderLoop_quad } from "./renderLoop_quad_view";
 
 
 import {
@@ -159,7 +165,7 @@ export default {
                 context.state.CPU_storage.largeBitMap.push(img_bitMap);
             }
 
-            console.log("【Quad】Large BitMaps construct Done~ ");
+            console.log("【Quad-Init】Large BitMaps construct Done~ ");
             context.state.main_view_flow_quad.fence["DATASET_INFO_PARSE_DONE"] = true;
         },
 
@@ -239,9 +245,9 @@ export default {
             await read_back_miplevel_pass_quad(state, device);
             // console.log("【Global】Mip data read back Done~");
             // console.log("【Sub】Ready to render sub view Debug~");
-            state.sub_view_flow_debug.fence["RENDER_READY"] = true;
+            // state.sub_view_flow_debug.fence["RENDER_READY"] = true;
             const mip_info = state.CPU_storage.mip_info;
-            // console.log("mip_info = ", mip_info);
+            console.log("mip_info = ", mip_info);
 
             const cmd_json = {
                 cmd: "fetch_quad_instance",
@@ -289,8 +295,8 @@ export default {
                 }
             }
 
-            // console.log("bitmaps = ", context.state.CPU_storage.quadBitMap);
-            // console.log("【Global】BitMaps Parse Done~");
+            console.log("bitmaps = ", context.state.CPU_storage.quadBitMap);
+            console.log("【Quad-Fetch】BitMaps Parse Done~");
             context.state.main_view_flow_quad.fence["BITMAP_READY"] = true;
         },
 
@@ -317,121 +323,8 @@ export default {
 
 
 
-        /**
-         *  Main View Flow 3D
-         * */
-        main_flow_dataset_info_ready(state, device) {
-            /**
-             *  parse dataset info
-             * */
-            parse_dataset_info(state);
 
-            console.log("【Global】Dataset info parse Done~");
-
-            /**
-             *  Create Texture
-             * */
-            mipTexture_creation(state, device);
-
-            /**
-             *  Create VBO
-             * */
-            VBO_creation(state, device);
-
-            /**
-             *  Manage VBO Layout
-             * */
-            manage_VBO_Layout(state);
-
-            /**
-             *  Create UBO
-             * */
-            UBO_creation(state, device);
-
-            /**
-             *  Create SBO
-             * */
-            SBO_creation(state, device);
-
-            console.log("【Main】Buffer/Texture creation on Device Done~");
-
-
-
-            /**
-             *  Create Layout
-             * */
-            Layout_creation(state, device);
-
-            /**
-             *  Create BindGroup
-             * */
-            BindGroup_creation(state, device);
-
-            /**
-             *  Create Pipeline
-             * */
-            Pipeline_creation(state, device);
-
-
-            console.log("【Main】Layout/BindGroup/Pipeline creation Done~");
-
-
-            /**
-             *  Fill MVP Related UBOs
-             * */
-            fill_MVP_UBO(state, device);
-
-
-            /**
-             *  Fill instances pos Related VBOs/SBOs 
-             * */
-            fill_Instance_Pos_VBO(state, device);
-
-
-            /**
-             *  Compute MipLevel on GPU
-             * */
-            compute_miplevel_pass(state, device);
-
-            console.log("【Main】Compute mipLevel submit Done~");
-
-        },
-
-        main_flow_bitmap_ready(state, device) {
-
-            /**
-             *  Fill Texture Memory on GPU
-             * */
-            fill_Mip_Texture(state, device);
-
-
-            /**
-             *  Fill Atlas Info of VBO
-             * */
-            fill_Atlas_Info_VBO(state, device);
-
-            /**
-             *  Fill quad VBOs
-             * */
-            fill_Quad_VBO(state, device);
-
-
-            /**
-             *  Register Interaction Events
-             * */
-            // Main-Canvas
-            canvasMouseInteraction(state, device);
-            canvasKeyboardInteraction(state, device);
-            console.log("【Main】Interaction register for Main Canvas Done~");
-
-
-            state.main_view_flow_3d.fence["RENDER_READY"] = true;
-            console.log("【Main】Ready to render main view 3D~");
-        },
-
-        /**
-         *  Main View Flow Quad
-         * */
+        /**############################# Main View Flow Quad #############################**/
         main_quad_flow_dataset_info_ready(state, device) {
             /**
              *  parse dataset info
@@ -465,7 +358,7 @@ export default {
              * */
             SBO_creation(state, device);
 
-            console.log("【Quad】Buffer/Texture creation on Device Done~");
+            console.log("【Quad-Init】Buffer/Texture creation on Device Done~");
 
 
 
@@ -485,7 +378,7 @@ export default {
             Pipeline_creation_quad(state, device);
 
 
-            console.log("【Quad】Layout/BindGroup/Pipeline creation Done~");
+            console.log("【Quad-Init】Layout/BindGroup/Pipeline creation Done~");
 
 
 
@@ -507,6 +400,12 @@ export default {
             // compute_miplevel_pass_quad(state, device);
 
             // console.log("【Main】Compute mipLevel submit Done~");
+
+            /**
+             *  Fill layout SBO
+             * */ 
+
+            fill_layout2d_layout3d_SBO(state, device);
 
 
             /**
@@ -540,16 +439,34 @@ export default {
              * */
             fill_Quad_VBO(state, device);
 
-
-
-
             state.main_view_flow_quad.fence["RENDER_READY"] = true;
-            console.log("【Main】Ready to render main view 3D~");
+            console.log("【Quad-Init】Ready to render main view 3D~");
+
+            free_storage(state);
+            console.log("【Quad-Init】Redundant CPU Storage Free Done~");
+
+            // 
+
+            // COMPUTE_MIP_SUBMIT
+
+            compute_miplevel_pass_quad(state, device);
+        },
+        main_flow_fetch_bitmap_ready(state, device) {
+
+            // // 复位所有相关标志位
+            // state.main_view_flow_quad.fence["COMPUTE_MIP_SUBMIT"] = false;
+            // state.main_view_flow_quad.fence["MIP_COMPUTE_DONE"] = false;
+            // state.main_view_flow_quad.fence["BITMAP_RECEIVED"] = false;
+            // state.main_view_flow_quad.fence["BITMAP_READY"] = false;
+
+            // compute_miplevel_pass_quad(state, device);
+
+
         },
 
-        /**
-         *  Sub View Flow Debug
-         * */
+
+
+        /**############################# Sub View Flow Debug #############################**/
         sub_flow_dataset_info_ready(state, device) {
             /**
              *  Create Texture
@@ -735,12 +652,17 @@ export default {
             main_view_flow_quad: {
 
                 fence: {
+                    // init and render loop
                     DATASET_INFO_READY: { val: false },
                     DATASET_INFO_PARSE_DONE: { val: false },
+                    RENDER_READY: { val: false },
+
+                    // dynamic pre-fetch loop
                     COMPUTE_MIP_SUBMIT: { val: false },
+                    MIP_COMPUTE_DONE: { val: false },
                     BITMAP_RECEIVED: { val: false },
                     BITMAP_READY: { val: false },
-                    RENDER_READY: { val: false },
+
                 },
                 Layouts: {},
                 BindGroups: {},
@@ -767,7 +689,7 @@ export default {
                     lastY: 0,   // 弃用保留
                     wheel_speed: 0.05,
                     dragball_speed: 0.005,
-                    drag_speed: 1.0,
+                    drag_speed: 0.08,
 
                 },
                 keyboard_info: {

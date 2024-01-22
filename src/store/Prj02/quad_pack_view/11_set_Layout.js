@@ -230,6 +230,65 @@ function Layout_creation_quad(state, device) {
     state.main_view_flow_quad.Layouts["interaction"] = Interaction_UBO_Layout;
 
 
+
+    // /**
+    //  *  pos layout-2d layout
+    //  * */ 
+    // const Layout_2d_Layout = device.createBindGroupLayout({
+    //     entries: [{
+    //         binding: 0,
+    //         visibility: GPUShaderStage.VERTEX,
+    //         buffer: {
+    //             type: "read-only-storage"
+    //         }
+    //     }]
+    // });
+    // state.main_view_flow_quad.Layouts["layout_2d"] = Layout_2d_Layout;
+
+    
+    // /**
+    //  *  pos layout-3d layout
+    //  * */ 
+    // const Layout_3d_Layout = device.createBindGroupLayout({
+    //     entries: [{
+    //         binding: 0,
+    //         visibility: GPUShaderStage.VERTEX,
+    //         buffer: {
+    //             type: "read-only-storage"
+    //         }
+    //     }]
+    // });
+    // state.main_view_flow_quad.Layouts["layout_3d"] = Layout_3d_Layout;
+
+
+
+    
+    /**
+     *  current uv info layout
+     * */ 
+    const Current_uv_Layout = device.createBindGroupLayout({
+        entries: [{
+            binding: 0,
+            visibility: GPUShaderStage.VERTEX,
+            buffer: {
+                type: "read-only-storage"
+            }
+        }, {
+            binding: 1,
+            visibility: GPUShaderStage.VERTEX,
+            buffer: {
+                type: "read-only-storage"
+            }
+        }, {
+            binding: 2,
+            visibility: GPUShaderStage.VERTEX,
+            buffer: {
+                type: "read-only-storage"
+            }
+        }]
+    });
+    state.main_view_flow_quad.Layouts["current_uv"] = Current_uv_Layout;
+
 }
 
 

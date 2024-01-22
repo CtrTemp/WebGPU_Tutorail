@@ -34,12 +34,12 @@ function renderLoop_quad(state, device) {
     // }, 25);
 
 
-    /**
-     *  计算更新当前光标落在哪个图片上
-     * */
-    fill_nearest_dist_SBO_init(state, device);
+    // /**
+    //  *  计算更新当前光标落在哪个图片上
+    //  * */
+    // fill_nearest_dist_SBO_init(state, device);
 
-    compute_cursor_hitpoint(state, device);
+    // compute_cursor_hitpoint(state, device);
 
     /**
      *  更新当前simulation_control的参数，并导入GPU
@@ -47,10 +47,10 @@ function renderLoop_quad(state, device) {
 
     update_simulation_SBO_quad(state, device);
 
-    /**
-     *  执行一次 move 操作
-     * */ 
-    compute_instance_move_pass(state, device);
+    // /**
+    //  *  执行一次 move 操作
+    //  * */ 
+    // compute_instance_move_pass(state, device);
 
 
 

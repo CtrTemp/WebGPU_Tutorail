@@ -108,7 +108,6 @@ fn simulate(@builtin(global_invocation_id) global_invocation_id : vec3<u32>) {
     var instance_pos = data[idx].position;
     var aspect = data[idx].tex_aspect;
 
-    var mip_val = -1.0;
 
     /**
      *  回来这里计算更新mips
@@ -119,7 +118,6 @@ fn simulate(@builtin(global_invocation_id) global_invocation_id : vec3<u32>) {
 
     if(check_hit(hitPoint, instance_pos.xyz, aspect))
     {
-        mip_arr[idx] = -1.0;
 
         // 鱼眼镜头效果
         if(data[idx].pos_offset.z > -30)
@@ -139,7 +137,6 @@ fn simulate(@builtin(global_invocation_id) global_invocation_id : vec3<u32>) {
     // }
     else
     {
-        mip_arr[idx] = 7.0;
         if(data[idx].pos_offset.z < 0)
         {
             var dir = 3*normalize(instance_pos.xyz-lookFrom.xyz);

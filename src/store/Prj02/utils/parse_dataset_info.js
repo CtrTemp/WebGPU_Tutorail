@@ -20,22 +20,46 @@ function parse_dataset_info(state) {
     /**
      *  后续使用读取到的信息进行填充，现阶段先写死
      * */
+    // const instanceInfoByteSize =
+    //     4 * 4 + // pos【永久留存】
+    //     4 * 4 + // pos_offset【永久留存】
+    //     4 * 4 + // Layout1 pos【动态加载】
+    //     4 * 4 + // Layout2 pos【动态加载】
+    //     4 * 4 + // Layout3 pos【动态加载】
+    //     1 * 4 + // Layout-flag【永久留存】
+    //     1 * 4 + // large-quad-idx【永久留存】
+    //     2 * 4 + // uv offset【】
+    //     2 * 4 + // uv scale
+    //     2 * 4 + // quad scale
+    //     2 * 4 + // default uv offset    
+    //     2 * 4 + // default uv scale
+    //     2 * 4 + // default quad scale 
+    //     2 * 4 + // padding  （注意，padding补全是非常有必要的！）
+    //     0;
+
+
     const instanceInfoByteSize =
-        4 * 4 + // pos
-        4 * 4 + // pos_offset
-        4 * 4 + // Layout1 pos
-        4 * 4 + // Layout2 pos
-        4 * 4 + // Layout3 pos
-        1 * 4 + // Layout-flag
-        1 * 4 + // large-quad-idx
-        2 * 4 + // uv offset
-        2 * 4 + // uv scale
-        2 * 4 + // quad scale
-        2 * 4 + // default uv offset    
-        2 * 4 + // default uv scale
-        2 * 4 + // default quad scale 
-        2 * 4 + // padding  （注意，padding补全是非常有必要的！）
+        1 * 4 + // instance idx【永久留存】
+        3 * 4 + // padding 
+        4 * 4 + // pos【永久留存】
+        4 * 4 + // pos_offset【永久留存】
+        4 * 4 + // Default Layout(random)【永久留存】
+        4 * 4 + // Layout-2d-similarity【永久留存】
+        4 * 4 + // Layout-3d-similarity【永久留存】
+        1 * 4 + // Layout-flag【永久留存】
+        1 * 4 + // Default large-quad-idx【永久留存】
+        2 * 4 + // Default uv offset【永久留存】
+        2 * 4 + // Default uv scale【永久留存】
+        2 * 4 + // Default quad scale【永久留存】
+        0 * 4 + // padding  （注意，padding补全是非常有必要的！）
         0;
+
+
+    // 4 * 4 + // Layout-2d-similarity【动态加载】
+    // 4 * 4 + // Layout-3d-similarity【动态加载】
+    // 2 * 4 + // current uv offset
+    // 2 * 4 + // current uv scale
+    // 2 * 4 + // current uv size
 
     state.CPU_storage.instance_info["instanceInfoByteSize"] = instanceInfoByteSize;
 
@@ -53,26 +77,26 @@ function parse_dataset_info(state) {
     // const flow_info = gen_sphere_instance_pos(50, numInstances); // main-view-3D
     /**
      *  总数据集部分 instance 部分小数据集图片（10293）
-     * */ 
-    // const z_dist = 85;
-    // const horizontal_range = 300;
-    // const vertical_range = 300;
-    // const horizontal_cnt = 100;
-    // const vertical_cnt = 100;
+     * */
+    const z_dist = 85;
+    const horizontal_range = 60;
+    const vertical_range = 60;
+    const horizontal_cnt = 20;
+    const vertical_cnt = 20;
     // const z_dist = 65;
     // const horizontal_range = 75;
     // const vertical_range = 35;
     // const horizontal_cnt = 25;
     // const vertical_cnt = 12;
 
-    /**
-     *  基本上是总数据集全部的instance（300000），基本上全部的小数据集图片
-     * */ 
-    const z_dist = 85;
-    const horizontal_range = 2400;
-    const vertical_range = 1050;
-    const horizontal_cnt = 800;
-    const vertical_cnt = 380;
+    // /**
+    //  *  基本上是总数据集全部的instance（300000），基本上全部的小数据集图片
+    //  * */ 
+    // const z_dist = 85;
+    // const horizontal_range = 2400;
+    // const vertical_range = 1050;
+    // const horizontal_cnt = 800;
+    // const vertical_cnt = 380;
     state.CPU_storage.interaction_info["z_plane_depth"] = z_dist;
     const flow_info = gen_rect_instance_pos(
         z_dist,

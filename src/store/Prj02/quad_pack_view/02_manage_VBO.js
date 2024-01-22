@@ -5,6 +5,35 @@ import { gen_rect_instance_atlas_info } from "./gen_quad_pos_arr";
 
 
 /**
+ *  2024/01/22 晚饭前
+ *  回来注销掉所有的 main-view 文件夹下的内容，之后就不会再使用了
+ *  将有用的函数一并归入到 quad_pack_view 中
+ *  sub_view 保留，并不进行修改
+ *  重写VBO结构，将数据结构分开存放，分开更新
+ * */ 
+
+
+function create_pos_VBO(state, device)
+{
+    const instancesBuffer = device.createBuffer({
+        size: numInstances * instanceInfoByteSize,
+        usage: GPUBufferUsage.VERTEX | GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
+        // mappedAtCreation: true,
+    })
+    state.GPU_memory.VBOs["instances"] = instancesBuffer;
+}
+
+
+function createVBO_repectively(state, device)
+{
+     
+}
+
+
+
+
+
+/**
  *  在初始化阶段：仅对 VBOs position 相关的信息进行填充，用于使用compute shader计算MipLevel信息
  * */
 

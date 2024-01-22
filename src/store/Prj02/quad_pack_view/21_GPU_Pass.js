@@ -22,6 +22,7 @@ function compute_miplevel_pass_quad(state, device) {
     // 在这里更新标志位
 
     state.main_view_flow_quad.fence["COMPUTE_MIP_SUBMIT"] = true;
+    console.log("【Quad-Fetch】Compute MipLevel Submitted~");
 }
 
 /**
@@ -72,7 +73,7 @@ async function read_back_miplevel_pass_quad(state, device) {
 
     await state.GPU_memory.SBOs["mip_read_back"].mapAsync(GPUMapMode.READ);
     const arrBuffer = new Float32Array(state.GPU_memory.SBOs["mip_read_back"].getMappedRange());
-    console.log("hello~ readBuffer = ", arrBuffer);
+    // console.log("hello~ readBuffer = ", arrBuffer);
 
     state.CPU_storage.storage_arr["mip"] = arrBuffer;
 
@@ -116,6 +117,7 @@ function render_main_view_quad(state, device, renderPassDescriptor) {
     pass.setBindGroup(0, state.main_view_flow_quad.BindGroups["mvp_pack"]);
     pass.setBindGroup(1, state.main_view_flow_quad.BindGroups["sample"]);
     pass.setBindGroup(2, state.main_view_flow_quad.BindGroups["mip_vertex"]);
+    pass.setBindGroup(3, state.main_view_flow_quad.BindGroups["current_uv"]);
     pass.setVertexBuffer(0, state.GPU_memory.VBOs["instances"]);
     pass.setVertexBuffer(1, state.GPU_memory.VBOs["quad"]);
     pass.draw(6, state.CPU_storage.instance_info["numInstances"], 0, 0);
@@ -125,6 +127,7 @@ function render_main_view_quad(state, device, renderPassDescriptor) {
     pass.setBindGroup(0, state.main_view_flow_quad.BindGroups["mvp_pack"]);
     pass.setBindGroup(1, state.main_view_flow_quad.BindGroups["sample"]);
     pass.setBindGroup(2, state.main_view_flow_quad.BindGroups["mip_vertex"]);
+    pass.setBindGroup(3, state.main_view_flow_quad.BindGroups["current_uv"]);
     pass.setVertexBuffer(0, state.GPU_memory.VBOs["instances"]);
     pass.setVertexBuffer(1, state.GPU_memory.VBOs["quad"]);
     pass.draw(6, state.CPU_storage.instance_info["numInstances"], 0, 0);

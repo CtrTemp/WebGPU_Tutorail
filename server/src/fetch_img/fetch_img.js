@@ -239,14 +239,18 @@ function read_large_texture(root_dir, ret_arr) {
 async function read_big_pre_fetch_img(json_pack) {
 
     // const large_quad_root_dir = "../../../data_set/large/"
-    const large_quad_root_dir = "../../../data_set/large_16_16/"
+    // const large_quad_root_dir = "../../../data_set/large_16_16/"
+    // const large_quad_root_dir = "../../../data_set/large_08_08/"
+    const large_quad_root_dir = "../../../data_set/large_8x8_10k/"
 
 
 
     // const description_json_path = "../../../data_set/large_quad.json"
     // const description_json_path = "../../../data_set/large_quad_dict.json"
     // const description_json_path = "../../../data_set/large_quad_dict-300k.json"
-    const description_json_path = "../../../data_set/large_quad_dict_16.json"
+    // const description_json_path = "../../../data_set/large_quad_dict_16.json"
+    // const description_json_path = "../../../data_set/large_quad_dict_08.json"
+    const description_json_path = "../../../data_set/large_quad_arr_10k_8x8.json"
     
     let ret_arr = [];
 

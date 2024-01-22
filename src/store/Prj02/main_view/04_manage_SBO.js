@@ -3,12 +3,70 @@ import { vec3, vec4 } from "wgpu-matrix";
 
 function SBO_creation(state, device) {
 
-    const mip_SBO_Arr_size = state.CPU_storage.instance_info["numInstances"];
+    const instance_cnt = state.CPU_storage.instance_info["numInstances"];
+
+
+    /**
+     *  Layout-2d-similarity SBO
+     * */
+    const Layout_2d_SBO = device.createBuffer({
+        size: instance_cnt * 4 * 2,
+        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+        // mappedAtCreation: true,
+    });
+    state.GPU_memory.SBOs["layout_2d"] = Layout_2d_SBO;
+
+
+    /**
+     *  Layout-3d-similarity SBO
+     * */
+    const Layout_3d_SBO = device.createBuffer({
+        size: instance_cnt * 4 * 3,
+        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+        // mappedAtCreation: true,
+    });
+    state.GPU_memory.SBOs["layout_3d"] = Layout_3d_SBO;
+
+
+    /**
+     *  current uv offset SBO
+     * */
+    const Current_UV_Offset_SBO = device.createBuffer({
+        size: instance_cnt * 4 * 2,
+        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+        // mappedAtCreation: true,
+    });
+    state.GPU_memory.SBOs["uv_offset"] = Current_UV_Offset_SBO;
+
+
+    /**
+     *  current uv aspect SBO
+     * */
+    const Current_UV_Aspect_SBO = device.createBuffer({
+        size: instance_cnt * 4 * 2,
+        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+        // mappedAtCreation: true,
+    });
+    state.GPU_memory.SBOs["uv_aspect"] = Current_UV_Aspect_SBO;
+
+
+    /**
+     *  current uv size SBO
+     * */
+    const Current_UV_Size_SBO = device.createBuffer({
+        size: instance_cnt * 4 * 2,
+        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+        // mappedAtCreation: true,
+    });
+    state.GPU_memory.SBOs["uv_size"] = Current_UV_Size_SBO;
+
+
+
     /**
      *  GPU 端 Storage Buffer
      * */
     const mipStorageBuffer = device.createBuffer({
-        size: mip_SBO_Arr_size * 4,
+        size: instance_cnt * 4 * 1,
         usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC,
         // mappedAtCreation: true,
     });
@@ -20,7 +78,7 @@ function SBO_creation(state, device) {
      *  Storage Buffer 在 CPU 端的映射 用于数据回传后读取以及向后端传输
      * */
     const mip_info_MappedBuffer = device.createBuffer({
-        size: mip_SBO_Arr_size * 4,
+        size: instance_cnt * 4 * 1,
         usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST,
         // mappedAtCreation: true,
     });
@@ -42,7 +100,7 @@ function SBO_creation(state, device) {
     state.GPU_memory.SBOs["nearest_hit_dist"] = Nearest_Hit_Distance_SBO;
 
 
-    
+
     /**
      *  Instance Moving Simulation Related SBO
      * */
@@ -136,10 +194,49 @@ function fill_nearest_dist_SBO_init(state, device) {
 }
 
 
+/**
+ *  Fill Layouts SBO
+ * */
+function fill_layout2d_layout3d_SBO(state, device) {
+    console.log("【Fill Layout】server_raw_info = ", state.CPU_storage.server_raw_info["dataset_info_pack"]);
+
+    const description_json = state.CPU_storage.server_raw_info.dataset_info_pack["description_json"];
+    const instance_cnt = state.CPU_storage.instance_info["numInstances"];
+
+    let layout_2d_arr = [];
+    let layout_3d_arr = [];
+
+    for (let i = 0; i < instance_cnt; i++) {
+        Array.prototype.push.apply(layout_2d_arr, description_json[i]["layout2"]);
+        Array.prototype.push.apply(layout_3d_arr, description_json[i]["layout3"]);
+
+    }
+
+    // console.log("layout_2d_arr len = ", layout_2d_arr.length);
+    // console.log("layout_3d_arr len = ", layout_3d_arr.length);
+    
+    const Layout_2d_SBO = state.GPU_memory.SBOs["layout_2d"];
+    const Layout_3d_SBO = state.GPU_memory.SBOs["layout_3d"];
+
+    const Layout_2d_writeBuffer = new Float32Array(layout_2d_arr);
+    const Layout_3d_writeBuffer = new Float32Array(layout_3d_arr);
+
+
+
+    device.queue.writeBuffer(Layout_2d_SBO, 0, Layout_2d_writeBuffer);
+    device.queue.writeBuffer(Layout_3d_SBO, 0, Layout_3d_writeBuffer);
+
+    
+
+
+}
 
 
 
 
-
-
-export { SBO_creation, fill_nearest_dist_SBO_init, update_mip_data_SBO }
+export {
+    SBO_creation,
+    fill_nearest_dist_SBO_init,
+    update_mip_data_SBO,
+    fill_layout2d_layout3d_SBO
+}
