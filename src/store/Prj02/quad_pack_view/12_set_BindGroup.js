@@ -104,6 +104,26 @@ function BindGroup_creation_quad(state, device) {
                 binding: 6,
                 resource: state.GPU_memory.Textures["large_quad_prefetch"][5].createView()
             },
+            // dynamic pre-fetch texture 32*32
+            {
+                binding: 7,
+                resource: state.GPU_memory.Textures["dynamic_prefetch"][0].createView()
+            },
+            // dynamic pre-fetch texture 64*64
+            {
+                binding: 8,
+                resource: state.GPU_memory.Textures["dynamic_prefetch"][1].createView()
+            },
+            // dynamic pre-fetch texture 128*128
+            {
+                binding: 9,
+                resource: state.GPU_memory.Textures["dynamic_prefetch"][2].createView()
+            },
+            // dynamic pre-fetch texture 256*256
+            {
+                binding: 10,
+                resource: state.GPU_memory.Textures["dynamic_prefetch"][3].createView()
+            }
         ]
     });
     state.main_view_flow_quad.BindGroups["sample"] = Sample_UBO_BindGroup;
@@ -276,31 +296,19 @@ function BindGroup_creation_quad(state, device) {
     /**
      *  Current uv BindGroup
      * */
-    const Curren_uv_BindGroup = device.createBindGroup({
-        layout: state.main_view_flow_quad.Layouts["current_uv"],
+    const Curren_Atlas_Info_BindGroup = device.createBindGroup({
+        layout: state.main_view_flow_quad.Layouts["cur_atlas_info"],
         entries: [
             {
                 binding: 0,
                 resource: {
-                    buffer: state.GPU_memory.SBOs["uv_offset"],
+                    buffer: state.GPU_memory.SBOs["cur_atlas_info"],
                 }
-            },
-            {
-                binding: 1,
-                resource: {
-                    buffer: state.GPU_memory.SBOs["uv_aspect"],
-                }
-            },
-            {
-                binding: 2,
-                resource: {
-                    buffer: state.GPU_memory.SBOs["uv_size"],
-                }
-            },
+            }
         ]
     });
 
-    state.main_view_flow_quad.BindGroups["current_uv"] = Curren_uv_BindGroup;
+    state.main_view_flow_quad.BindGroups["cur_atlas_info"] = Curren_Atlas_Info_BindGroup;
 
 }
 

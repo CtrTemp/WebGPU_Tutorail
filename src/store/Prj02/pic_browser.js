@@ -18,6 +18,8 @@ import {
 
 import { free_storage } from "./utils/storage_free";
 
+import { parse_mipLevelArr } from "./utils/mipLevel";
+
 /**
  *  Main-View Related
  * */
@@ -68,6 +70,7 @@ import {
     quadTexture_creation,
     fill_Quad_Texture,
     fill_Large_Quad_Texture,
+    dynamic_fetch_update_Texture,
 } from "./quad_pack_view/01_manage_Texture";
 
 import {
@@ -125,28 +128,6 @@ export default {
      *  本工程使用Vue框架，借助WebGPU重构工程，实现前向渲染管线 
      */
     actions: {
-
-        // async construct_imgBitMap(context, ret_json_pack) {
-        //     // console.log("json pack received = ", ret_json_pack);
-
-        //     // 开始创建 img bit map
-        //     for (let i = 0; i < ret_json_pack.arr.length; i++) {
-
-        //         let file = ret_json_pack.arr[i];
-        //         let url = "data:image/png;base64," + file;
-
-        //         const blob = dataURL2Blob(url);
-
-        //         // console.log("blob = ", blob);
-
-        //         const img_bitMap = await createImageBitmap(blob);
-
-        //         context.state.CPU_storage.instancedBitMap.push(img_bitMap);
-        //     }
-
-        //     context.state.main_view_flow_3d.fence["BITMAP_READY"] = true;
-        //     // console.log("bitmaps = ", context.state.CPU_storage.instancedBitMap);
-        // },
 
         async construct_large_imgBitMap(context, ret_json_pack) {
             console.log("json pack = ", ret_json_pack);
@@ -243,48 +224,63 @@ export default {
         async readBackMipLevel_and_FetchQuadPicSetFromServer(context, device) {
             const state = context.state;
             await read_back_miplevel_pass_quad(state, device);
-            // console.log("【Global】Mip data read back Done~");
+            console.log("【Global】Mip data read back Done~");
             // console.log("【Sub】Ready to render sub view Debug~");
             // state.sub_view_flow_debug.fence["RENDER_READY"] = true;
-            const mip_info = state.CPU_storage.mip_info;
-            console.log("mip_info = ", mip_info);
+
+
+            parse_mipLevelArr(state);
+
 
             const cmd_json = {
                 cmd: "fetch_quad_instance",
-                mip_info: mip_info, // mip info 描述信息
-            };
+                mip_info: state.CPU_storage.mip_info.index_arr, // mip info 描述信息
+            }
+
+
+            // const cmd_json = {
+            //     cmd: "fetch_quad_instance",
+            //     mip_info: mip_info, // mip info 描述信息
+            // };
+
+            // const mip_info = state.CPU_storage.mip_info;
+            // console.log("mip_info = ", mip_info);
 
             state.ws.send(JSON.stringify(cmd_json));
         },
 
 
         async construct_quad_imgBitMap(context) {
-            // console.log("json pack received = ", ret_json_pack);
 
             const ret_json_pack = context.state.CPU_storage.server_raw_info["quad_bitmap_info_pack"];
+            console.log("json pack received = ", ret_json_pack);
 
             let flag = false;
             if (context.state.CPU_storage.quadBitMap.length == 13) {
                 flag = true;
             }
 
-            const bitMapArr = ret_json_pack["quadBitMaps"];
+            const bitMapInfo = ret_json_pack["quadBitMaps"];
 
             // 开始创建 img bit map
-            for (let i = 0; i < bitMapArr.length; i++) {
+            for (let i = 0; i < bitMapInfo.length; i++) {
 
                 let current_level_mapArr = [];
 
-                for (let j = 0; j < bitMapArr[i].length; j++) {
+                for (let j = 0; j < bitMapInfo[i].length; j++) {
 
-                    let file = bitMapArr[i][j];
+                    let file = bitMapInfo[i][j]["file_url"];
+                    let file_idx = bitMapInfo[i][j]["pic_idx"];
                     let url = "data:image/png;base64," + file;
 
                     const blob = dataURL2Blob(url);
 
                     const img_bitMap = await createImageBitmap(blob);
 
-                    current_level_mapArr.push(img_bitMap);
+                    current_level_mapArr.push({
+                        file_idx: file_idx,
+                        bitMap: img_bitMap,
+                    });
 
                 }
                 if (flag) {
@@ -401,11 +397,11 @@ export default {
 
             // console.log("【Main】Compute mipLevel submit Done~");
 
-            /**
-             *  Fill layout SBO
-             * */ 
+            // /**
+            //  *  Fill layout SBO
+            //  * */
 
-            fill_layout2d_layout3d_SBO(state, device);
+            // fill_layout2d_layout3d_SBO(state, device);
 
 
             /**
@@ -447,17 +443,27 @@ export default {
 
             // 
 
-            // COMPUTE_MIP_SUBMIT
-
+            /**
+             *  Compute MipLevel
+             * */
             compute_miplevel_pass_quad(state, device);
+
         },
         main_flow_fetch_bitmap_ready(state, device) {
+
+            /**
+             *  打开这里从而获得动态预取
+             * */ 
 
             // // 复位所有相关标志位
             // state.main_view_flow_quad.fence["COMPUTE_MIP_SUBMIT"] = false;
             // state.main_view_flow_quad.fence["MIP_COMPUTE_DONE"] = false;
             // state.main_view_flow_quad.fence["BITMAP_RECEIVED"] = false;
             // state.main_view_flow_quad.fence["BITMAP_READY"] = false;
+
+            console.log("【Quad】Ready to reload High-Res Pic");
+
+            dynamic_fetch_update_Texture(state, device);
 
             // compute_miplevel_pass_quad(state, device);
 
@@ -585,7 +591,8 @@ export default {
                     instance: [],
                     mip_instance: [],
                     quad_instance: [],
-                    large_quad_prefetch: [] // 32*32贴片块组成的预取数据纹理，预设一共有6张
+                    large_quad_prefetch: [],    // 32*32贴片块组成的预取数据纹理，预设一共有6张
+                    dynamic_prefetch: [],       // 动态预取纹理 32 64 128 尺寸各两张？？
                 },
             },
             CPU_storage: {
@@ -606,16 +613,26 @@ export default {
 
                 atlas_info: {
                     size: [],       // 用于记录大纹理的长宽尺寸
-                    uv_offset: [],  // 用于记录instance对应图片纹理在大纹理中的uv偏移
-                    uv_size: [],    // 用于记录instance对应图片纹理在大纹理中的uv归一化宽高尺寸
-                    tex_aspect: [], // 用于记录instance对应图片纹理的宽高比系数
+                    // uv_offset: [],  // 用于记录instance对应图片纹理在大纹理中的uv偏移
+                    // uv_aspect: [], // 用于记录instance对应图片纹理的宽高比系数
+                    // uv_size: [],    // 用于记录instance对应图片纹理在大纹理中的uv归一化宽高尺寸
+
+                    /**
+                     *  arr[x+0]: pre-fetch large textrue idx
+                     *  arr[x+1:x+2]: uv_offset
+                     *  arr[x+3:x+4]: uv_aspect
+                     *  arr[x+5:x+6]: uv_size
+                     * */
+                    stride: 0,
+                    arr: [],
 
                 },
                 mip_atlas_info: [],
                 quad_atlas_info: [],
                 mip_info: {
                     total_length: 0,// 用于记录miplevel的最大深度（也就是应该创建多少个大纹理）
-                    arr: []         // 用于记录当前视场中图片的MipLevel信息
+                    arr: [],        // 用于记录当前视场中图片的MipLevel信息
+                    index_arr: [],  // 更为详细的描述
                 },
 
                 instance_info: {}, // 描述instance数量等数据集信息，后端读取文件获得

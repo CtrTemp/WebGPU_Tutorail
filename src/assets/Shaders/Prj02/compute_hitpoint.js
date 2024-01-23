@@ -13,19 +13,17 @@ var update_select_compute = /* wgsl */`
 
 // 要注意这里后面两项不能加入，instance要的只有particle的信息，quad信息不要
 struct Instance {
+    pic_idx         : f32,        // instance idx
     position        : vec4<f32>,
     pos_offset      : vec4<f32>,
-    layout1_pos     : vec4<f32>,
-    layout2_pos     : vec4<f32>,
-    layout3_pos     : vec4<f32>,
+    default_layout  : vec4<f32>,
+    layout2         : vec4<f32>,
+    layout3         : vec4<f32>,
     layout_flag     : f32,    
     quad_idx        : f32,
     
-    uv_offset       : vec2<f32>,
-    tex_aspect      : vec2<f32>,
-    uv_size         : vec2<f32>,
     uv_offset_d     : vec2<f32>,    // default_uv_offset
-    tex_aspect_d    : vec2<f32>,    // default_uv_scale
+    uv_aspect_d     : vec2<f32>,    // default_uv_scale
     uv_size_d       : vec2<f32>,    // default_quad_scale
 }
  
@@ -106,7 +104,7 @@ fn simulate(@builtin(global_invocation_id) global_invocation_id : vec3<u32>) {
     var idx = global_invocation_id.x;
 
     var instance_pos = data[idx].position;
-    var aspect = data[idx].tex_aspect;
+    var aspect = data[idx].uv_aspect_d;
 
 
     /**

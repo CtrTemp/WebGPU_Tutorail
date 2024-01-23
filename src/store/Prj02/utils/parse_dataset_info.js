@@ -67,6 +67,7 @@ function parse_dataset_info(state) {
     const mip_range = 13;  // mip level 0~12 后面也应该从数据库中读取获得，这里暂时写死
     state.CPU_storage.mip_info["total_length"] = mip_range;
     state.CPU_storage.mip_info["arr"] = new Array(mip_range).fill(0);
+    state.CPU_storage.mip_info["index_arr"] = new Array(mip_range);
     state.CPU_storage["mip_atlas_info"] = new Array(mip_range).fill([]);
     state.CPU_storage["quad_atlas_info"] = new Array(mip_range).fill([]);
 
@@ -104,9 +105,21 @@ function parse_dataset_info(state) {
         horizontal_cnt, vertical_cnt,
         ret_json_pack.description_json); // main-view-quad
     state.CPU_storage.vertices_arr["instance"] = flow_info.flow_arr;
-    state.CPU_storage.instance_info["numInstances"] = horizontal_cnt * vertical_cnt;
+    const numInstances = horizontal_cnt * vertical_cnt;
+    state.CPU_storage.instance_info["numInstances"] = numInstances;
+    state.CPU_storage.storage_arr["mip"] = new Float32Array(numInstances).fill(0);
 
-    state.CPU_storage.storage_arr["mip"] = new Float32Array(horizontal_cnt * vertical_cnt).fill(0);
+
+    const atlas_info_size =
+        1 + // pre-fetch ready state 
+        1 + // pre-fetch large textrue idx
+        2 + // uv_offset
+        2 + // uv_aspect
+        2 + // uv_size
+        0;
+    state.CPU_storage.atlas_info["stride"] = atlas_info_size;
+    state.CPU_storage.atlas_info["arr"] = new Float32Array(numInstances * atlas_info_size).fill(0);
+
 
     /**
      *  生成 quad 信息（这个的确是写死的）

@@ -14,7 +14,7 @@ function Pipeline_creation_quad(state, device) {
             state.main_view_flow_quad.Layouts["mvp_pack"],      // group0
             state.main_view_flow_quad.Layouts["sample"],        // group1
             state.main_view_flow_quad.Layouts["mip_vertex"],    // group2
-            state.main_view_flow_quad.Layouts["current_uv"],    // group3
+            state.main_view_flow_quad.Layouts["cur_atlas_info"],// group3
         ]
     });
     state.main_view_flow_quad.Pipeline_Layouts["render_instances"] = particle_Render_Pipeline_Layout;

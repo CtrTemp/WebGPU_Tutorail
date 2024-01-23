@@ -77,14 +77,16 @@ async function read_back_miplevel_pass_quad(state, device) {
 
     state.CPU_storage.storage_arr["mip"] = arrBuffer;
 
-    state.CPU_storage.mip_info["arr"].fill(0);
+    console.log("mip fetch back = ", state.CPU_storage.storage_arr["mip"]);
 
-    for (let i = 0; i < instancesLen; i++) {
-        if (arrBuffer[i] == -1) {
-            continue;
-        }
-        state.CPU_storage.mip_info["arr"][Math.floor(arrBuffer[i])]++;
-    }
+    // state.CPU_storage.mip_info["arr"].fill(0);
+
+    // for (let i = 0; i < instancesLen; i++) {
+    //     if (arrBuffer[i] == -1) {
+    //         continue;
+    //     }
+    //     state.CPU_storage.mip_info["arr"][Math.floor(arrBuffer[i])]++;
+    // }
 
 
     // /**
@@ -112,27 +114,27 @@ function render_main_view_quad(state, device, renderPassDescriptor) {
 
     const pass = encoder.beginRenderPass(renderPassDescriptor);
 
-    
+
     pass.setPipeline(state.main_view_flow_quad.Pipelines["render_quad_frame"]);
     pass.setBindGroup(0, state.main_view_flow_quad.BindGroups["mvp_pack"]);
     pass.setBindGroup(1, state.main_view_flow_quad.BindGroups["sample"]);
     pass.setBindGroup(2, state.main_view_flow_quad.BindGroups["mip_vertex"]);
-    pass.setBindGroup(3, state.main_view_flow_quad.BindGroups["current_uv"]);
+    pass.setBindGroup(3, state.main_view_flow_quad.BindGroups["cur_atlas_info"]);
     pass.setVertexBuffer(0, state.GPU_memory.VBOs["instances"]);
     pass.setVertexBuffer(1, state.GPU_memory.VBOs["quad"]);
     pass.draw(6, state.CPU_storage.instance_info["numInstances"], 0, 0);
 
-    
+
     pass.setPipeline(state.main_view_flow_quad.Pipelines["render_instances"]);
     pass.setBindGroup(0, state.main_view_flow_quad.BindGroups["mvp_pack"]);
     pass.setBindGroup(1, state.main_view_flow_quad.BindGroups["sample"]);
     pass.setBindGroup(2, state.main_view_flow_quad.BindGroups["mip_vertex"]);
-    pass.setBindGroup(3, state.main_view_flow_quad.BindGroups["current_uv"]);
+    pass.setBindGroup(3, state.main_view_flow_quad.BindGroups["cur_atlas_info"]);
     pass.setVertexBuffer(0, state.GPU_memory.VBOs["instances"]);
     pass.setVertexBuffer(1, state.GPU_memory.VBOs["quad"]);
     pass.draw(6, state.CPU_storage.instance_info["numInstances"], 0, 0);
 
-    
+
 
 
     pass.end();

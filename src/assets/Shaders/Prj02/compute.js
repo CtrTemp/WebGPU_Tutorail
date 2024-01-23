@@ -26,19 +26,17 @@ struct SimulationParams {
 
 // 要注意这里后面两项不能加入，instance要的只有particle的信息，quad信息不要
 struct Instance {
+  pic_idx         : f32,        // instance idx
   position        : vec4<f32>,
   pos_offset      : vec4<f32>,
-  layout1_pos     : vec4<f32>,
-  layout2_pos     : vec4<f32>,
-  layout3_pos     : vec4<f32>,
-  layout_flag     : f32,
+  default_layout  : vec4<f32>,
+  layout2         : vec4<f32>,
+  layout3         : vec4<f32>,
+  layout_flag     : f32,    
   quad_idx        : f32,
   
-  uv_offset       : vec2<f32>,
-  tex_aspect      : vec2<f32>,
-  uv_size         : vec2<f32>,
   uv_offset_d     : vec2<f32>,    // default_uv_offset
-  tex_aspect_d    : vec2<f32>,    // default_uv_scale
+  uv_aspect_d     : vec2<f32>,    // default_uv_scale
   uv_size_d       : vec2<f32>,    // default_quad_scale
   // quad_pos     : vec2<f32>,    // -1..+1
   // quad_uv      : vec2<f32>,    // 0..+1
@@ -65,7 +63,7 @@ fn simulate(@builtin(global_invocation_id) global_invocation_id : vec3<u32>) {
   let idx = global_invocation_id.x;
   var instance = data[idx];
 
-  if(sim_params.cur_layout==1.0 && distance(instance.layout1_pos, instance.position)<0.01){
+  if(sim_params.cur_layout==1.0 && distance(instance.default_layout, instance.position)<0.01){
     /**
      *  Uniform Buffer 是只读的，，，
      *  要想修改应将其改为Storage Buffer，饭后回来搞定这个
@@ -74,12 +72,12 @@ fn simulate(@builtin(global_invocation_id) global_invocation_id : vec3<u32>) {
     data[idx] = instance;
     return;
   }
-  if(sim_params.cur_layout==2.0 && distance(instance.layout2_pos, instance.position)<0.01){
+  if(sim_params.cur_layout==2.0 && distance(instance.layout2, instance.position)<0.01){
     instance.layout_flag = 2.0;
     data[idx] = instance;
     return;
   }
-  if(sim_params.cur_layout==3.0 && distance(instance.layout3_pos, instance.position)<0.01){
+  if(sim_params.cur_layout==3.0 && distance(instance.layout3, instance.position)<0.01){
     instance.layout_flag = 3.0;
     data[idx] = instance;
     return;
@@ -87,21 +85,21 @@ fn simulate(@builtin(global_invocation_id) global_invocation_id : vec3<u32>) {
 
 
   let step = 100.0; // 运动步长
-  var pos1_to_pos2_vec3f = (instance.layout2_pos.xyz-instance.layout1_pos.xyz) / step;
-  var pos2_to_pos3_vec3f = (instance.layout3_pos.xyz-instance.layout2_pos.xyz) / step;
-  var pos3_to_pos1_vec3f = (instance.layout1_pos.xyz-instance.layout3_pos.xyz) / step;
+  var pos1_to_pos2_vec3f = (instance.layout2.xyz-instance.default_layout.xyz) / step;
+  var pos2_to_pos3_vec3f = (instance.layout3.xyz-instance.layout2.xyz) / step;
+  var pos3_to_pos1_vec3f = (instance.default_layout.xyz-instance.layout3.xyz) / step;
 
   
   var void_color_1 = vec4(1.0, 1.0, 0.0, 0.2);  // layout1 color
   var void_color_2 = vec4(0.0, 1.0, 0.0, 0.2);  // layout2 color
   var void_color_3 = vec4(0.0, 0.0, 1.0, 0.2);  // layout3 color
 
-  var c1_to_c2 = (void_color_2.xyz - void_color_1.xyz) * distance(instance.position, instance.layout1_pos) / distance(instance.layout1_pos, instance.layout2_pos);
-  var c2_to_c1 = (void_color_1.xyz - void_color_2.xyz) * distance(instance.position, instance.layout2_pos) / distance(instance.layout1_pos, instance.layout2_pos);
-  var c2_to_c3 = (void_color_3.xyz - void_color_2.xyz) * distance(instance.position, instance.layout2_pos) / distance(instance.layout2_pos, instance.layout3_pos);
-  var c3_to_c2 = (void_color_2.xyz - void_color_3.xyz) * distance(instance.position, instance.layout3_pos) / distance(instance.layout2_pos, instance.layout3_pos);
-  var c3_to_c1 = (void_color_1.xyz - void_color_3.xyz) * distance(instance.position, instance.layout3_pos) / distance(instance.layout3_pos, instance.layout1_pos);
-  var c1_to_c3 = (void_color_3.xyz - void_color_1.xyz) * distance(instance.position, instance.layout1_pos) / distance(instance.layout3_pos, instance.layout1_pos);
+  var c1_to_c2 = (void_color_2.xyz - void_color_1.xyz) * distance(instance.position, instance.default_layout) / distance(instance.default_layout, instance.layout2);
+  var c2_to_c1 = (void_color_1.xyz - void_color_2.xyz) * distance(instance.position, instance.layout2) / distance(instance.default_layout, instance.layout2);
+  var c2_to_c3 = (void_color_3.xyz - void_color_2.xyz) * distance(instance.position, instance.layout2) / distance(instance.layout2, instance.layout3);
+  var c3_to_c2 = (void_color_2.xyz - void_color_3.xyz) * distance(instance.position, instance.layout3) / distance(instance.layout2, instance.layout3);
+  var c3_to_c1 = (void_color_1.xyz - void_color_3.xyz) * distance(instance.position, instance.layout3) / distance(instance.layout3, instance.default_layout);
+  var c1_to_c3 = (void_color_3.xyz - void_color_1.xyz) * distance(instance.position, instance.default_layout) / distance(instance.layout3, instance.default_layout);
 
   
 

@@ -97,8 +97,24 @@ function quadTexture_creation(state, device) {
     }
 
     /**
-     *  创建运行时预取纹理，一共6张
+     *  2024/01/23 创建运行时预取纹理，一共6张
      * */
+
+    for (let i = 0; i < 4; i++) {
+        const global_texture_size = Math.pow(2, 13);  // 8192 * 8192
+        state.CPU_storage.atlas_info["size"].push([global_texture_size, global_texture_size]);
+        const instanceTexture = device.createTexture({
+            dimension: '2d',
+            size: [global_texture_size, global_texture_size, 1],
+            format: 'rgba8unorm',
+            usage:
+                GPUTextureUsage.TEXTURE_BINDING |
+                GPUTextureUsage.COPY_DST |
+                GPUTextureUsage.RENDER_ATTACHMENT,
+        });
+
+        state.GPU_memory.Textures["dynamic_prefetch"].push(instanceTexture);
+    }
 
 
 
@@ -210,8 +226,100 @@ function fill_Large_Quad_Texture(state, device) {
     }
 }
 
+
+/**
+ *  2024-01-23晚饭前
+ *  晚饭回来想这里应该咋更新纹理！！！就快成功了~
+ * */
+function dynamic_fetch_update_Texture(state, device) {
+
+    const global_texture_size = state.CPU_storage.atlas_info["size"][0][0];
+
+    const quadBitMap = state.CPU_storage.quadBitMap;
+
+    const map = {
+        5: 0,
+        4: 1,
+        3: 2,
+        2: 3,
+    }
+
+    const atlas_info_stride = state.CPU_storage.atlas_info["stride"];
+
+    /**
+     *  对 SBO 中的 ready state 都置为0
+     *  不用费劲遍历了，直接清空即可
+     * */ 
+    state.CPU_storage.atlas_info.arr.fill(0);
+
+
+    /**
+     *  遍历每一个 MipLevel
+     * */
+    for (let i = 0; i < quadBitMap.length; i++) {
+
+        const instanceTexture = state.GPU_memory.Textures["dynamic_prefetch"][map[i]];
+
+        let offset = 0;         // 总内存偏移
+
+        let width_offset = 0;   // 当前图片在大纹理内的宽度偏移
+        let height_offset = 0;  // 当前图片在大纹理内的高度偏移
+
+        /**
+         *  遍历当前MipLevel中的所有图片
+         * */
+        const instance_len = quadBitMap[i].length;
+
+        for (let j = 0; j < instance_len; j++) {
+
+            const imageBitmap = quadBitMap[i][j]["bitMap"];
+            const pic_idx = quadBitMap[i][j]["file_idx"];
+            const img_width = imageBitmap.width;
+            const img_height = imageBitmap.height;
+
+            // 填充
+            device.queue.copyExternalImageToTexture(
+                { source: imageBitmap }, // src
+                { texture: instanceTexture, origin: [width_offset, height_offset, 0], flipY: false }, // dst （flipY 好像没啥卵用）
+                [img_width, img_height] // size
+            );
+
+
+            const uv_offset = [width_offset / global_texture_size, height_offset / global_texture_size];
+            const uv_aspect = [1.0, 1.0];
+            const uv_size = [img_width / global_texture_size, img_height / global_texture_size];
+
+            state.CPU_storage.atlas_info.arr[pic_idx * atlas_info_stride + 0] = 1;
+            state.CPU_storage.atlas_info.arr[pic_idx * atlas_info_stride + 1] = map[i];
+            state.CPU_storage.atlas_info.arr[pic_idx * atlas_info_stride + 2] = uv_offset[0];
+            state.CPU_storage.atlas_info.arr[pic_idx * atlas_info_stride + 3] = uv_offset[1];
+            state.CPU_storage.atlas_info.arr[pic_idx * atlas_info_stride + 4] = uv_aspect[0];
+            state.CPU_storage.atlas_info.arr[pic_idx * atlas_info_stride + 5] = uv_aspect[1];
+            state.CPU_storage.atlas_info.arr[pic_idx * atlas_info_stride + 6] = uv_size[0];
+            state.CPU_storage.atlas_info.arr[pic_idx * atlas_info_stride + 7] = uv_size[1];
+
+
+
+            offset += img_width * img_height;
+            width_offset += img_width;
+            if (width_offset >= global_texture_size) {
+                height_offset += img_height;
+                width_offset = 0;
+            }
+
+        }
+    }
+
+    // 同步更新 SBO
+    const atlas_Info_SBO = state.GPU_memory.SBOs["cur_atlas_info"];
+    const writeBuffer = state.CPU_storage.atlas_info.arr;
+    device.queue.writeBuffer(atlas_Info_SBO, 0, writeBuffer);
+
+}
+
 export {
     quadTexture_creation,
     fill_Quad_Texture,
     fill_Large_Quad_Texture,
+    dynamic_fetch_update_Texture,
 }

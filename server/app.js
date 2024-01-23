@@ -7,10 +7,10 @@ const socket_server_handler = function (socket) {
     socket.on("text", function (data_pack) {
 
         // JSON 数据包解析
-        console.log(data_pack, typeof data_pack);
+        // console.log(data_pack, typeof data_pack);
         const json_pack = JSON.parse(data_pack);
         // 打印查看当前 指令
-        console.log("CMD = ", json_pack.cmd);
+        // console.log("CMD = ", json_pack.cmd);
 
 
         // 进入Router，进行业务发配

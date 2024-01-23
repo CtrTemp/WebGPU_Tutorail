@@ -114,6 +114,38 @@ function Layout_creation_quad(state, device) {
                 texture: {
                     sampleType: 'float'
                 }
+            },
+            // dynamic pre-fetch texture 32*32
+            {
+                binding: 7,
+                visibility: GPUShaderStage.FRAGMENT,
+                texture: {
+                    sampleType: 'float'
+                }
+            },
+            // dynamic pre-fetch texture 64*64
+            {
+                binding: 8,
+                visibility: GPUShaderStage.FRAGMENT,
+                texture: {
+                    sampleType: 'float'
+                }
+            },
+            // dynamic pre-fetch texture 128*128
+            {
+                binding: 9,
+                visibility: GPUShaderStage.FRAGMENT,
+                texture: {
+                    sampleType: 'float'
+                }
+            },
+            // dynamic pre-fetch texture 256*256
+            {
+                binding: 10,
+                visibility: GPUShaderStage.FRAGMENT,
+                texture: {
+                    sampleType: 'float'
+                }
             }
         ]
     });
@@ -264,30 +296,18 @@ function Layout_creation_quad(state, device) {
 
     
     /**
-     *  current uv info layout
+     *  current atlas info layout
      * */ 
-    const Current_uv_Layout = device.createBindGroupLayout({
+    const Current_Atlas_Info_Layout = device.createBindGroupLayout({
         entries: [{
             binding: 0,
-            visibility: GPUShaderStage.VERTEX,
-            buffer: {
-                type: "read-only-storage"
-            }
-        }, {
-            binding: 1,
-            visibility: GPUShaderStage.VERTEX,
-            buffer: {
-                type: "read-only-storage"
-            }
-        }, {
-            binding: 2,
-            visibility: GPUShaderStage.VERTEX,
+            visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
             buffer: {
                 type: "read-only-storage"
             }
         }]
     });
-    state.main_view_flow_quad.Layouts["current_uv"] = Current_uv_Layout;
+    state.main_view_flow_quad.Layouts["cur_atlas_info"] = Current_Atlas_Info_Layout;
 
 }
 

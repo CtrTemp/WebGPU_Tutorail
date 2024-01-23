@@ -6,59 +6,38 @@ function SBO_creation(state, device) {
     const instance_cnt = state.CPU_storage.instance_info["numInstances"];
 
 
-    /**
-     *  Layout-2d-similarity SBO
-     * */
-    const Layout_2d_SBO = device.createBuffer({
-        size: instance_cnt * 4 * 2,
-        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
-        // mappedAtCreation: true,
-    });
-    state.GPU_memory.SBOs["layout_2d"] = Layout_2d_SBO;
+    // /**
+    //  *  Layout-2d-similarity SBO
+    //  * */
+    // const Layout_2d_SBO = device.createBuffer({
+    //     size: instance_cnt * 4 * 2,
+    //     usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+    //     // mappedAtCreation: true,
+    // });
+    // state.GPU_memory.SBOs["layout_2d"] = Layout_2d_SBO;
+
+
+    // /**
+    //  *  Layout-3d-similarity SBO
+    //  * */
+    // const Layout_3d_SBO = device.createBuffer({
+    //     size: instance_cnt * 4 * 3,
+    //     usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+    //     // mappedAtCreation: true,
+    // });
+    // state.GPU_memory.SBOs["layout_3d"] = Layout_3d_SBO;
 
 
     /**
-     *  Layout-3d-similarity SBO
+     *  current atlas info SBO
      * */
-    const Layout_3d_SBO = device.createBuffer({
-        size: instance_cnt * 4 * 3,
+    const atlas_info_stride = state.CPU_storage.atlas_info["stride"];
+    const Current_Atlas_Info_SBO = device.createBuffer({
+        size: instance_cnt * atlas_info_stride * 4,
         usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
         // mappedAtCreation: true,
     });
-    state.GPU_memory.SBOs["layout_3d"] = Layout_3d_SBO;
-
-
-    /**
-     *  current uv offset SBO
-     * */
-    const Current_UV_Offset_SBO = device.createBuffer({
-        size: instance_cnt * 4 * 2,
-        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
-        // mappedAtCreation: true,
-    });
-    state.GPU_memory.SBOs["uv_offset"] = Current_UV_Offset_SBO;
-
-
-    /**
-     *  current uv aspect SBO
-     * */
-    const Current_UV_Aspect_SBO = device.createBuffer({
-        size: instance_cnt * 4 * 2,
-        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
-        // mappedAtCreation: true,
-    });
-    state.GPU_memory.SBOs["uv_aspect"] = Current_UV_Aspect_SBO;
-
-
-    /**
-     *  current uv size SBO
-     * */
-    const Current_UV_Size_SBO = device.createBuffer({
-        size: instance_cnt * 4 * 2,
-        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
-        // mappedAtCreation: true,
-    });
-    state.GPU_memory.SBOs["uv_size"] = Current_UV_Size_SBO;
+    state.GPU_memory.SBOs["cur_atlas_info"] = Current_Atlas_Info_SBO;
 
 
 

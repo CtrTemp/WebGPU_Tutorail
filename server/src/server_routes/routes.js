@@ -8,10 +8,12 @@ const {
     read_big_pre_fetch_img,
 } = require("../fetch_img/fetch_img")
 
+let cnt = 0;
 
 // 任务分发器，用于根据命令不同，将不同任务分发到各个处理函数
 const service_distribution = function (socket, json_pack) {
-    console.log(json_pack);
+    // console.log(json_pack);
+    console.log(cnt++);
 
     let ret_promise = new Promise((resolve, reject) => {
         switch (json_pack.cmd) {
