@@ -1,5 +1,6 @@
 import { mat4, vec3, vec4 } from "wgpu-matrix"
-import { fill_MVP_UBO } from "../main_view/03_manage_UBO";
+// import { fill_MVP_UBO } from "../main_view/03_manage_UBO";
+import { fill_MVP_UBO_quad } from "../quad_pack_view/03_manage_UBO";
 import { fill_MVP_UBO_sub } from "../sub_view/03_manage_UBO";
 import { pitch_yaw_updater_prim_cam } from "../quad_pack_view/xx_interaction";
 
@@ -35,7 +36,7 @@ function init_prim_Camera(state) {
 
 
     // const lookFrom = vec3.fromValues(-50.0, 0.0, 0.0);
-    const lookFrom = vec3.fromValues(0.0, 0.0, 70.0);
+    const lookFrom = vec3.fromValues(0.0, 0.0, -700.0);
     const viewDir = vec3.fromValues(0.0, 0.0, 1.0);
     const lookAt = vec3.add(lookFrom, viewDir);
     const up = vec3.fromValues(0.0, 1.0, 0.0);
@@ -192,7 +193,7 @@ function update_prim_Camera(state, device) {
 
 
     // GPU 端更新相机参数
-    fill_MVP_UBO(state, device);
+    fill_MVP_UBO_quad(state, device);
 
     // !!! 注意这里必须手动触发才行更新GUI
     gui.updateDisplay();

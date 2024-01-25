@@ -8,10 +8,7 @@ import {
 } from "./quad_pack_view/21_GPU_Pass";
 import { update_prim_Camera } from "./utils/set_camera";
 
-import {
-    fill_nearest_dist_SBO_init,
-} from "./main_view/04_manage_SBO";
-
+import { fill_nearest_dist_SBO_init } from "./quad_pack_view/04_manage_SBO";
 
 import { update_simulation_SBO_quad } from "./quad_pack_view/04_manage_SBO";
 /**
@@ -28,10 +25,6 @@ function renderLoop_quad(state, device) {
      *  Loop
      *  采用触发式，每次标志位被置位触发一次渲染，而不是使用定时器进行渲染
      * */
-    // let timerID = setInterval(() => {
-
-
-    // }, 25);
 
 
     /**
@@ -120,7 +113,7 @@ function renderLoop_quad(state, device) {
     // compute_miplevel_pass_quad(state, device);
 
 
-
+    // 触发式控制
     setTimeout(() => {
         state.main_view_flow_quad.fence["RENDER_READY"] = true;
     }, 25);

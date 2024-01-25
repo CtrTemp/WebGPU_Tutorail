@@ -94,78 +94,6 @@ onMounted(() => {
 
 
 
-/*** ################# Main View 3d Flow Control Watcher Group ################# ***/
-
-
-/**
- *  Dataset Info Ready
- * */
-// 需要用一个返回该属性的 getter 函数来完成监听：
-watch(() => {
-    return store.state.pic_browser.main_view_flow_3d.fence["DATASET_INFO_READY"];
-}, (flag) => {
-    if (flag == true) {
-        store.commit("pic_browser/main_flow_dataset_info_ready", device);
-
-    }
-}, { deep: true });
-
-
-
-/**
- *  Compute MipLevel Submit
- * */
-watch(() => {
-    return store.state.pic_browser.main_view_flow_3d.fence["COMPUTE_MIP_SUBMIT"];
-}, (flag) => {
-    if (flag == true) {
-        store.dispatch("pic_browser/readBackMipLevel_and_FetchPicFromServer", device);
-    }
-}, { deep: true });
-
-
-/**
- *  BitMap Received
- * */
-watch(() => {
-    return store.state.pic_browser.main_view_flow_3d.fence["BITMAP_RECEIVED"];
-}, (flag) => {
-    if (flag == true) {
-        store.dispatch("pic_browser/construct_mip_imgBitMap");
-    }
-}, { deep: true });
-
-
-
-/**
- *  BitMap Ready
- * */
-watch(() => {
-    return store.state.pic_browser.main_view_flow_3d.fence["BITMAP_READY"];
-}, (flag) => {
-    if (flag == true) {
-        store.commit("pic_browser/main_flow_bitmap_ready", device);
-    }
-}, { deep: true });
-
-
-
-/**
- *  RENDER Ready
- * */
-watch(() => {
-    return store.state.pic_browser.main_view_flow_3d.fence["RENDER_READY"];
-}, (flag) => {
-    if (flag == true) {
-        store.commit("pic_browser/main_canvas_renderLoop", device);
-        // store.commit("pic_browser/sub_canvas_renderLoop", device);
-    }
-}, { deep: true });
-
-
-
-
-
 /*** ################# Sub View Debug Flow Control Watcher Group ################# ***/
 
 watch(() => {
@@ -207,7 +135,6 @@ watch(() => {
     return store.state.pic_browser.main_view_flow_quad.fence["DATASET_INFO_PARSE_DONE"];
 }, (flag) => {
     if (flag == true) {
-        // console.log("start up info parse done");
         store.commit("pic_browser/main_quad_flow_dataset_info_parse_done", device);
     }
 }, { deep: true })
@@ -259,7 +186,6 @@ watch(() => {
     return store.state.pic_browser.main_view_flow_quad.fence["BITMAP_READY"];
 }, (flag) => {
     if (flag == true) {
-        console.log("quad bit map ready");
         store.commit("pic_browser/main_flow_fetch_bitmap_ready", device);
     }
 }, { deep: true });

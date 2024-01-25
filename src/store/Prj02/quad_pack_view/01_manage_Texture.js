@@ -97,10 +97,10 @@ function quadTexture_creation(state, device) {
     }
 
     /**
-     *  2024/01/23 创建运行时预取纹理，一共6张
+     *  2024/01/23 创建运行时预取纹理，一共5张
      * */
 
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 5; i++) {
         const global_texture_size = Math.pow(2, 13);  // 8192 * 8192
         state.CPU_storage.atlas_info["size"].push([global_texture_size, global_texture_size]);
         const instanceTexture = device.createTexture({
@@ -238,10 +238,11 @@ function dynamic_fetch_update_Texture(state, device) {
     const quadBitMap = state.CPU_storage.quadBitMap;
 
     const map = {
-        5: 0,
-        4: 1,
-        3: 2,
-        2: 3,
+        6: 0,       // Mip6: 16*16
+        5: 1,       // Mip5: 32*32
+        4: 2,       // Mip4: 64*64
+        3: 3,       // Mip3: 128*128
+        2: 4,       // Mip2: 256*256
     }
 
     const atlas_info_stride = state.CPU_storage.atlas_info["stride"];

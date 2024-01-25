@@ -140,10 +140,11 @@ const fragment_shader = /* wgsl */`
 @group(1) @binding(4) var largeQuad4: texture_2d<f32>;
 @group(1) @binding(5) var largeQuad5: texture_2d<f32>;
 @group(1) @binding(6) var largeQuad6: texture_2d<f32>;
-@group(1) @binding(7) var dynamicFetchQuad_32: texture_2d<f32>;
-@group(1) @binding(8) var dynamicFetchQuad_64: texture_2d<f32>;
-@group(1) @binding(9) var dynamicFetchQuad_128: texture_2d<f32>;
-@group(1) @binding(10) var dynamicFetchQuad_256: texture_2d<f32>;
+@group(1) @binding(7) var dynamicFetchQuad_16: texture_2d<f32>;
+@group(1) @binding(8) var dynamicFetchQuad_32: texture_2d<f32>;
+@group(1) @binding(9) var dynamicFetchQuad_64: texture_2d<f32>;
+@group(1) @binding(10) var dynamicFetchQuad_128: texture_2d<f32>;
+@group(1) @binding(11) var dynamicFetchQuad_256: texture_2d<f32>;
 
 
 struct FragIutput {
@@ -195,10 +196,11 @@ fn fs_main(in : FragIutput) -> @location(0) vec4<f32> {
   /**
    *  动态更新后的纹理
    * */ 
-  color = select(color, textureSample(dynamicFetchQuad_32, mySampler, target_uv), in.ready_flag>0);
-  color = select(color, textureSample(dynamicFetchQuad_64, mySampler, target_uv), in.texture_idx>0);
-  color = select(color, textureSample(dynamicFetchQuad_128, mySampler, target_uv), in.texture_idx>1);
-  color = select(color, textureSample(dynamicFetchQuad_256, mySampler, target_uv), in.texture_idx>2);
+  color = select(color, textureSample(dynamicFetchQuad_16, mySampler, target_uv), in.ready_flag>0);
+  color = select(color, textureSample(dynamicFetchQuad_32, mySampler, target_uv), in.texture_idx>0);
+  color = select(color, textureSample(dynamicFetchQuad_64, mySampler, target_uv), in.texture_idx>1);
+  color = select(color, textureSample(dynamicFetchQuad_128, mySampler, target_uv), in.texture_idx>2);
+  color = select(color, textureSample(dynamicFetchQuad_256, mySampler, target_uv), in.texture_idx>3);
 
   // return vec4(in.miplevel);
   color.w = 1.0; // 完全不透明

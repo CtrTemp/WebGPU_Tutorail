@@ -104,25 +104,30 @@ function BindGroup_creation_quad(state, device) {
                 binding: 6,
                 resource: state.GPU_memory.Textures["large_quad_prefetch"][5].createView()
             },
-            // dynamic pre-fetch texture 32*32
+            // dynamic pre-fetch texture 16*16
             {
                 binding: 7,
                 resource: state.GPU_memory.Textures["dynamic_prefetch"][0].createView()
             },
-            // dynamic pre-fetch texture 64*64
+            // dynamic pre-fetch texture 32*32
             {
                 binding: 8,
                 resource: state.GPU_memory.Textures["dynamic_prefetch"][1].createView()
             },
-            // dynamic pre-fetch texture 128*128
+            // dynamic pre-fetch texture 64*64
             {
                 binding: 9,
                 resource: state.GPU_memory.Textures["dynamic_prefetch"][2].createView()
             },
-            // dynamic pre-fetch texture 256*256
+            // dynamic pre-fetch texture 128*128
             {
                 binding: 10,
                 resource: state.GPU_memory.Textures["dynamic_prefetch"][3].createView()
+            },
+            // dynamic pre-fetch texture 256*256
+            {
+                binding: 11,
+                resource: state.GPU_memory.Textures["dynamic_prefetch"][4].createView()
             }
         ]
     });

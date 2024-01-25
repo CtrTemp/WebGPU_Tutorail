@@ -175,8 +175,8 @@ function recursive_read_quad_instance(idx, edge, mip_info_arr, ret_arr) {
 
 
 function read_instance_in_single_mip_level(mip_val, single_mip_arr) {
-    
-    if (mip_val <= 1 || mip_val >= 7) {
+
+    if (mip_val <= 1 || mip_val >= 6) {
         return [];
     }
     // console.log("map len = ", filename_map.map.length);
@@ -190,7 +190,9 @@ function read_instance_in_single_mip_level(mip_val, single_mip_arr) {
         quad_str = "0" + quad_str;
     }
 
-    const root_dir = `../../../data_set/quad_img/x${quad_str}/`;
+    // const root_dir = `../../../data_set/quad_img/x${quad_str}/`;  // 本地 D 盘 10k 数据集
+    const root_dir = `H:/Data/PKU/WebGPU/PicSet/COVID-19-VIS/quad_img/x${quad_str}/`;  // 移动硬盘 H盘 300k 数据集
+    
 
 
     let url_arr = [];
@@ -221,13 +223,16 @@ async function read_quad_instance(json_pack) {
 
     // const mip_info_arr = json_pack.mip_info["arr"];
     const mip_index_arr = json_pack.mip_info;
-    // console.log("mip_info_arr = ", mip_info_arr);
+    // console.log("mip_info_arr = ", mip_index_arr);
     let ret_arr = [];
 
+    let fetch_bitmap_cnt = 0;
     let ret_promise = new Promise((resolve, reject) => {
 
         for (let i = 0; i < mip_index_arr.length; i++) {
-            ret_arr.push(read_instance_in_single_mip_level(i, mip_index_arr[i]));
+            const arr = read_instance_in_single_mip_level(i, mip_index_arr[i]);
+            fetch_bitmap_cnt += arr.length;
+            ret_arr.push(arr);
         }
 
         resolve({
@@ -235,6 +240,8 @@ async function read_quad_instance(json_pack) {
             quadBitMaps: ret_arr,
         })
     });
+
+    console.log("fetch_bitmap_cnt = ", fetch_bitmap_cnt);
 
     return ret_promise;
 }
@@ -283,18 +290,19 @@ function read_large_texture(root_dir, ret_arr) {
 async function read_big_pre_fetch_img(json_pack) {
 
     // const large_quad_root_dir = "../../../data_set/large/"
-    // const large_quad_root_dir = "../../../data_set/large_16_16/"
-    // const large_quad_root_dir = "../../../data_set/large_08_08/"
-    const large_quad_root_dir = "../../../data_set/large_8x8_10k/"
+    // const large_quad_root_dir = "../../../data_set/large_16_16/"    // 300k
+    const large_quad_root_dir = "../../../data_set/large_08_08/"    // 300k 
+    // const large_quad_root_dir = "../../../data_set/large_8x8_10k/"
 
 
 
     // const description_json_path = "../../../data_set/large_quad.json"
     // const description_json_path = "../../../data_set/large_quad_dict.json"
-    // const description_json_path = "../../../data_set/large_quad_dict-300k.json"
-    // const description_json_path = "../../../data_set/large_quad_dict_16.json"
-    // const description_json_path = "../../../data_set/large_quad_dict_08.json"
-    const description_json_path = "../../../data_set/large_quad_arr_10k_8x8.json"
+    // const description_json_path = "../../../data_set/large_quad_dict-300k.json" // 300k 32*32
+    // const description_json_path = "../../../data_set/large_quad_dict_16.json"   // 300k dict
+    // const description_json_path = "../../../data_set/large_quad_dict_08.json"   // 300k dict
+    const description_json_path = "../../../data_set/large_quad_arr_08.json"   // 300k arr
+    // const description_json_path = "../../../data_set/large_quad_arr_10k_8x8.json" // 10k arr
 
     let ret_arr = [];
 

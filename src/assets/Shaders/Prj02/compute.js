@@ -90,9 +90,9 @@ fn simulate(@builtin(global_invocation_id) global_invocation_id : vec3<u32>) {
   var pos3_to_pos1_vec3f = (instance.default_layout.xyz-instance.layout3.xyz) / step;
 
   
-  var void_color_1 = vec4(1.0, 1.0, 0.0, 0.2);  // layout1 color
-  var void_color_2 = vec4(0.0, 1.0, 0.0, 0.2);  // layout2 color
-  var void_color_3 = vec4(0.0, 0.0, 1.0, 0.2);  // layout3 color
+  var void_color_1 = vec4(0.2, 0.2, 0.0, 0.2);  // layout1 color
+  var void_color_2 = vec4(0.0, 0.2, 0.0, 0.2);  // layout2 color
+  var void_color_3 = vec4(0.0, 0.0, 0.2, 0.2);  // layout3 color
 
   var c1_to_c2 = (void_color_2.xyz - void_color_1.xyz) * distance(instance.position, instance.default_layout) / distance(instance.default_layout, instance.layout2);
   var c2_to_c1 = (void_color_1.xyz - void_color_2.xyz) * distance(instance.position, instance.layout2) / distance(instance.default_layout, instance.layout2);

@@ -2,8 +2,41 @@
 
 function SBO_creation(state, device) {
 
-
     const instance_cnt = state.CPU_storage.instance_info["numInstances"];
+
+
+    // /**
+    //  *  Layout-2d-similarity SBO
+    //  * */
+    // const Layout_2d_SBO = device.createBuffer({
+    //     size: instance_cnt * 4 * 2,
+    //     usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+    //     // mappedAtCreation: true,
+    // });
+    // state.GPU_memory.SBOs["layout_2d"] = Layout_2d_SBO;
+
+
+    // /**
+    //  *  Layout-3d-similarity SBO
+    //  * */
+    // const Layout_3d_SBO = device.createBuffer({
+    //     size: instance_cnt * 4 * 3,
+    //     usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+    //     // mappedAtCreation: true,
+    // });
+    // state.GPU_memory.SBOs["layout_3d"] = Layout_3d_SBO;
+
+
+    /**
+     *  current atlas info SBO
+     * */
+    const atlas_info_stride = state.CPU_storage.atlas_info["stride"];
+    const Current_Atlas_Info_SBO = device.createBuffer({
+        size: instance_cnt * atlas_info_stride * 4,
+        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+        // mappedAtCreation: true,
+    });
+    state.GPU_memory.SBOs["cur_atlas_info"] = Current_Atlas_Info_SBO;
 
 
 
@@ -28,9 +61,47 @@ function SBO_creation(state, device) {
         // mappedAtCreation: true,
     });
     state.GPU_memory.SBOs["mip_read_back"] = mip_info_MappedBuffer;
+
+
+    /**
+     *  Trace Ray Nearest Pos SBO creation
+     * */
+    const Nearest_Hit_Distance_SBO_BufferSize =
+        1 * 4 + // float
+        3 * 4 + // padding
+        0;
+    const Nearest_Hit_Distance_SBO = device.createBuffer({
+        size: Nearest_Hit_Distance_SBO_BufferSize * 4,
+        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+        // mappedAtCreation: true,
+    });
+    state.GPU_memory.SBOs["nearest_hit_dist"] = Nearest_Hit_Distance_SBO;
+
+
+
+    /**
+     *  Instance Moving Simulation Related SBO
+     * */
+    const simulation_info_size =
+        1 * 4 + // current layout
+        1 * 4 + // last layout
+        1 * 4 + // base simu-speed
+        1 * 4 + // pause flag
+        0;
+    const Simulation_Control_SBO = device.createBuffer({
+        size: simulation_info_size,
+        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+    });
+    state.GPU_memory.SBOs["simu_control"] = Simulation_Control_SBO;
 }
 
 
+
+function fill_nearest_dist_SBO_init(state, device) {
+    const nearest_dist_Buffer = state.GPU_memory.SBOs["nearest_hit_dist"];
+    const writeBuffer = new Float32Array([0.0]);
+    device.queue.writeBuffer(nearest_dist_Buffer, 0, writeBuffer);
+}
 
 
 function update_simulation_SBO_quad(state, device) {
@@ -41,61 +112,10 @@ function update_simulation_SBO_quad(state, device) {
 }
 
 
-// function fill_atlas_info_SBO(state, device) {
-
-//     const stride = state.CPU_storage.atlas_info["stride"];;
-
-//     const quadBitMap = state.CPU_storage.quadBitMap;
-    
-//     const map = {
-//         5: 0,
-//         4: 1,
-//         3: 2,
-//         2: 3,
-//     }
-//     /**
-//      *  遍历每一个 MipLevel
-//      * */
-//     for (let i = 0; i < quadBitMap.length; i++) {
-        
-//         const Texture_idx = map[i];
-
-//         /**
-//          *  遍历当前MipLevel中的所有图片
-//          * */
-//         const instance_len = quadBitMap[i].length;
-
-//         for (let j = 0; j < instance_len; j++) {
-
-//             const imageBitmap = quadBitMap[i][j]["bitMap"];
-//             const img_width = imageBitmap.width;
-//             const img_height = imageBitmap.height;
-
-//             // 填充
-//             device.queue.copyExternalImageToTexture(
-//                 { source: imageBitmap }, // src
-//                 { texture: instanceTexture, origin: [width_offset, height_offset, 0], flipY: false }, // dst （flipY 好像没啥卵用）
-//                 [img_width, img_height] // size
-//             );
-
-//             offset += img_width * img_height;
-//             width_offset += img_width;
-//             if (width_offset >= global_texture_size) {
-//                 height_offset += img_height;
-//                 width_offset = 0;
-//             }
-
-//         }
-//     }
-
-//     // state.CPU_storage.atlas_info.arr
-// }
-
-
-
 
 
 export {
     SBO_creation,
     update_simulation_SBO_quad,
+    fill_nearest_dist_SBO_init,
 }

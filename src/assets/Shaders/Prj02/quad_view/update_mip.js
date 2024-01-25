@@ -58,7 +58,10 @@ fn compute_miplevel(pos : vec4f, unitDistance : f32) -> f32 {
     var v_pos = view_mat * pos;       // 得到相对相机的坐标
     
     var check_z = v_pos.z / v_pos.w;  // 归一化得到实际坐标距离
-    var mip_val = sqrt(-check_z / unitDistance);
+    // var mip_val = sqrt(-check_z / unitDistance); // 这个怎么蠢到用sqrt???
+    
+    // 应该用以下的 log2(x)
+    var mip_val = log2(-check_z / unitDistance);
 
     return mip_val;
 }
@@ -84,8 +87,10 @@ fn simulate(@builtin(global_invocation_id) global_invocation_id : vec3<u32>) {
 
     if(check_in_frustum(ndc_pos)){
         mip_val = compute_miplevel(instance_pos, 1.0);
+        if(mip_val < 3){
+            mip_val = 2.0;
+        }
     }
-
 
     /**
      *  更新mips

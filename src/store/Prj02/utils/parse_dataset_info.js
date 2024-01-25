@@ -1,10 +1,6 @@
 /**
  *  解析场景信息，并填充相关全局变量
  * */
-import {
-    gen_sphere_instance_pos,
-    gen_customized_instance_pos
-} from "../main_view/gen_curve_line";
 
 import { gen_rect_instance_pos } from "../quad_pack_view/gen_quad_pos_arr";
 
@@ -79,11 +75,11 @@ function parse_dataset_info(state) {
     /**
      *  总数据集部分 instance 部分小数据集图片（10293）
      * */
-    const z_dist = 85;
-    const horizontal_range = 60;
-    const vertical_range = 60;
-    const horizontal_cnt = 20;
-    const vertical_cnt = 20;
+    const z_dist = 0;
+    const horizontal_range = 300;
+    const vertical_range = 300;
+    const horizontal_cnt = 100;
+    const vertical_cnt = 100;
     // const z_dist = 65;
     // const horizontal_range = 75;
     // const vertical_range = 35;

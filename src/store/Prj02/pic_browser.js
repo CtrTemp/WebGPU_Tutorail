@@ -21,49 +21,6 @@ import { free_storage } from "./utils/storage_free";
 import { parse_mipLevelArr } from "./utils/mipLevel";
 
 /**
- *  Main-View Related
- * */
-import {
-    mipTexture_creation,
-    fill_Mip_Texture,
-} from "./main_view/01_manage_Texture";
-import {
-    VBO_creation,
-    fill_Instance_Pos_VBO,
-    fill_Atlas_Info_VBO,
-    fill_Quad_VBO,
-    manage_VBO_Layout
-} from "./main_view/02_manage_VBO"
-import {
-    UBO_creation,
-    fill_MVP_UBO,
-    fill_Interaction_UBO
-} from "./main_view/03_manage_UBO"
-import {
-    SBO_creation,
-    fill_nearest_dist_SBO_init,
-    fill_layout2d_layout3d_SBO,
-} from "./main_view/04_manage_SBO";
-import { Layout_creation } from "./main_view/11_set_Layout";
-import { BindGroup_creation } from "./main_view/12_set_BindGroup";
-import { Pipeline_creation } from "./main_view/13_set_Pipeline";
-
-import {
-    compute_miplevel_pass,
-    read_back_miplevel_pass,
-} from "./main_view/21_GPU_Pass";
-
-import {
-    canvasMouseInteraction,
-    canvasKeyboardInteraction
-} from "./main_view/xx_interaction";
-
-import {
-    renderLoop_main
-} from "./renderLoop_main_view";
-
-
-/**
  *  Main View Quad Related
  * */
 import {
@@ -74,15 +31,23 @@ import {
 } from "./quad_pack_view/01_manage_Texture";
 
 import {
+    VBO_creation,
     fill_quad_Instance_Pos_VBO,
-    fill_quad_Atlas_Info_VBO
+    fill_quad_Atlas_Info_VBO,
+    fill_Quad_VBO,
+    manage_VBO_Layout,
 } from "./quad_pack_view/02_manage_VBO";
 import { Layout_creation_quad } from "./quad_pack_view/11_set_Layout";
 import { BindGroup_creation_quad } from "./quad_pack_view/12_set_BindGroup";
 import { Pipeline_creation_quad } from "./quad_pack_view/13_set_Pipeline";
 
-import { fill_MVP_UBO_quad } from "./quad_pack_view/03_manage_UBO";
+import {
+    UBO_creation,
+    fill_MVP_UBO_quad,
+    fill_Interaction_UBO,
+} from "./quad_pack_view/03_manage_UBO";
 
+import { SBO_creation } from "./quad_pack_view/04_manage_SBO";
 
 import {
     compute_miplevel_pass_quad,
@@ -224,7 +189,7 @@ export default {
         async readBackMipLevel_and_FetchQuadPicSetFromServer(context, device) {
             const state = context.state;
             await read_back_miplevel_pass_quad(state, device);
-            console.log("【Global】Mip data read back Done~");
+            // console.log("【Global】Mip data read back Done~");
             // console.log("【Sub】Ready to render sub view Debug~");
             // state.sub_view_flow_debug.fence["RENDER_READY"] = true;
 
@@ -253,7 +218,7 @@ export default {
         async construct_quad_imgBitMap(context) {
 
             const ret_json_pack = context.state.CPU_storage.server_raw_info["quad_bitmap_info_pack"];
-            console.log("json pack received = ", ret_json_pack);
+            // console.log("json pack received = ", ret_json_pack);
 
             let flag = false;
             if (context.state.CPU_storage.quadBitMap.length == 13) {
@@ -291,8 +256,8 @@ export default {
                 }
             }
 
-            console.log("bitmaps = ", context.state.CPU_storage.quadBitMap);
-            console.log("【Quad-Fetch】BitMaps Parse Done~");
+            // console.log("bitmaps = ", context.state.CPU_storage.quadBitMap);
+            // console.log("【Quad-Fetch】BitMaps Parse Done~");
             context.state.main_view_flow_quad.fence["BITMAP_READY"] = true;
         },
 
@@ -449,25 +414,24 @@ export default {
             compute_miplevel_pass_quad(state, device);
 
         },
+
         main_flow_fetch_bitmap_ready(state, device) {
 
-            /**
-             *  打开这里从而获得动态预取
-             * */ 
-
-            // // 复位所有相关标志位
-            // state.main_view_flow_quad.fence["COMPUTE_MIP_SUBMIT"] = false;
-            // state.main_view_flow_quad.fence["MIP_COMPUTE_DONE"] = false;
-            // state.main_view_flow_quad.fence["BITMAP_RECEIVED"] = false;
-            // state.main_view_flow_quad.fence["BITMAP_READY"] = false;
-
-            console.log("【Quad】Ready to reload High-Res Pic");
+            // console.log("【Quad】Ready to reload High-Res Pic");
 
             dynamic_fetch_update_Texture(state, device);
 
-            // compute_miplevel_pass_quad(state, device);
-
-
+            
+            /**
+             *  打开这里从而获得动态预取
+             * */
+            // 复位所有相关标志位
+            state.main_view_flow_quad.fence["COMPUTE_MIP_SUBMIT"] = false;
+            state.main_view_flow_quad.fence["MIP_COMPUTE_DONE"] = false;
+            state.main_view_flow_quad.fence["BITMAP_RECEIVED"] = false;
+            state.main_view_flow_quad.fence["BITMAP_READY"] = false;
+            // 开启下一轮循环
+            compute_miplevel_pass_quad(state, device);
         },
 
 
@@ -546,13 +510,6 @@ export default {
         },
 
 
-
-        /**
-         *  Main View 3D Render Loop
-         * */
-        main_canvas_renderLoop(state, device) {
-            renderLoop_main(state, device);
-        },
 
         /**
          *  Main View Quad Render Loop
@@ -642,10 +599,10 @@ export default {
             main_view_flow_3d: {
                 fence: {
                     // DEVICE_READY: { val: false },    // 暂时没用到
-                    DATASET_INFO_READY: { val: false }, // 初始化阶段向后台申请数据库信息
-                    COMPUTE_MIP_SUBMIT: { val: false }, // 已经向GPU提交计算MipLevel的申请，等待数据返回
-                    BITMAP_RECEIVED: { val: false },    // 收到后台发来的BitMap字符串，准备构建
-                    BITMAP_READY: { val: false },       // BitMap构建完成，可以填充Texture Memory
+                    DATASET_INFO_READY: { val: false }, 
+                    COMPUTE_MIP_SUBMIT: { val: false }, 
+                    BITMAP_RECEIVED: { val: false },    
+                    BITMAP_READY: { val: false },      
                     RENDER_READY: { val: false },       // 
                 },
                 Layouts: {},
@@ -670,15 +627,15 @@ export default {
 
                 fence: {
                     // init and render loop
-                    DATASET_INFO_READY: { val: false },
+                    DATASET_INFO_READY: { val: false }, // 初始化阶段向后台申请数据库信息
                     DATASET_INFO_PARSE_DONE: { val: false },
                     RENDER_READY: { val: false },
 
                     // dynamic pre-fetch loop
-                    COMPUTE_MIP_SUBMIT: { val: false },
+                    COMPUTE_MIP_SUBMIT: { val: false }, // 已经向GPU提交计算MipLevel的申请，等待数据返回
                     MIP_COMPUTE_DONE: { val: false },
-                    BITMAP_RECEIVED: { val: false },
-                    BITMAP_READY: { val: false },
+                    BITMAP_RECEIVED: { val: false },    // 收到后台发来的BitMap字符串，准备构建
+                    BITMAP_READY: { val: false },       // BitMap构建完成，可以填充Texture Memory
 
                 },
                 Layouts: {},
@@ -713,7 +670,7 @@ export default {
                     speed: 1.0
                 },
                 simu_info: {
-                    cur_layout: 1.0,
+                    cur_layout: 3.0,
                     last_layout: 1.0,
                     simu_speed: 1.0,
                     simu_pause: 0.0,    // 初始为允许状态

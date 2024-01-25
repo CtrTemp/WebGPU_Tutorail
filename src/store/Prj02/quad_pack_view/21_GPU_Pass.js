@@ -22,7 +22,7 @@ function compute_miplevel_pass_quad(state, device) {
     // 在这里更新标志位
 
     state.main_view_flow_quad.fence["COMPUTE_MIP_SUBMIT"] = true;
-    console.log("【Quad-Fetch】Compute MipLevel Submitted~");
+    // console.log("【Quad-Fetch】Compute MipLevel Submitted~");
 }
 
 /**
@@ -77,7 +77,7 @@ async function read_back_miplevel_pass_quad(state, device) {
 
     state.CPU_storage.storage_arr["mip"] = arrBuffer;
 
-    console.log("mip fetch back = ", state.CPU_storage.storage_arr["mip"]);
+    // console.log("mip fetch back = ", state.CPU_storage.storage_arr["mip"]);
 
     // state.CPU_storage.mip_info["arr"].fill(0);
 

@@ -3,10 +3,8 @@ import { mat4, vec3, vec4 } from "wgpu-matrix"
 
 import { init_prim_Camera, update_sub_Camera, update_prim_Camera } from "../utils/set_camera";
 
-import { update_and_fill_Trace_Ray_UBO } from "../main_view/03_manage_UBO";
+import { update_and_fill_Trace_Ray_UBO } from "./03_manage_UBO";
 
-
-import { update_mip_data_SBO } from "../main_view/04_manage_SBO";
 
 
 /**

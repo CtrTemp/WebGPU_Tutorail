@@ -115,7 +115,7 @@ function Layout_creation_quad(state, device) {
                     sampleType: 'float'
                 }
             },
-            // dynamic pre-fetch texture 32*32
+            // dynamic pre-fetch texture 16*16
             {
                 binding: 7,
                 visibility: GPUShaderStage.FRAGMENT,
@@ -123,7 +123,7 @@ function Layout_creation_quad(state, device) {
                     sampleType: 'float'
                 }
             },
-            // dynamic pre-fetch texture 64*64
+            // dynamic pre-fetch texture 32*32
             {
                 binding: 8,
                 visibility: GPUShaderStage.FRAGMENT,
@@ -131,7 +131,7 @@ function Layout_creation_quad(state, device) {
                     sampleType: 'float'
                 }
             },
-            // dynamic pre-fetch texture 128*128
+            // dynamic pre-fetch texture 64*64
             {
                 binding: 9,
                 visibility: GPUShaderStage.FRAGMENT,
@@ -139,9 +139,17 @@ function Layout_creation_quad(state, device) {
                     sampleType: 'float'
                 }
             },
-            // dynamic pre-fetch texture 256*256
+            // dynamic pre-fetch texture 128*128
             {
                 binding: 10,
+                visibility: GPUShaderStage.FRAGMENT,
+                texture: {
+                    sampleType: 'float'
+                }
+            },
+            // dynamic pre-fetch texture 256*256
+            {
+                binding: 11,
                 visibility: GPUShaderStage.FRAGMENT,
                 texture: {
                     sampleType: 'float'
