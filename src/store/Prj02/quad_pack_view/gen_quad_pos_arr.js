@@ -54,7 +54,7 @@ function gen_rect_instance_pos(
              *  减少使用 contact 数据量越大的时候耗时明显变多！！!
              * */
             Array.prototype.push.apply(ret_arr, [global_cnt, 0, 0, 0]);         // idx + padding 
-            Array.prototype.push.apply(ret_arr, [l3_x, l3_y, l3_z, 1.0]);    // default pos
+            Array.prototype.push.apply(ret_arr, [pos_x, pos_y, pos_z, 1.0]);       // default pos
             Array.prototype.push.apply(ret_arr, [0, 0, 0, 0]);                  // pos_offset
             Array.prototype.push.apply(ret_arr, [pos_x, pos_y, pos_z, 1.0]);    // Default Layout
             Array.prototype.push.apply(ret_arr, [l2_x, l2_y, l2_z, 1.0]);       // layout 2d pos

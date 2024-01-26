@@ -174,7 +174,7 @@ function recursive_read_quad_instance(idx, edge, mip_info_arr, ret_arr) {
 
 
 
-function read_instance_in_single_mip_level(mip_val, single_mip_arr) {
+function read_instance_in_single_mip_level(mip_val, single_mip_arr, data_pack_volume) {
 
     if (mip_val <= 1 || mip_val >= 6) {
         return [];
@@ -192,14 +192,24 @@ function read_instance_in_single_mip_level(mip_val, single_mip_arr) {
 
     // const root_dir = `../../../data_set/quad_img/x${quad_str}/`;  // 本地 D 盘 10k 数据集
     const root_dir = `D:/Data/PKU/WebGPU/PicSet/COVID-19-VIS/quad_img/x${quad_str}/`;  // 移动硬盘（注意盘号可能会发生改变） 300k 数据集
-    
+
 
 
     let url_arr = [];
 
 
-    for (let i = 0; i < cur_pic_len; i++) {
-        const pic_idx = single_mip_arr[i];
+    while (single_mip_arr.length != 0) {
+        /**
+         *  这里默认pop()最后一个元素，可以尝试使用数组任意元素删除的操作，虽然时间复杂度更高，
+         * 但好在数组不会那么长，所以耗时也不会太久
+         * */
+        // const pic_idx = single_mip_arr.pop(); // 顺序操作
+
+        const rand_idx = Math.floor(Math.random() * single_mip_arr.length);
+        const pic_idx = single_mip_arr[rand_idx];
+        single_mip_arr.splice(rand_idx, 1);
+
+
         const file_path = root_dir + filename_map.map[pic_idx];
         if (fs.existsSync(file_path)) {
             const file = fs.readFileSync(file_path);
@@ -207,9 +217,18 @@ function read_instance_in_single_mip_level(mip_val, single_mip_arr) {
                 pic_idx: pic_idx,
                 file_url: file.toString("base64"),
             });
+            data_pack_volume.val--;
+            if (data_pack_volume.val == 0) {
+                break;
+            }
         }
-
     }
+
+    // for (let i = 0; i < cur_pic_len; i++) {
+    //     const pic_idx = single_mip_arr[i];
+
+
+    // }
 
     // console.log("url_arr = ", url_arr);
     return url_arr;
@@ -219,31 +238,56 @@ function read_instance_in_single_mip_level(mip_val, single_mip_arr) {
 /**
  *  读取 quad_img 图片方格
  * */
-async function read_quad_instance(json_pack) {
+async function read_quad_instance(json_pack, socket) {
 
+
+    let data_pack_volume = { val: 50 }; // 限制一个数据包最多传输50张图片（该方式传参相当于传引用）
     // const mip_info_arr = json_pack.mip_info["arr"];
-    const mip_index_arr = json_pack.mip_info;
+    let mip_index_arr = json_pack.mip_info;
+
+    let flag = false;
+    for (let i = 0; i < mip_index_arr.length; i++) {
+        if (mip_index_arr[i] != 0) {
+            flag = true;
+            break;
+        }
+    }
+
+    if (flag == false) {
+        return;
+    }
+
     // console.log("mip_info_arr = ", mip_index_arr);
     let ret_arr = [];
 
     let fetch_bitmap_cnt = 0;
-    let ret_promise = new Promise((resolve, reject) => {
 
-        for (let i = 0; i < mip_index_arr.length; i++) {
-            const arr = read_instance_in_single_mip_level(i, mip_index_arr[i]);
-            fetch_bitmap_cnt += arr.length;
-            ret_arr.push(arr);
-        }
 
-        resolve({
-            cmd: "quad_texture_pack",
-            quadBitMaps: ret_arr,
-        })
-    });
+    for (let i = 0; i < mip_index_arr.length; i++) {
+        const arr = read_instance_in_single_mip_level(i, mip_index_arr[i], data_pack_volume);
+        // console.log("data_pack_volume = ", data_pack_volume);
+        fetch_bitmap_cnt += arr.length;
+        ret_arr.push(arr);
+    }
+    // console.log("mip_info_arr = ", json_pack.mip_info);
+
+    const cmd_pack = {
+        cmd: "quad_texture_pack",
+        quadBitMaps: ret_arr,
+    };
+    socket.sendText(JSON.stringify(cmd_pack));
+
+
 
     console.log("fetch_bitmap_cnt = ", fetch_bitmap_cnt);
 
-    return ret_promise;
+
+    // 尝试设置一个定时器查看效果：
+
+    setTimeout(() => {
+        read_quad_instance(json_pack, socket); // 递归调用
+    }, 1000);
+
 }
 
 

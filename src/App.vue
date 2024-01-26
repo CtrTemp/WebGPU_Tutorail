@@ -133,6 +133,7 @@ store.state.ws.onmessage = function (e) {
     case "quad_texture_pack":
       store.state.pic_browser.CPU_storage.server_raw_info["quad_bitmap_info_pack"] = json_pack;
       store.state.pic_browser.main_view_flow_quad.fence["BITMAP_RECEIVED"] = true;
+      console.log("haha~");
       break;
 
     case "large_texture_pack":
@@ -142,7 +143,7 @@ store.state.ws.onmessage = function (e) {
       break;
 
     default:
-      console.log("server source message header invalid");
+      console.log("server source message header invalid, pack = ", json_pack);
   }
 };
 

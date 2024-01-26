@@ -75,25 +75,25 @@ function parse_dataset_info(state) {
     /**
      *  总数据集部分 instance 部分小数据集图片（10293）
      * */
+    const z_dist = 0;
+    const horizontal_range = 300;
+    const vertical_range = 300;
+    const horizontal_cnt = 100;
+    const vertical_cnt = 100;
     // const z_dist = 0;
-    // const horizontal_range = 300;
-    // const vertical_range = 300;
-    // const horizontal_cnt = 100;
-    // const vertical_cnt = 100;
-    // const z_dist = 65;
     // const horizontal_range = 75;
     // const vertical_range = 35;
     // const horizontal_cnt = 25;
     // const vertical_cnt = 12;
 
-    // /**
-    //  *  基本上是总数据集全部的instance（300000），基本上全部的小数据集图片
-    //  * */ 
-    const z_dist = 85;
-    const horizontal_range = 2400;
-    const vertical_range = 1050;
-    const horizontal_cnt = 800;
-    const vertical_cnt = 380;
+    // // /**
+    // //  *  基本上是总数据集全部的instance（300000），基本上全部的小数据集图片
+    // //  * */ 
+    // const z_dist = 0;
+    // const horizontal_range = 2400;
+    // const vertical_range = 1050;
+    // const horizontal_cnt = 800;
+    // const vertical_cnt = 380;
     state.CPU_storage.interaction_info["z_plane_depth"] = z_dist;
     const flow_info = gen_rect_instance_pos(
         z_dist,
@@ -115,6 +115,8 @@ function parse_dataset_info(state) {
         0;
     state.CPU_storage.atlas_info["stride"] = atlas_info_size;
     state.CPU_storage.atlas_info["arr"] = new Float32Array(numInstances * atlas_info_size).fill(0);
+    state.CPU_storage.atlas_info["tex_width_offset"] = new Uint32Array(mip_range).fill(0);
+    state.CPU_storage.atlas_info["tex_height_offset"] = new Uint32Array(mip_range).fill(0);
 
 
     /**

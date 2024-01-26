@@ -248,10 +248,13 @@ function dynamic_fetch_update_Texture(state, device) {
     const atlas_info_stride = state.CPU_storage.atlas_info["stride"];
 
     /**
-     *  对 SBO 中的 ready state 都置为0
-     *  不用费劲遍历了，直接清空即可
+     *  2024/01/26 到此为止，明天来了继续更新
      * */ 
-    state.CPU_storage.atlas_info.arr.fill(0);
+    // /**
+    //  *  对 SBO 中的 ready state 都置为0
+    //  *  不用费劲遍历了，直接清空即可
+    //  * */
+    // state.CPU_storage.atlas_info.arr.fill(0);
 
 
     /**
@@ -261,10 +264,14 @@ function dynamic_fetch_update_Texture(state, device) {
 
         const instanceTexture = state.GPU_memory.Textures["dynamic_prefetch"][map[i]];
 
-        let offset = 0;         // 总内存偏移
 
-        let width_offset = 0;   // 当前图片在大纹理内的宽度偏移
-        let height_offset = 0;  // 当前图片在大纹理内的高度偏移
+        /**
+         *  由于分批次加载，以下变量改用全局变量代替
+         * */
+        let width_offset = state.CPU_storage.atlas_info["tex_width_offset"][i];   // 当前图片在大纹理内的宽度偏移
+        let height_offset = state.CPU_storage.atlas_info["tex_height_offset"][i];  // 当前图片在大纹理内的高度偏移
+
+        // console.log("width_offset = ", state.CPU_storage.atlas_info["tex_width_offset"]);
 
         /**
          *  遍历当前MipLevel中的所有图片
@@ -301,7 +308,6 @@ function dynamic_fetch_update_Texture(state, device) {
 
 
 
-            offset += img_width * img_height;
             width_offset += img_width;
             if (width_offset >= global_texture_size) {
                 height_offset += img_height;
@@ -309,6 +315,10 @@ function dynamic_fetch_update_Texture(state, device) {
             }
 
         }
+
+
+        state.CPU_storage.atlas_info["tex_width_offset"][i] = width_offset; // 回写
+        state.CPU_storage.atlas_info["tex_height_offset"][i] = height_offset;
     }
 
     // 同步更新 SBO

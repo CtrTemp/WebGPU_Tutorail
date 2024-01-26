@@ -193,7 +193,7 @@ export default {
             // console.log("【Sub】Ready to render sub view Debug~");
             // state.sub_view_flow_debug.fence["RENDER_READY"] = true;
 
-            
+
             parse_mipLevelArr(state); // 时间占用怪物找到了，，，这个在300k的时候耗时很久！
 
 
@@ -258,7 +258,7 @@ export default {
             }
 
             // console.log("bitmaps = ", context.state.CPU_storage.quadBitMap);
-            // console.log("【Quad-Fetch】BitMaps Parse Done~");
+            console.log("【Quad-Fetch】BitMaps Parse Done~");
             context.state.main_view_flow_quad.fence["BITMAP_READY"] = true;
         },
 
@@ -422,7 +422,7 @@ export default {
 
             dynamic_fetch_update_Texture(state, device);
 
-            
+
             /**
              *  打开这里从而获得动态预取
              * */
@@ -432,9 +432,9 @@ export default {
             state.main_view_flow_quad.fence["BITMAP_RECEIVED"] = false;
             state.main_view_flow_quad.fence["BITMAP_READY"] = false;
             // 开启下一轮循环
-            compute_miplevel_pass_quad(state, device);
-            
-            console.timeEnd("dynamic loop time cost : ");
+            // compute_miplevel_pass_quad(state, device);
+
+            // console.timeEnd("dynamic loop time cost : ");
         },
 
 
@@ -587,6 +587,14 @@ export default {
                     stride: 0,
                     arr: [],
 
+                    /**
+                     *  为分批次动态数据加载所提供的计数标志，由局部变量提升为全局标志，当前批次所有的数据包
+                     * 都加载完毕后再清零
+                     * */
+                    tex_width_offset: 0,
+                    tex_height_offset: 0,
+
+
                 },
                 mip_atlas_info: [],
                 quad_atlas_info: [],
@@ -600,21 +608,21 @@ export default {
                 additional_info: {},
                 interaction_info: {}, // 描述交互相关的 info
             },
-            main_view_flow_3d: {
-                fence: {
-                    // DEVICE_READY: { val: false },    // 暂时没用到
-                    DATASET_INFO_READY: { val: false }, 
-                    COMPUTE_MIP_SUBMIT: { val: false }, 
-                    BITMAP_RECEIVED: { val: false },    
-                    BITMAP_READY: { val: false },      
-                    RENDER_READY: { val: false },       // 
-                },
-                Layouts: {},
-                BindGroups: {},
-                Pipelines: {},
-                passDescriptors: {},
-                Pipeline_Layouts: {},
-            },
+            // main_view_flow_3d: {
+            //     fence: {
+            //         // DEVICE_READY: { val: false },    // 暂时没用到
+            //         DATASET_INFO_READY: { val: false }, 
+            //         COMPUTE_MIP_SUBMIT: { val: false }, 
+            //         BITMAP_RECEIVED: { val: false },    
+            //         BITMAP_READY: { val: false },      
+            //         RENDER_READY: { val: false },       // 
+            //     },
+            //     Layouts: {},
+            //     BindGroups: {},
+            //     Pipelines: {},
+            //     passDescriptors: {},
+            //     Pipeline_Layouts: {},
+            // },
             sub_view_flow_debug: {
                 fence: {
                     DATASET_INFO_READY: { val: false },
@@ -640,6 +648,11 @@ export default {
                     MIP_COMPUTE_DONE: { val: false },
                     BITMAP_RECEIVED: { val: false },    // 收到后台发来的BitMap字符串，准备构建
                     BITMAP_READY: { val: false },       // BitMap构建完成，可以填充Texture Memory
+                    /**
+                     *  我们使用数据包的形式，对数据进行分批次的更新，当最后一批数据更新完毕之前不会触发下一个取数据轮次，
+                     * 以下 LAST_DATA_PACK_FLAG 被置位后，才会触发下一轮次的更新
+                     * */
+                    LAST_DATA_PACK_FLAG: { val: false },
 
                 },
                 Layouts: {},
@@ -674,7 +687,7 @@ export default {
                     speed: 1.0
                 },
                 simu_info: {
-                    cur_layout: 3.0,
+                    cur_layout: 1.0,
                     last_layout: 1.0,
                     simu_speed: 1.0,
                     simu_pause: 0.0,    // 初始为允许状态

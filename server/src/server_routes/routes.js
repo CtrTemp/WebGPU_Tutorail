@@ -15,6 +15,7 @@ const service_distribution = function (socket, json_pack) {
     // console.log(json_pack);
     console.log(cnt++);
 
+
     let ret_promise = new Promise((resolve, reject) => {
         switch (json_pack.cmd) {
             case "void":
@@ -36,7 +37,8 @@ const service_distribution = function (socket, json_pack) {
                 resolve(read_mip_instance(json_pack));
                 break;
             case "fetch_quad_instance":
-                resolve(read_quad_instance(json_pack));
+                // resolve();
+                read_quad_instance(json_pack, socket);
                 break;
             default:
                 console.log("Missing: CMD out of range");

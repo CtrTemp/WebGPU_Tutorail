@@ -77,7 +77,7 @@ async function read_back_miplevel_pass_quad(state, device) {
 
     state.CPU_storage.storage_arr["mip"] = arrBuffer;
 
-    // console.log("mip fetch back = ", state.CPU_storage.storage_arr["mip"]);
+    console.log("mip fetch back = ", state.CPU_storage.storage_arr["mip"]);
 
     // state.CPU_storage.mip_info["arr"].fill(0);
 

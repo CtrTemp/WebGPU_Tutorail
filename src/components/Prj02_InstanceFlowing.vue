@@ -161,7 +161,7 @@ watch(() => {
     return store.state.pic_browser.main_view_flow_quad.fence["COMPUTE_MIP_SUBMIT"];
 }, (flag) => {
     if (flag == true) {
-        console.time("dynamic loop time cost : ");
+        // console.time("dynamic loop time cost : ");
         store.dispatch("pic_browser/readBackMipLevel_and_FetchQuadPicSetFromServer", device);
     }
 }, { deep: true });
