@@ -36,7 +36,7 @@ function init_prim_Camera(state) {
 
 
     // const lookFrom = vec3.fromValues(-50.0, 0.0, 0.0);
-    const lookFrom = vec3.fromValues(0.0, 0.0, -700.0);
+    const lookFrom = vec3.fromValues(0.0, 0.0, -50.0);
     const viewDir = vec3.fromValues(0.0, 0.0, 1.0);
     const lookAt = vec3.add(lookFrom, viewDir);
     const up = vec3.fromValues(0.0, 1.0, 0.0);

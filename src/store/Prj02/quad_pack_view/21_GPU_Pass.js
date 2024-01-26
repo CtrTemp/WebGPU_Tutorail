@@ -70,8 +70,8 @@ async function read_back_miplevel_pass_quad(state, device) {
     // 队列提交
     device.queue.submit([readBack_encoder.finish()]);
 
-
     await state.GPU_memory.SBOs["mip_read_back"].mapAsync(GPUMapMode.READ);
+    
     const arrBuffer = new Float32Array(state.GPU_memory.SBOs["mip_read_back"].getMappedRange());
     // console.log("hello~ readBuffer = ", arrBuffer);
 

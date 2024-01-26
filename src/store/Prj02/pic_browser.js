@@ -193,8 +193,8 @@ export default {
             // console.log("【Sub】Ready to render sub view Debug~");
             // state.sub_view_flow_debug.fence["RENDER_READY"] = true;
 
-
-            parse_mipLevelArr(state);
+            
+            parse_mipLevelArr(state); // 时间占用怪物找到了，，，这个在300k的时候耗时很久！
 
 
             const cmd_json = {
@@ -212,6 +212,7 @@ export default {
             // console.log("mip_info = ", mip_info);
 
             state.ws.send(JSON.stringify(cmd_json));
+
         },
 
 
@@ -432,6 +433,8 @@ export default {
             state.main_view_flow_quad.fence["BITMAP_READY"] = false;
             // 开启下一轮循环
             compute_miplevel_pass_quad(state, device);
+            
+            console.timeEnd("dynamic loop time cost : ");
         },
 
 
@@ -530,6 +533,7 @@ export default {
     state() {
         return {
             ws: undefined,
+            // timer: undefined,
             GUI: {},
             camera: {
                 prim_camera: {},

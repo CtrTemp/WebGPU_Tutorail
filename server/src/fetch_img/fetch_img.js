@@ -191,7 +191,7 @@ function read_instance_in_single_mip_level(mip_val, single_mip_arr) {
     }
 
     // const root_dir = `../../../data_set/quad_img/x${quad_str}/`;  // 本地 D 盘 10k 数据集
-    const root_dir = `H:/Data/PKU/WebGPU/PicSet/COVID-19-VIS/quad_img/x${quad_str}/`;  // 移动硬盘 H盘 300k 数据集
+    const root_dir = `D:/Data/PKU/WebGPU/PicSet/COVID-19-VIS/quad_img/x${quad_str}/`;  // 移动硬盘（注意盘号可能会发生改变） 300k 数据集
     
 
 
