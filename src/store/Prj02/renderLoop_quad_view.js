@@ -8,9 +8,12 @@ import {
 } from "./quad_pack_view/21_GPU_Pass";
 import { update_prim_Camera } from "./utils/set_camera";
 
-import { fill_nearest_dist_SBO_init } from "./quad_pack_view/04_manage_SBO";
+import {
+    fill_nearest_dist_SBO_init,
+    update_simulation_SBO_quad,
+    reset_hitIndex_SBO
+} from "./quad_pack_view/04_manage_SBO";
 
-import { update_simulation_SBO_quad } from "./quad_pack_view/04_manage_SBO";
 /**
  *  Stage04：启动渲染循环
  * */
@@ -32,17 +35,22 @@ function renderLoop_quad(state, device) {
      * */
     fill_nearest_dist_SBO_init(state, device);
 
+
+    /**
+     *  执行计算光标与图片交点
+     * */
+    reset_hitIndex_SBO(state, device);
     compute_cursor_hitpoint(state, device);
+
 
     /**
      *  更新当前simulation_control的参数，并导入GPU
-     * */ 
-
+     * */
     update_simulation_SBO_quad(state, device);
 
     /**
      *  执行一次 move 操作
-     * */ 
+     * */
     compute_instance_move_pass(state, device);
 
 
@@ -113,10 +121,11 @@ function renderLoop_quad(state, device) {
     // compute_miplevel_pass_quad(state, device);
 
 
-    // 触发式控制
+    // 触发式控制（这里定义最快40帧）
     setTimeout(() => {
         state.main_view_flow_quad.fence["RENDER_READY"] = true;
     }, 25);
+
 }
 
 

@@ -58,9 +58,43 @@ function SBO_creation(state, device) {
     const mip_info_MappedBuffer = device.createBuffer({
         size: instance_cnt * 4 * 1,
         usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST,
-        // mappedAtCreation: true,
+        mappedAtCreation: true,
     });
     state.GPU_memory.SBOs["mip_read_back"] = mip_info_MappedBuffer;
+
+
+
+
+    /**
+     *  当前选中的是哪一个图片的索引标号
+     * */ 
+    const hitIndex_StorageBuffer = device.createBuffer({
+        size: 4 * 1,
+        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC,
+        // mappedAtCreation: true,
+    });
+
+    state.GPU_memory.SBOs["hit_index"] = hitIndex_StorageBuffer;
+
+    
+    /**
+     *  当前选中的是哪一个图片的索引标号（对应的CPU端映射）
+     * */ 
+    const hitIndex_MappedBuffer = device.createBuffer({
+        size: 4 * 1,
+        usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST,
+        // mappedAtCreation: true,
+    });
+    state.GPU_memory.SBOs["hit_index_read_back"] = hitIndex_MappedBuffer;
+
+
+
+
+
+
+
+
+
 
 
     /**
@@ -112,10 +146,17 @@ function update_simulation_SBO_quad(state, device) {
 }
 
 
+function reset_hitIndex_SBO(state, device)
+{
+    const hit_index_SBO = state.GPU_memory.SBOs["hit_index"];
+    const writeBuffer = new Float32Array([-1.0]); // 初始化为-1
+    device.queue.writeBuffer(hit_index_SBO, 0, writeBuffer);
+}
 
 
 export {
     SBO_creation,
     update_simulation_SBO_quad,
     fill_nearest_dist_SBO_init,
+    reset_hitIndex_SBO,
 }

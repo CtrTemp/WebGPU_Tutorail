@@ -41,6 +41,33 @@ function pitch_yaw_updater_prim_cam(state) {
  *  Dragging
  * */
 function mouseMovingCallback(state, device, event) {
+
+
+    // /**
+    //  *  一个跟随鼠标移动的tips
+    //  * 后期可以考虑是否加上？
+    //  * */ 
+    // const hit_index = state.CPU_storage.selected_img.val;
+    // let hover_box = document.getElementsByClassName("hover-box")[0];
+    // if (hit_index == -1) {
+    //     hover_box.style.display = "none";
+    // }
+    // else {
+    //     // console.log("hoverbox = ", event.clientX + 'px');
+    //     hover_box.style.left = event.clientX + 'px';
+    //     hover_box.style.top = event.clientY + 'px';
+    //     hover_box.style.display = "block";
+    // }
+
+
+
+
+
+
+
+
+
+
     if (!state.main_canvas.mouse_info["dragging"]) {
         // console.log("invalid mouse moving~ ");
         return;
@@ -81,7 +108,6 @@ function mouseMovingCallback(state, device, event) {
 
         pitch_yaw_updater_prim_cam(state);
     }
-
 
 
     update_prim_Camera(state, device);

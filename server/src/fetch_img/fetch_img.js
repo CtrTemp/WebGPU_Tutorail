@@ -5,6 +5,7 @@ const {
 } = require("./fetch_json")
 
 const filename_map = require("../filename_map");
+const img_info_arr = require("../img_set_description_arr");
 
 /**
  *  读取特定的图片文件
@@ -382,9 +383,39 @@ async function read_big_pre_fetch_img(json_pack) {
 
 
 
+
+async function read_single_raw_image(json_pack, socket) {
+
+    const file_idx = json_pack["idx"];
+    const file_name = filename_map.map[file_idx];
+    const file_info = img_info_arr.arr[file_idx];
+
+    const root_dir = `D:/Data/PKU/WebGPU/PicSet/COVID-19-VIS/covid_charts-300k/`;  // 移动硬盘（注意盘号可能会发生改变） 300k 数据集
+    const file_path = root_dir + file_name;
+
+
+    const file = fs.readFileSync(file_path);
+    const trans_url = file.toString("base64");
+
+    // console.log("trans_url = ", trans_url);
+
+    const ret_back_single_raw_img = {
+        cmd: "single_raw_img",
+        img_url: trans_url,
+        img_info: file_info,
+    };
+
+
+    socket.sendText(JSON.stringify(ret_back_single_raw_img));
+
+}
+
+
+
 module.exports = {
     read_instanced_texture,
     read_mip_instance,
     read_quad_instance,
-    read_big_pre_fetch_img
+    read_big_pre_fetch_img,
+    read_single_raw_image,
 }

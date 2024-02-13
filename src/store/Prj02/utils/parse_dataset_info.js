@@ -76,10 +76,10 @@ function parse_dataset_info(state) {
      *  总数据集部分 instance 部分小数据集图片（10293）
      * */
     const z_dist = 0;
-    const horizontal_range = 300;
-    const vertical_range = 300;
-    const horizontal_cnt = 100;
-    const vertical_cnt = 100;
+    const horizontal_range = 120;
+    const vertical_range = 60;
+    const horizontal_cnt = 40;
+    const vertical_cnt = 20;
     // const z_dist = 0;
     // const horizontal_range = 75;
     // const vertical_range = 35;
@@ -105,6 +105,8 @@ function parse_dataset_info(state) {
     state.CPU_storage.instance_info["numInstances"] = numInstances;
     state.CPU_storage.storage_arr["mip"] = new Float32Array(numInstances).fill(0);
 
+    
+    state.CPU_storage.storage_arr["hit_index"] = new Float32Array(1).fill(-1.0);
 
     const atlas_info_size =
         1 + // pre-fetch ready state 

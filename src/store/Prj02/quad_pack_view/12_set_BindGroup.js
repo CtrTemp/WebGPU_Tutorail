@@ -208,6 +208,12 @@ function BindGroup_creation_quad(state, device) {
                 resource: {
                     buffer: state.GPU_memory.SBOs["nearest_hit_dist"],
                 }
+            },
+            {
+                binding: 3,
+                resource: {
+                    buffer: state.GPU_memory.SBOs["hit_index"],
+                }
             }
         ]
     });

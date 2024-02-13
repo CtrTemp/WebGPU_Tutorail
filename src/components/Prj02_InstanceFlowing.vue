@@ -2,14 +2,21 @@
     <div class="root-container-main">
         <!-- <canvas class="sub-canvas" width="512" height="512"></canvas> -->
         <canvas class="main-canvas" width="512" height="512"></canvas>
+        <div class="hover-box">
+            <!-- 其他内容 -->
+            <!-- <img src="" alt="" width="100" height="100" id="raw-img"> -->
+        </div>
+        <SiderPannel />
     </div>
 </template>
   
 <script setup>
 
+import SiderPannel from './SiderPannel/SiderPannel.vue';
+
 import { useStore } from 'vuex';
 import { onMounted } from 'vue';
-import { inject, watch } from 'vue';
+import { inject, provide, watch } from 'vue';
 
 import { mat4, vec3, vec4 } from "wgpu-matrix"
 
@@ -21,6 +28,12 @@ const device = await inject("device");
 const store = useStore();
 
 const ws = store.state.ws;
+
+
+// provide("single_img_info", store.state.pic_browser.CPU_storage.single_img_info);
+
+
+
 
 // onMounted
 onMounted(() => {
@@ -84,7 +97,7 @@ onMounted(() => {
 /*** ################# Global Watch Camera ################# ***/
 
 
- 
+
 // watch(() => {
 //     return store.state.pic_browser.camera["prim_camera"];
 // }, () => {
@@ -143,7 +156,7 @@ watch(() => {
 /**
  *  RENDER Ready
  * */
- watch(() => {
+watch(() => {
     return store.state.pic_browser.main_view_flow_quad.fence["RENDER_READY"];
 }, (flag) => {
     if (flag == true) {
@@ -156,7 +169,7 @@ watch(() => {
 
 /**
  *  Compute MipLevel Pass Submit
- * */ 
+ * */
 watch(() => {
     return store.state.pic_browser.main_view_flow_quad.fence["COMPUTE_MIP_SUBMIT"];
 }, (flag) => {
@@ -193,6 +206,45 @@ watch(() => {
 
 
 
+/**
+ *  Get selected img Done
+ *  第一次需要被触发执行（选择你的触发位置吧，先去吃饭，回来从选择触发位置开始继续）
+ * */
+
+watch(() => {
+    return store.state.pic_browser.main_view_flow_quad.fence["GET_SELECTED_IMG"];
+}, (flag) => {
+    if (flag == true) {
+        store.dispatch("pic_browser/get_selected_image_idx", device);
+    }
+}, { deep: true });
+
+
+
+watch(() => {
+    return store.state.pic_browser.CPU_storage.selected_img;
+}, (val) => {
+    if (val.val != -1) {
+        /**
+         *  根据当前的信息，向服务端取数据
+         * */
+        const img_idx = val.val;
+
+        const json_cmd = {
+            cmd: "fetch_single_img",
+            idx: img_idx,
+        };
+
+        store.state.pic_browser.ws.send(JSON.stringify(json_cmd));
+    }
+}, { deep: true });
+
+
+
+
+
+
+
 </script>
   
 <style>
@@ -219,6 +271,16 @@ watch(() => {
     height: 100%; */
     right: 0px;
     bottom: 0px;
+}
+
+.hover-box {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 50px;
+    height: 50px;
+    background-color: aquamarine;
+    display: none;
 }
 </style>
   

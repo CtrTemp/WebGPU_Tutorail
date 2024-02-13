@@ -6,6 +6,7 @@ const {
     read_mip_instance,
     read_quad_instance,
     read_big_pre_fetch_img,
+    read_single_raw_image,
 } = require("../fetch_img/fetch_img")
 
 let cnt = 0;
@@ -39,6 +40,9 @@ const service_distribution = function (socket, json_pack) {
             case "fetch_quad_instance":
                 // resolve();
                 read_quad_instance(json_pack, socket);
+                break;
+            case "fetch_single_img":
+                read_single_raw_image(json_pack, socket);
                 break;
             default:
                 console.log("Missing: CMD out of range");

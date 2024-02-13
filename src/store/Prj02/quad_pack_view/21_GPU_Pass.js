@@ -107,6 +107,45 @@ async function read_back_miplevel_pass_quad(state, device) {
 
 
 /**
+ *  从GPU读取返回当前光标选中图片的idx信息
+ *  注意，这里是异步函数，使用 await 等待获取结果，在 dispatch 中执行调用
+ * */
+async function read_back_hitIndex_pass(state, device) {
+
+    // 自举触发
+    state.main_view_flow_quad.fence["GET_SELECTED_IMG"] = false;
+
+    state.GPU_memory.SBOs["hit_index_read_back"].unmap();
+
+
+    // Encode Pass 填充
+    const readBack_encoder = device.createCommandEncoder();
+    readBack_encoder.copyBufferToBuffer(
+        state.GPU_memory.SBOs["hit_index"],
+        0,
+        state.GPU_memory.SBOs["hit_index_read_back"],
+        0,
+        1 * 4,
+    );
+
+    // 队列提交
+    device.queue.submit([readBack_encoder.finish()]);
+
+    await state.GPU_memory.SBOs["hit_index_read_back"].mapAsync(GPUMapMode.READ);
+    
+    const arrBuffer = new Float32Array(state.GPU_memory.SBOs["hit_index_read_back"].getMappedRange());
+    state.CPU_storage.selected_img.val = arrBuffer[0];
+
+    // console.log(state.CPU_storage.storage_arr["hit_index"]);
+
+    // 自举触发
+    state.main_view_flow_quad.fence["GET_SELECTED_IMG"] = true;
+}
+
+
+
+
+/**
  *  main view render pass
  * */
 function render_main_view_quad(state, device, renderPassDescriptor) {
@@ -187,5 +226,6 @@ export {
     render_main_view_quad,
     render_quad_frame,
     compute_instance_move_pass,
+    read_back_hitIndex_pass,
 }
 

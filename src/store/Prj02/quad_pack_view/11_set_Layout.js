@@ -250,6 +250,12 @@ function Layout_creation_quad(state, device) {
             buffer: {
                 type: "storage"
             }
+        }, {
+            binding: 3,
+            visibility: GPUShaderStage.COMPUTE,
+            buffer: {
+                type: "storage"
+            }
         }]
     });
     state.main_view_flow_quad.Layouts["cursor_ray"] = Cursor_Ray_UBO_Layout;

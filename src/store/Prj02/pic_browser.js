@@ -52,6 +52,7 @@ import { SBO_creation } from "./quad_pack_view/04_manage_SBO";
 import {
     compute_miplevel_pass_quad,
     read_back_miplevel_pass_quad,
+    read_back_hitIndex_pass,
 } from "./quad_pack_view/21_GPU_Pass";
 
 import { renderLoop_quad } from "./renderLoop_quad_view";
@@ -262,6 +263,67 @@ export default {
             context.state.main_view_flow_quad.fence["BITMAP_READY"] = true;
         },
 
+        async get_selected_image_idx(context, device) {
+            // console.log("triggered");
+            await read_back_hitIndex_pass(context.state, device);
+
+        },
+
+
+
+        async main_quad_update_detail_img(context, json_pack) {
+
+            const url = "data:image/png;base64," + json_pack.img_url;
+            const img_info = json_pack.img_info;
+            
+            context.state.CPU_storage.single_img_url = url;
+            context.state.CPU_storage.single_img_info = img_info;
+
+            const blob = dataURL2Blob(url);
+
+            const img_bitMap = await createImageBitmap(blob);
+
+
+
+            // const img_root_div = document.getElementsByClassName("hover-box")[0];
+            // // 老元素删除
+            // const ori_img = document.getElementById("raw-img");
+            // if (ori_img != null) {
+            //     img_root_div.removeChild(ori_img);
+            // }
+
+            // // 新元素创建并添加
+            // const img = new Image(100, 100);
+            // img.src = context.state.CPU_storage.single_img_url;
+            // img.id = "raw-img";
+            // img_root_div.appendChild(img);
+
+
+            const img_root_div = document.getElementsByClassName("img_container")[0];
+            // 老元素删除
+            const ori_img = document.getElementById("detail-img");
+            if (ori_img != null) {
+                img_root_div.removeChild(ori_img);
+            }
+
+            // 新元素创建并添加
+            const img = new Image();
+            img.src = context.state.CPU_storage.single_img_url;
+            img.id = "detail-img";
+
+            // console.log("img = ", img);
+
+            if (img_bitMap.width > img_bitMap.height) {
+                img.style.width = "100%";
+            }
+            else {
+                img.style.height = "100%";
+            }
+
+            img_root_div.appendChild(img);
+
+        },
+
 
     },
     mutations: {
@@ -414,6 +476,8 @@ export default {
              * */
             compute_miplevel_pass_quad(state, device);
 
+            state.main_view_flow_quad.fence["GET_SELECTED_IMG"] = true;
+
         },
 
         main_flow_fetch_bitmap_ready(state, device) {
@@ -528,7 +592,6 @@ export default {
             // renderLoop_sub(state, device);
         },
 
-
     },
     state() {
         return {
@@ -607,6 +670,14 @@ export default {
                 instance_info: {}, // 描述instance数量等数据集信息，后端读取文件获得
                 additional_info: {},
                 interaction_info: {}, // 描述交互相关的 info
+
+                /**
+                 *  单一图片选取浏览
+                 * */
+                selected_img: { val: -1 },
+                single_img_url: "",
+                single_img_info: {},
+
             },
             // main_view_flow_3d: {
             //     fence: {
@@ -653,6 +724,11 @@ export default {
                      * 以下 LAST_DATA_PACK_FLAG 被置位后，才会触发下一轮次的更新
                      * */
                     LAST_DATA_PACK_FLAG: { val: false },
+
+                    /**
+                     *  Single Image Fetch
+                     * */
+                    GET_SELECTED_IMG: { val: false },
 
                 },
                 Layouts: {},

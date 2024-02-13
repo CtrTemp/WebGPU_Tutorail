@@ -129,7 +129,7 @@ store.state.ws.onmessage = function (e) {
       store.state.pic_browser.CPU_storage.server_raw_info["mip_bitmap_info_pack"] = json_pack;
       // store.state.pic_browser.main_view_flow_3d.fence["BITMAP_RECEIVED"] = true;
       break;
-      
+
     case "quad_texture_pack":
       store.state.pic_browser.CPU_storage.server_raw_info["quad_bitmap_info_pack"] = json_pack;
       store.state.pic_browser.main_view_flow_quad.fence["BITMAP_RECEIVED"] = true;
@@ -140,6 +140,10 @@ store.state.ws.onmessage = function (e) {
       store.state.pic_browser.CPU_storage.server_raw_info["dataset_info_pack"] = json_pack;
       store.state.pic_browser.main_view_flow_quad.fence["DATASET_INFO_READY"] = true;
       store.dispatch("pic_browser/construct_large_imgBitMap", json_pack);
+      break;
+
+    case "single_raw_img":
+      store.dispatch("pic_browser/main_quad_update_detail_img", json_pack);
       break;
 
     default:
