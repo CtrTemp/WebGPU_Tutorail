@@ -180,7 +180,7 @@ fn simulate(@builtin(global_invocation_id) global_invocation_id : vec3<u32>) {
 
 
         // 鱼眼镜头 xoy 平面散开效果
-        if(length(data[idx].pos_offset) < 1*xov_move_para)
+        if(length(data[idx].pos_offset) < 1*xov_move_para+0.75)
         {
             // 首先计算移动方向，应该向着观察点移动
             var dir = 0.05*normalize(instance_pos.xyz-hitPoint);

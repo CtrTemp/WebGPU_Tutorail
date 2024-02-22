@@ -192,7 +192,8 @@ function read_instance_in_single_mip_level(mip_val, single_mip_arr, data_pack_vo
     }
 
     // const root_dir = `../../../data_set/quad_img/x${quad_str}/`;  // 本地 D 盘 10k 数据集
-    const root_dir = `D:/Data/PKU/WebGPU/PicSet/COVID-19-VIS/quad_img/x${quad_str}/`;  // 移动硬盘（注意盘号可能会发生改变） 300k 数据集
+    // const root_dir = `D:/Data/PKU/WebGPU/PicSet/COVID-19-VIS/quad_img/x${quad_str}/`;  // 移动硬盘（注意盘号可能会发生改变） 300k 数据集
+    const root_dir = `../../../../../../../../Data/PKU/WebGPU/PicSet/COVID-19-VIS/quad_img/x${quad_str}/`;  // 移动硬盘（注意盘号可能会发生改变） 300k 数据集
 
 
 
@@ -287,7 +288,7 @@ async function read_quad_instance(json_pack, socket) {
 
     setTimeout(() => {
         read_quad_instance(json_pack, socket); // 递归调用
-    }, 1000);
+    }, 500);
 
 }
 
@@ -389,8 +390,9 @@ async function read_single_raw_image(json_pack, socket) {
     const file_idx = json_pack["idx"];
     const file_name = filename_map.map[file_idx];
     const file_info = img_info_arr.arr[file_idx];
-
-    const root_dir = `D:/Data/PKU/WebGPU/PicSet/COVID-19-VIS/covid_charts-300k/`;  // 移动硬盘（注意盘号可能会发生改变） 300k 数据集
+    // G:\Code\PKU\WebGPU\WebGPU_Browser\240213_detail_view_and_optimize_fisheye\WebGPU_Tutorial\server\src\fetch_img
+    // const root_dir = `D:/Data/PKU/WebGPU/PicSet/COVID-19-VIS/covid_charts-300k/`;  // 移动硬盘（注意盘号可能会发生改变） 300k 数据集
+    const root_dir = `../../../../../../../../Data/PKU/WebGPU/PicSet/COVID-19-VIS/covid_charts-300k/`;  // 移动硬盘（注意盘号可能会发生改变） 300k 数据集
     const file_path = root_dir + file_name;
 
 
