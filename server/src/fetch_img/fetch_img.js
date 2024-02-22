@@ -347,7 +347,8 @@ async function read_big_pre_fetch_img(json_pack) {
     // const description_json_path = "../../../data_set/large_quad_dict-300k.json" // 300k 32*32
     // const description_json_path = "../../../data_set/large_quad_dict_16.json"   // 300k dict
     // const description_json_path = "../../../data_set/large_quad_dict_08.json"   // 300k dict
-    const description_json_path = "../../../data_set/large_quad_arr_08.json"   // 300k arr
+    // const description_json_path = "../../../data_set/large_quad_arr_08.json"   // 300k arr
+    const description_json_path = "../../../data_set/large_quad_arr_08_2d_update.json"   // 300k arr update 2d coord
     // const description_json_path = "../../../data_set/large_quad_arr_10k_8x8.json" // 10k arr
 
     let ret_arr = [];

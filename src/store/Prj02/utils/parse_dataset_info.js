@@ -72,14 +72,14 @@ function parse_dataset_info(state) {
      *  暂时在这里生成随机的场景信息
      * */
     // const flow_info = gen_sphere_instance_pos(50, numInstances); // main-view-3D
-    /**
-     *  总数据集部分 instance 部分小数据集图片（10293）
-     * */
+    // /**
+    //  *  总数据集部分 instance 部分小数据集图片（10293）
+    //  * */
     // const z_dist = 0;
-    // const horizontal_range = 1200;
-    // const vertical_range = 600;
-    // const horizontal_cnt = 400;
-    // const vertical_cnt = 200;
+    // const horizontal_range = 150;
+    // const vertical_range = 150;
+    // const horizontal_cnt = 50;
+    // const vertical_cnt = 50;
     // const z_dist = 0;
     // const horizontal_range = 75;
     // const vertical_range = 35;
