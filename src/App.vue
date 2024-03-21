@@ -25,12 +25,14 @@
 
 
     <!-- <Prj01_InstanceMoving /> -->
-    <Prj02_InstanceFlowing />
+    <!-- <Prj02_InstanceFlowing /> -->
     <!-- <Temp /> -->
     <!-- <Test01 /> -->
 
+    <router-view></router-view>
 
   </Suspense>
+  
   <!-- <WebGPURoot/> -->
 </template>
 

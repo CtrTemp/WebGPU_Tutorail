@@ -7,6 +7,7 @@ import App from './App.vue'
 // import Vuex from 'vuex'
 // 引入在 ./store/index.js 文件中创建配置好的 store 即可
 import { store } from './store'
+import router from './router'
 
 
 import "animate.css"
@@ -39,5 +40,5 @@ import "animate.css"
 
 const app = createApp(App)
     .use(store)
-    // .use(router)
+    .use(router)
     .mount('#app');

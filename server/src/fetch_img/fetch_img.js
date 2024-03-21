@@ -337,8 +337,8 @@ async function read_big_pre_fetch_img(json_pack) {
 
     // const large_quad_root_dir = "../../../data_set/large/"
     // const large_quad_root_dir = "../../../data_set/large_16_16/"    // 300k
-    const large_quad_root_dir = "../../../data_set/large_08_08/"    // 300k 
-    // const large_quad_root_dir = "../../../data_set/large_8x8_10k/"
+    // const large_quad_root_dir = "../../../data_set/large_08_08/"    // 300k 
+    const large_quad_root_dir = "../../../data_set/large_8x8_10k/"
 
 
 
@@ -348,8 +348,8 @@ async function read_big_pre_fetch_img(json_pack) {
     // const description_json_path = "../../../data_set/large_quad_dict_16.json"   // 300k dict
     // const description_json_path = "../../../data_set/large_quad_dict_08.json"   // 300k dict
     // const description_json_path = "../../../data_set/large_quad_arr_08.json"   // 300k arr
-    const description_json_path = "../../../data_set/large_quad_arr_08_2d_update.json"   // 300k arr update 2d coord
-    // const description_json_path = "../../../data_set/large_quad_arr_10k_8x8.json" // 10k arr
+    // const description_json_path = "../../../data_set/large_quad_arr_08_2d_update.json"   // 300k arr update 2d coord
+    const description_json_path = "../../../data_set/large_quad_arr_10k_8x8.json" // 10k arr
 
     let ret_arr = [];
 
@@ -393,7 +393,8 @@ async function read_single_raw_image(json_pack, socket) {
     const file_info = img_info_arr.arr[file_idx];
     // G:\Code\PKU\WebGPU\WebGPU_Browser\240213_detail_view_and_optimize_fisheye\WebGPU_Tutorial\server\src\fetch_img
     // const root_dir = `D:/Data/PKU/WebGPU/PicSet/COVID-19-VIS/covid_charts-300k/`;  // 移动硬盘（注意盘号可能会发生改变） 300k 数据集
-    const root_dir = `../../../../../../../../Data/PKU/WebGPU/PicSet/COVID-19-VIS/covid_charts-300k/`;  // 移动硬盘（注意盘号可能会发生改变） 300k 数据集
+    // const root_dir = `../../../../../../../../Data/PKU/WebGPU/PicSet/COVID-19-VIS/covid_charts-300k/`;  // 移动硬盘（注意盘号可能会发生改变） 300k 数据集
+    const root_dir = "../../../data_set/quad_img/";  // 本地 10k 数据集
     const file_path = root_dir + file_name;
 
 
