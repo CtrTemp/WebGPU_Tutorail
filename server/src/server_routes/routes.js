@@ -29,19 +29,19 @@ const service_distribution = function (socket, json_pack) {
             case "sys_startup_prefetch":            // 系统启动时候首次取的数据
                 resolve(read_big_pre_fetch_img());
                 break;
-            case "fetch_instanced_texture":
-                // read_instanced_texture();
-                resolve(read_instanced_texture());
-                break;
-            case "fetch_mip_instance":
-                // read_mip_instance(json_pack);
-                resolve(read_mip_instance(json_pack));
-                break;
-            case "fetch_quad_instance":
+            // case "fetch_instanced_texture":
+            //     // read_instanced_texture();
+            //     resolve(read_instanced_texture());
+            //     break;
+            // case "fetch_mip_instance":
+            //     // read_mip_instance(json_pack);
+            //     resolve(read_mip_instance(json_pack));
+            //     break;
+            case "fetch_quad_instance":             // 根据视场当前 MipLevel 获取自适应分辨率图片
                 // resolve();
                 read_quad_instance(json_pack, socket);
                 break;
-            case "fetch_single_img":
+            case "fetch_single_img":                // 根据鼠标 hover 选中图片，进行细节视图展示
                 read_single_raw_image(json_pack, socket);
                 break;
             default:

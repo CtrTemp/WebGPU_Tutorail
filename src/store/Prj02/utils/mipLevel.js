@@ -28,11 +28,9 @@ function parse_mipLevelArr(state) {
             state.CPU_storage.mip_info.index_arr[mip_val].push(file_name_idx);
         }
     }
-    console.log(state.CPU_storage.mip_info);
+    // console.log(state.CPU_storage.mip_info);
     // console.timeEnd("refine mipLevelArr");
-
-
-    console.log("val = ", state.CPU_storage.mip_info.index_arr);
+    // console.log("val = ", state.CPU_storage.mip_info.index_arr);
 }
 
 

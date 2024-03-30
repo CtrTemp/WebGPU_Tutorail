@@ -19,7 +19,7 @@ const routes = [
     //默认初始化跳转到 /heigh_res
     {
         path: '/',
-        redirect: '/heigh_res',
+        redirect: '/collection',
     },
 
 ];

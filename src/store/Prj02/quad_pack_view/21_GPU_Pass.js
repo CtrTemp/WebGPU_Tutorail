@@ -77,7 +77,7 @@ async function read_back_miplevel_pass_quad(state, device) {
 
     state.CPU_storage.storage_arr["mip"] = arrBuffer;
 
-    console.log("mip fetch back = ", state.CPU_storage.storage_arr["mip"]);
+    // console.log("mip fetch back = ", state.CPU_storage.storage_arr["mip"]);
 
     // state.CPU_storage.mip_info["arr"].fill(0);
 
@@ -134,7 +134,11 @@ async function read_back_hitIndex_pass(state, device) {
     await state.GPU_memory.SBOs["hit_index_read_back"].mapAsync(GPUMapMode.READ);
     
     const arrBuffer = new Float32Array(state.GPU_memory.SBOs["hit_index_read_back"].getMappedRange());
-    state.CPU_storage.selected_img.val = arrBuffer[0];
+    if(arrBuffer[0] != -1) // 如果当前光标没有选中图片，则保留上一个图片的信息
+    {
+        state.CPU_storage.selected_img.val = arrBuffer[0];
+    }
+    
 
     // console.log(state.CPU_storage.storage_arr["hit_index"]);
 

@@ -4,7 +4,8 @@ const {
     read_description_json
 } = require("./fetch_json")
 
-const filename_map = require("../filename_map");
+// const filename_map = require("../filename_map"); // 300k COVID-19-VIS
+const filename_map = require("../biomedical_filename_map"); // BioMedical - 1400
 const img_info_arr = require("../img_set_description_arr");
 
 /**
@@ -193,7 +194,8 @@ function read_instance_in_single_mip_level(mip_val, single_mip_arr, data_pack_vo
 
     // const root_dir = `../../../data_set/quad_img/x${quad_str}/`;  // 本地 D 盘 10k 数据集
     // const root_dir = `D:/Data/PKU/WebGPU/PicSet/COVID-19-VIS/quad_img/x${quad_str}/`;  // 移动硬盘（注意盘号可能会发生改变） 300k 数据集
-    const root_dir = `../../../../../../../../Data/PKU/WebGPU/PicSet/COVID-19-VIS/quad_img/x${quad_str}/`;  // 移动硬盘（注意盘号可能会发生改变） 300k 数据集
+    // const root_dir = `../../../../../../../../Data/PKU/WebGPU/PicSet/COVID-19-VIS/quad_img/x${quad_str}/`;  // 移动硬盘（注意盘号可能会发生改变） 300k 数据集
+    const root_dir = `../../../data_set_10k/quad_img/x${quad_str}/`;  // 
 
 
 
@@ -338,7 +340,8 @@ async function read_big_pre_fetch_img(json_pack) {
     // const large_quad_root_dir = "../../../data_set/large/"
     // const large_quad_root_dir = "../../../data_set/large_16_16/"    // 300k
     // const large_quad_root_dir = "../../../data_set/large_08_08/"    // 300k 
-    const large_quad_root_dir = "../../../data_set/large_8x8_10k/"
+    // const large_quad_root_dir = "../../../data_set_10k/large_8x8_10k/"
+    const large_quad_root_dir = "../../../data_set_biomedical/large_128x128/" // biomedical-1400
 
 
 
@@ -349,7 +352,7 @@ async function read_big_pre_fetch_img(json_pack) {
     // const description_json_path = "../../../data_set/large_quad_dict_08.json"   // 300k dict
     // const description_json_path = "../../../data_set/large_quad_arr_08.json"   // 300k arr
     // const description_json_path = "../../../data_set/large_quad_arr_08_2d_update.json"   // 300k arr update 2d coord
-    const description_json_path = "../../../data_set/large_quad_arr_10k_8x8.json" // 10k arr
+    const description_json_path = "../../../data_set_biomedical/layout_and_description.json" // 10k arr
 
     let ret_arr = [];
 
@@ -394,9 +397,12 @@ async function read_single_raw_image(json_pack, socket) {
     // G:\Code\PKU\WebGPU\WebGPU_Browser\240213_detail_view_and_optimize_fisheye\WebGPU_Tutorial\server\src\fetch_img
     // const root_dir = `D:/Data/PKU/WebGPU/PicSet/COVID-19-VIS/covid_charts-300k/`;  // 移动硬盘（注意盘号可能会发生改变） 300k 数据集
     // const root_dir = `../../../../../../../../Data/PKU/WebGPU/PicSet/COVID-19-VIS/covid_charts-300k/`;  // 移动硬盘（注意盘号可能会发生改变） 300k 数据集
-    const root_dir = "../../../data_set/quad_img/";  // 本地 10k 数据集
+    const root_dir = "../../../data_set_10k/cur_all_bigset/";  // 本地 10k 数据集
     const file_path = root_dir + file_name;
 
+    if (!fs.existsSync(file_path)) {
+        return;
+    }
 
     const file = fs.readFileSync(file_path);
     const trans_url = file.toString("base64");

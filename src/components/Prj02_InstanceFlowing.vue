@@ -2,17 +2,23 @@
     <div class="root-container-main">
         <!-- <canvas class="sub-canvas" width="512" height="512"></canvas> -->
         <canvas class="main-canvas" width="512" height="512"></canvas>
-        <div class="hover-box">
-            <!-- 其他内容 -->
-            <!-- <img src="" alt="" width="100" height="100" id="raw-img"> -->
-        </div>
-        <SiderPannel />
+        <!-- <div class="hover-box">
+            其他内容
+            <img src="" alt="" width="100" height="100" id="raw-img">
+        </div> -->
+        <!-- <SiderPannel /> -->
+
+        <!-- <div id='openSeadragon1' style="display: none;"></div> -->
+        <!-- 使用 v-if 会重新加载一遍这个组件，方便传参 -->
+        <HighResImage v-if="store.state.pic_browser.CPU_storage.show_highres" :heigh_res_file_path="'hello'" />
     </div>
 </template>
-  
+
 <script setup>
 
 import SiderPannel from './SiderPannel/SiderPannel.vue';
+import HighResImage from './HighResImage.vue';
+
 
 import { useStore } from 'vuex';
 import { onMounted } from 'vue';
@@ -20,15 +26,19 @@ import { inject, provide, watch } from 'vue';
 
 import { mat4, vec3, vec4 } from "wgpu-matrix"
 
+import { useRouter } from 'vue-router';
+
 /**
  *  以下语句必须，不可注释
  *  恰好为等待 device 响应的时间，之后再去执行 onMounted 可以保证 device 是可靠的
  * */
 const device = await inject("device");
 const store = useStore();
+const router = useRouter();
 
 const ws = store.state.ws;
 
+console.log("device = ", device)
 
 // provide("single_img_info", store.state.pic_browser.CPU_storage.single_img_info);
 
@@ -37,6 +47,7 @@ const ws = store.state.ws;
 
 // onMounted
 onMounted(() => {
+
 
 
     const window_width = window.innerWidth;
@@ -54,6 +65,8 @@ onMounted(() => {
 
     const device = store.state.device;
 
+
+    console.log("device device = ", device)
     /**
      *  将 rootState 中的 ws 接口赋值给本地的 ws
      * */
@@ -234,9 +247,18 @@ watch(() => {
             cmd: "fetch_single_img",
             idx: img_idx,
         };
+        // store.state.pic_browser.ws.send(JSON.stringify(json_cmd));
 
-        store.state.pic_browser.ws.send(JSON.stringify(json_cmd));
     }
+}, { deep: true });
+
+
+
+// 是否进行页面跳转
+watch(() => {
+    return store.state.pic_browser.main_canvas.mouse_info.db_click_flag;
+}, (flag) => {
+    router.push("./heigh_res");
 }, { deep: true });
 
 
@@ -244,9 +266,8 @@ watch(() => {
 
 
 
-
 </script>
-  
+
 <style>
 .root-container-main {
     position: absolute;
@@ -282,5 +303,16 @@ watch(() => {
     background-color: aquamarine;
     display: none;
 }
+
+
+/* #openSeadragon1 {
+    position: absolute;
+    top: 0%;
+    left: 0%;
+    width: 100%;
+    height: 100%;
+    border: chocolate 1vw solid;
+    box-sizing: border-box;
+    background-color: white;
+} */
 </style>
-  

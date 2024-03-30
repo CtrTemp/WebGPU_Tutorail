@@ -264,7 +264,6 @@ function dynamic_fetch_update_Texture(state, device) {
 
         const instanceTexture = state.GPU_memory.Textures["dynamic_prefetch"][map[i]];
 
-
         /**
          *  由于分批次加载，以下变量改用全局变量代替
          * */

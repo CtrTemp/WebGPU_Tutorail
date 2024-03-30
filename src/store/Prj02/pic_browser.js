@@ -99,7 +99,6 @@ export default {
             console.log("json pack = ", ret_json_pack);
             const img_url_arr = ret_json_pack.largeBitMaps;
 
-
             for (let i = 0; i < img_url_arr.length; i++) {
 
                 let file = img_url_arr[i];
@@ -275,7 +274,7 @@ export default {
 
             const url = "data:image/png;base64," + json_pack.img_url;
             const img_info = json_pack.img_info;
-            
+
             context.state.CPU_storage.single_img_url = url;
             context.state.CPU_storage.single_img_info = img_info;
 
@@ -678,6 +677,11 @@ export default {
                 single_img_url: "",
                 single_img_info: {},
 
+                /**
+                 *  高分辨率视图
+                 * */ 
+                show_highres: false,
+
             },
             // main_view_flow_3d: {
             //     fence: {
@@ -757,6 +761,7 @@ export default {
                     wheel_speed: 0.05,
                     dragball_speed: 0.005,
                     drag_speed: 0.08,
+                    db_click_flag: { val: false },
 
                 },
                 keyboard_info: {

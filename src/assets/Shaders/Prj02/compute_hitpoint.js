@@ -76,7 +76,7 @@ fn compute_hitPoint(pos : vec3f) -> vec3f
 
 fn check_hit(hitPoint : vec3f, pos : vec3f, aspect : vec2f, max_influence_radius : f32) -> i32
 {
-    // return false;
+    // return 0;
     // var range_t = 1.0 * up * aspect.y + pos;
     // var range_b = -1.0 * up * aspect.y + pos;
     // var range_l = 1.0 * right * aspect.x + pos;
@@ -154,7 +154,7 @@ fn simulate(@builtin(global_invocation_id) global_invocation_id : vec3<u32>) {
 
 
 
-    // 鱼眼镜头位移测试
+    // 鱼眼镜头位移
     if(check_val != 0)
     {
         if(check_val == 1)
@@ -178,37 +178,37 @@ fn simulate(@builtin(global_invocation_id) global_invocation_id : vec3<u32>) {
             xov_move_para = 1;
         }
 
+        // //  暂时停掉鱼眼镜头 2024-03-29
+        // //  鱼眼镜头 xoy 平面散开效果
+        // if(length(data[idx].pos_offset) < 1*xov_move_para+0.75)
+        // {
+        //     // 首先计算移动方向，应该向着观察点移动
+        //     var dir = 0.05*normalize(instance_pos.xyz-hitPoint);
 
-        // 鱼眼镜头 xoy 平面散开效果
-        if(length(data[idx].pos_offset) < 1*xov_move_para+0.75)
-        {
-            // 首先计算移动方向，应该向着观察点移动
-            var dir = 0.05*normalize(instance_pos.xyz-hitPoint);
-
-            data[idx].pos_offset.x = data[idx].pos_offset.x+dir.x;
-            data[idx].pos_offset.y = data[idx].pos_offset.y+dir.y;
-            data[idx].pos_offset.z = data[idx].pos_offset.z+dir.z;
-        }
+        //     data[idx].pos_offset.x = data[idx].pos_offset.x+dir.x;
+        //     data[idx].pos_offset.y = data[idx].pos_offset.y+dir.y;
+        //     data[idx].pos_offset.z = data[idx].pos_offset.z+dir.z;
+        // }
 
 
-        // 鱼眼镜头 z轴 移动产生的放大效果
-        if(data[idx].pos_offset.z > -10*z_move_para)
-        {
-            // 首先计算移动方向，应该向着观察点移动
-            var dir = 1*normalize(instance_pos.xyz-lookFrom.xyz);
-            data[idx].pos_offset.x = data[idx].pos_offset.x-dir.x;
-            data[idx].pos_offset.y = data[idx].pos_offset.y-dir.y;
-            data[idx].pos_offset.z = data[idx].pos_offset.z-dir.z;
-            // data[idx].pos_offset.z = data[idx].pos_offset.z-3;
-        }
-        // z轴修正
-        if(data[idx].pos_offset.z < -10*z_move_para - 1)
-        {
-            var dir = 1*normalize(instance_pos.xyz-lookFrom.xyz);
-            data[idx].pos_offset.x = data[idx].pos_offset.x+dir.x;
-            data[idx].pos_offset.y = data[idx].pos_offset.y+dir.y;
-            data[idx].pos_offset.z = data[idx].pos_offset.z+dir.z;
-        }
+        // // 鱼眼镜头 z轴 移动产生的放大效果
+        // if(data[idx].pos_offset.z > -10*z_move_para)
+        // {
+        //     // 首先计算移动方向，应该向着观察点移动
+        //     var dir = 1*normalize(instance_pos.xyz-lookFrom.xyz);
+        //     data[idx].pos_offset.x = data[idx].pos_offset.x-dir.x;
+        //     data[idx].pos_offset.y = data[idx].pos_offset.y-dir.y;
+        //     data[idx].pos_offset.z = data[idx].pos_offset.z-dir.z;
+        //     // data[idx].pos_offset.z = data[idx].pos_offset.z-3;
+        // }
+        // // z轴修正
+        // if(data[idx].pos_offset.z < -10*z_move_para - 1)
+        // {
+        //     var dir = 1*normalize(instance_pos.xyz-lookFrom.xyz);
+        //     data[idx].pos_offset.x = data[idx].pos_offset.x+dir.x;
+        //     data[idx].pos_offset.y = data[idx].pos_offset.y+dir.y;
+        //     data[idx].pos_offset.z = data[idx].pos_offset.z+dir.z;
+        // }
     }
     else
     {

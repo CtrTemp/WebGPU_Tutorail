@@ -76,10 +76,10 @@ function parse_dataset_info(state) {
      *  总数据集部分 instance 部分小数据集图片（10293）
      * */
     const z_dist = 0;
-    const horizontal_range = 150;
-    const vertical_range = 30;
-    const horizontal_cnt = 50;
-    const vertical_cnt = 10;
+    const horizontal_range = 120;
+    const vertical_range = 90;
+    const horizontal_cnt = 40;
+    const vertical_cnt = 30;
     // const z_dist = 0;
     // const horizontal_range = 75;
     // const vertical_range = 35;

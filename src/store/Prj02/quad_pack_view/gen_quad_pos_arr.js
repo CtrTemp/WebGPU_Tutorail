@@ -7,6 +7,8 @@ function gen_rect_instance_pos(
 ) {
 
 
+    console.log("raw info pack - ", raw_info_pack)
+
     let ret_arr = [];
 
     const horizontal_step = horizontal_range / horizontal_cnt;
@@ -16,8 +18,8 @@ function gen_rect_instance_pos(
     const vertical_offset = -vertical_range / 2;
 
 
-    const scale_para_3d = 40;
-    const scale_para_2d = 20;
+    const scale_para_3d = 5;
+    const scale_para_2d = 5;
 
     for (let i = 0; i < vertical_cnt; i++) {
         for (let j = 0; j < horizontal_cnt; j++) {
@@ -33,19 +35,20 @@ function gen_rect_instance_pos(
             let pos_y = (0.5 + i) * vertical_step + vertical_offset;
             let pos_z = z_plane_dist;
 
-            // let l2_i = item["layout2"][1]
-            // let l2_j = item["layout2"][0]
-            // let l2_x = (0.5 + l2_j) * horizontal_step + horizontal_offset;
-            // let l2_y = (0.5 + l2_i) * vertical_step + vertical_offset;
+            let l2_i = item["layout2d_coord"][1]
+            let l2_j = item["layout2d_coord"][0]
+            let l2_x = (0.5 + l2_j) * horizontal_step + horizontal_offset;
+            let l2_y = (0.5 + l2_i) * vertical_step + vertical_offset;
+            let l2_z = z_plane_dist;
+            
+
+            // let l2_x = item["layout2d"][1] * scale_para_2d;
+            // let l2_y = item["layout2d"][0] * scale_para_2d;
             // let l2_z = z_plane_dist;
 
-            let l2_x = item["layout2"][1] * scale_para_2d;
-            let l2_y = item["layout2"][0] * scale_para_2d;
-            let l2_z = z_plane_dist;
-
-            let l3_x = item["layout3"][0] * scale_para_3d;
-            let l3_y = item["layout3"][1] * scale_para_3d;
-            let l3_z = item["layout3"][2] * scale_para_3d;
+            let l3_x = item["layout3d"][0] * scale_para_3d;
+            let l3_y = item["layout3d"][1] * scale_para_3d;
+            let l3_z = item["layout3d"][2] * scale_para_3d;
 
             // let time = Math.asin(pos_z / Math.sqrt(pos_x * pos_x + pos_z * pos_z)); // rotating
             // if (Math.random() > 0.5) {
@@ -66,9 +69,13 @@ function gen_rect_instance_pos(
             Array.prototype.push.apply(ret_arr, [l3_x, l3_y, l3_z, 1.0]);       // layout 3d pos
             Array.prototype.push.apply(ret_arr, [default_layout, quad_idx]);    // layout_flag + quad_idx、
             Array.prototype.push.apply(ret_arr, default_uv_offset_arr);         // default_uv_offset
+            // Array.prototype.push.apply(ret_arr, [0.015625, 0]);         // default_uv_offset
             Array.prototype.push.apply(ret_arr, [1.0, 1.0]);                    // default_uv_scale
             Array.prototype.push.apply(ret_arr, default_uv_size_arr);           // default_uv_size
+            // Array.prototype.push.apply(ret_arr, [0.015625, 0.015625]);           // default_uv_size
 
+
+            0.015625
 
         }
     }
@@ -78,7 +85,7 @@ function gen_rect_instance_pos(
 
     flow_info["flow_arr"] = ret_arr;
     flow_info["numParticles"] = horizontal_cnt * vertical_cnt;
-    console.log("Done");
+    console.log("Done, Flow info = ", flow_info);
     return flow_info;
 }
 

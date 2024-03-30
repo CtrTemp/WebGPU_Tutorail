@@ -120,10 +120,39 @@ function mouseClickCallback(state, flag) {
     if (flag == "down") {
         state.main_canvas.mouse_info["dragging"] = true;
         state.main_canvas.mouse_info["firstMouse"] = true;
+
+        // 通过点选来得到图片细节信息
+        const img_idx = state.CPU_storage.selected_img.val;
+
+
+        const json_cmd = {
+            cmd: "fetch_single_img",
+            idx: img_idx,
+        };
+        state.ws.send(JSON.stringify(json_cmd));
     }
     else if (flag == "up") {
         state.main_canvas.mouse_info["dragging"] = false;
     }
+}
+
+/**
+ *  Double Click
+ * */
+function mouseDoubleClickCallback(state) {
+    // 这里添加一个函数，直接跳转到下一个router
+    // state.main_canvas.mouse_info.db_click_flag.val = !state.main_canvas.mouse_info.db_click_flag.val;
+    // 放弃使用 router 
+    // document.getElementById("openSeadragon1").style.display = "block"
+
+    
+    const img_idx = state.CPU_storage.selected_img.val;
+    if(img_idx>5)
+    {
+        alert("No High Resolution Resource Provided For This Image")
+        return;
+    }
+    state.CPU_storage.show_highres = true
 }
 
 /**
@@ -181,6 +210,9 @@ function canvasMouseInteraction_quad(state, device) {
     canvas.addEventListener("mouseup", (event) => {
         mouseClickCallback(state, "up");
     })
+    canvas.addEventListener('dblclick', (event) => {
+        mouseDoubleClickCallback(state)
+    });
 
     canvas.addEventListener("mousewheel", (event) => {
         mouseWheelCallback(state, device, event.deltaY);
@@ -442,6 +474,11 @@ function canvasKeyboardInteraction_quad(state, device, gui) {
                 // exchangeKeyboardActive(state);
                 exchangeDragControlFunc(state);
                 break;
+            case "G".charCodeAt(0):
+                state.CPU_storage.show_highres = false
+                break;
+
+
 
             default:
                 break;
